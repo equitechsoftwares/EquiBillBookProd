@@ -1,0 +1,342 @@
+﻿@{
+    if (ViewBag.Menus != null)
+    {
+        <div class="modal-header">
+            <h4 class="modal-title">User Role</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card-body">
+
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <!-- text input -->
+                                <div class="form-group">
+                                    <label>Role Name <span class="danger">*</span></label>
+                                    <span class="form-control" id="txtRoleName">@ViewBag.Role.RoleName</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0">
+
+                        @{
+                            var count = 1;
+                            var divId = 1;
+                            foreach (var outer in ViewBag.Menus)
+                            {
+                                if (outer.HasChildren == false)
+                                {
+                                    <div class="card  card-info card-outline ">
+                                        <div class="card-body">
+                                            <div class="row table-responsive">
+                                                <table id="tblUserRole" class="table ">
+                                                    <thead class="bg-gray-light">
+                                                        <tr>
+                                                            <th>Modules</th>
+                                                            <th>Select All </th>
+                                                            <th>View</th>
+                                                            <th>Add</th>
+                                                            <th>Edit</th>
+                                                            <th>Delete</th>
+                                                            <th>Export</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divPermissions" id="divPermissions@(divId)">
+                                                        <tr id="divPermission@(count)">
+                                                            <td>@outer.Title</td>
+                                                            <td>
+                                                                @if (outer.IsView && outer.IsAdd && outer.IsEdit && outer.IsDelete && outer.IsExport)
+                                                                {
+                                                                    <div class="checkbox icheck-turquoise">
+                                                                        @if (outer.IsAddEnabled && outer.IsEditEnabled && outer.IsDeleteEnabled && outer.IsViewEnabled && outer.IsExportEnabled)
+                                                                        {
+                                                                            <input type="checkbox" checked id="chk@(count)" onchange="selectedSelectAll('chk@(count)')" disabled />
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input type="checkbox" id="chk@(count)" onchange="selectedSelectAll('chk@(count)')" disabled />
+                                                                        }
+
+                                                                        <label for="chk@(count)"></label>
+
+                                                                    </div>
+                                                                }
+                                                                <input type="hidden" id="hdnMenuId@(count)" value="@outer.MenuId" />
+                                                                <input type="hidden" id="hdnMenuPermissionId@(count)" value="@outer.MenuPermissionId" />
+                                                            </td>
+                                                            <td>
+                                                                @if (outer.IsView)
+                                                                {
+                                                                    <div class="checkbox icheck-emerland">
+                                                                        @if (outer.IsViewEnabled)
+                                                                        {
+                                                                            <input checked type="checkbox" id="chkIsView@(count)" class="chk@(count)" onchange="toggleView(@count)" disabled />
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input type="checkbox" id="chkIsView@(count)" class="chk@(count)" onchange="toggleView(@count)" disabled />
+                                                                        }
+
+                                                                        <label for="chkIsView@(count)"></label>
+                                                                    </div>
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                @if (outer.IsAdd == true)
+                                                                {
+                                                                    <div class="checkbox icheck-info">
+
+                                                                        @if (outer.IsAddEnabled)
+                                                                        {
+                                                                            <input checked type="checkbox" id="chkIsAdd@(count)" class="chk@(count)" onchange="toggle(@count)" disabled />
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input type="checkbox" id="chkIsAdd@(count)" class="chk@(count)" onchange="toggle(@count)" disabled />
+                                                                        }
+
+                                                                        <label for="chkIsAdd@(count)"></label>
+
+                                                                    </div>
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                @if (outer.IsEdit == true)
+                                                                {
+                                                                    <div class="checkbox icheck-sunflower">
+                                                                        @if (outer.IsEditEnabled)
+                                                                        {
+                                                                            <input checked type="checkbox" id="chkIsEdit@(count)" class="chk@(count)" onchange="toggle(@count)" disabled />
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input type="checkbox" id="chkIsEdit@(count)" class="chk@(count)" onchange="toggle(@count)" disabled />
+                                                                        }
+
+                                                                        <label for="chkIsEdit@(count)"></label>
+                                                                    </div>
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                @if (outer.IsDelete)
+                                                                {
+                                                                    <div class="checkbox icheck-danger">
+                                                                        @if (outer.IsDeleteEnabled)
+                                                                        {
+                                                                            <input checked type="checkbox" id="chkIsDelete@(count)" class="chk@(count)" onchange="toggle(@count)" disabled />
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input type="checkbox" id="chkIsDelete@(count)" class="chk@(count)" onchange="toggle(@count)" disabled />
+                                                                        }
+
+                                                                        <label for="chkIsDelete@(count)"></label>
+                                                                    </div>
+                                                                }
+
+                                                            </td>
+
+                                                            <td>
+                                                                @if (outer.IsExport)
+                                                                {
+                                                                    <div class="checkbox icheck-carrot">
+                                                                        @if (outer.IsExportEnabled)
+                                                                        {
+                                                                            <input checked type="checkbox" id="chkIsExport@(count)" class="chk@(count)" onchange="toggle(@count)" disabled />
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <input type="checkbox" id="chkIsExport@(count)" class="chk@(count)" onchange="toggle(@count)" disabled />
+                                                                        }
+
+                                                                        <label for="chkIsExport@(count)"></label>
+                                                                    </div>
+                                                                }
+                                                            </td>
+                                                        </tr>
+
+
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    count++;
+                                }
+                                else
+                                {
+                                    <div class="card  card-info card-outline collapsed-card">
+                                        <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                            <h3 class="card-title">@outer.Title</h3>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-body">
+                                            @*<div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="checkbox icheck-emerland">
+                                            <input type="checkbox" id="chkSelectAll@(divId)" onchange="selectAllModule('chkSelectAll@(divId)')" disabled/>
+                                            <label for="chkSelectAll@(divId)">Select All</label>
+                                        </div>
+                                    </div>
+                                </div>*@
+                                            <div class="row table-responsive">
+                                                <table id="tblUserRole" class="table ">
+                                                    <thead class="bg-gray-light">
+                                                        <tr>
+                                                            <th>Modules</th>
+                                                            <th>Select All </th>
+                                                            <th>View</th>
+                                                            <th>Add</th>
+                                                            <th>Edit</th>
+                                                            <th>Delete</th>
+
+                                                            <th>Export</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divPermissions" id="divPermissions@(divId)">
+                                                        @foreach (var item in outer.InnerMenus)
+                                                        {
+                                                            if (item.IsView || item.IsAdd || item.IsEdit || item.IsDelete || item.IsExport)
+                                                            {
+                                                                <tr id="divPermission@(count)">
+                                                                    <td>@item.Title</td>
+                                                                    <td>
+                                                                        @if (item.IsView && item.IsAdd && item.IsEdit && item.IsDelete && item.IsExport)
+                                                                        {
+                                                                            <div class="checkbox icheck-turquoise">
+                                                                                @if (item.IsAddEnabled && item.IsEditEnabled && item.IsDeleteEnabled && item.IsViewEnabled && item.IsExportEnabled)
+                                                                                {
+                                                                                    <input type="checkbox" checked id="chk@(count)" class="chkSelectAll@(divId)" onchange="selectedSelectAll('chk@(count)')" disabled />
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <input type="checkbox" id="chk@(count)" class="chkSelectAll@(divId)" onchange="selectedSelectAll('chk@(count)')" disabled />
+                                                                                }
+
+                                                                                <label for="chk@(count)"></label>
+
+                                                                            </div>
+                                                                        }
+                                                                        <input type="hidden" id="hdnMenuId@(count)" value="@item.MenuId" />
+                                                                        <input type="hidden" id="hdnMenuPermissionId@(count)" value="@item.MenuPermissionId" />
+                                                                    </td>
+                                                                    <td>
+                                                                        @if (item.IsView)
+                                                                        {
+                                                                            <div class="checkbox icheck-emerland">
+                                                                                @if (item.IsViewEnabled)
+                                                                                {
+                                                                                    <input checked type="checkbox" id="chkIsView@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggleView(@count)" disabled />
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <input type="checkbox" id="chkIsView@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggleView(@count)" disabled />
+                                                                                }
+
+                                                                                <label for="chkIsView@(count)"></label>
+                                                                            </div>
+                                                                        }
+                                                                    </td>
+                                                                    <td>
+                                                                        @if (item.IsAdd == true)
+                                                                        {
+                                                                            <div class="checkbox icheck-info">
+
+                                                                                @if (item.IsAddEnabled)
+                                                                                {
+                                                                                    <input checked type="checkbox" id="chkIsAdd@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" disabled />
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <input type="checkbox" id="chkIsAdd@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" disabled />
+                                                                                }
+
+                                                                                <label for="chkIsAdd@(count)"></label>
+
+                                                                            </div>
+                                                                        }
+                                                                    </td>
+                                                                    <td>
+                                                                        @if (item.IsEdit == true)
+                                                                        {
+                                                                            <div class="checkbox icheck-sunflower">
+                                                                                @if (item.IsEditEnabled)
+                                                                                {
+                                                                                    <input checked type="checkbox" id="chkIsEdit@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" disabled />
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <input type="checkbox" id="chkIsEdit@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" disabled />
+                                                                                }
+
+                                                                                <label for="chkIsEdit@(count)"></label>
+                                                                            </div>
+                                                                        }
+                                                                    </td>
+                                                                    <td>
+                                                                        @if (item.IsDelete)
+                                                                        {
+                                                                            <div class="checkbox icheck-danger">
+                                                                                @if (item.IsDeleteEnabled)
+                                                                                {
+                                                                                    <input checked type="checkbox" id="chkIsDelete@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" disabled />
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <input type="checkbox" id="chkIsDelete@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" disabled />
+                                                                                }
+
+                                                                                <label for="chkIsDelete@(count)"></label>
+                                                                            </div>
+                                                                        }
+
+                                                                    </td>
+
+                                                                    <td>
+                                                                        @if (item.IsExport)
+                                                                        {
+                                                                            <div class="checkbox icheck-carrot">
+                                                                                @if (item.IsExportEnabled)
+                                                                                {
+                                                                                    <input checked type="checkbox" id="chkIsExport@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" disabled />
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <input type="checkbox" id="chkIsExport@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" disabled />
+                                                                                }
+
+                                                                                <label for="chkIsExport@(count)"></label>
+                                                                            </div>
+                                                                        }
+                                                                    </td>
+                                                                </tr>
+                                                                count++;
+                                                            }
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                divId++;
+                            }
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    }
+}

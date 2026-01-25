@@ -1,0 +1,369 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Contra";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Contra</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/banking/Contra">Contra List</a></li>
+                        <li class="breadcrumb-item active">Edit Contra</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/banking/Contra" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Business Location <span class="danger">*</span> </label>
+                                        <div class="input-group divBranch_ctrl">
+                                            <select class="form-control select2" style="width: 100%;" id="ddlBranch">
+                                                <option value="0">Select</option>
+                                                @foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    if (ViewBag.Contra.BranchId == item.BranchId)
+                                                    {
+                                                        <option value="@item.BranchId" selected>@item.Branch</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.BranchId">@item.Branch</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Reference No</label>
+                                        <input type="text" class="form-control" id="txtReferenceNo" value="@ViewBag.Contra.ReferenceNo" disabled />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label> Type </label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlType" onchange="toggleType()">
+                                                @{
+                                                    if (ViewBag.Contra.Type == "Fund Transfer")
+                                                    {
+                                                        <option value="Fund Transfer" selected>Fund Transfer</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="Fund Transfer">Fund Transfer</option>
+                                                    }
+                                                    if (ViewBag.Contra.Type == "Deposit")
+                                                    {
+                                                        <option value="Deposit" selected>Deposit</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="Deposit">Deposit</option>
+                                                    }
+                                                    if (ViewBag.Contra.Type == "Withdraw")
+                                                    {
+                                                        <option value="Withdraw" selected>Withdraw</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="Withdraw">Withdraw</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group" id="divFTAccount">
+                                        <label> From Account <span class="danger">*</span></label>
+                                        <div class="input-group divFromAccount_ctrl">
+                                            <select class="form-control select2" id="ddlFromAccount">
+                                                <option value="0">Select</option>
+                                                @{
+                                                    if (ViewBag.AccountSubTypes != null)
+                                                    {
+                                                        foreach (var item in ViewBag.AccountSubTypes)
+                                                        {
+                                                            if (item.Accounts.Count > 0)
+                                                            {
+                                                                if (item.Type == "Cash" || item.Type == "Bank" || item.Type == "Credit Card")
+                                                                {
+                                                                    <optgroup label="@item.DisplayAs">
+                                                                        @foreach (var inner in item.Accounts)
+                                                                        {
+                                                                            if (ViewBag.Contra.FromAccountId == inner.AccountId)
+                                                                            {
+                                                                                <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                            }
+                                                                        }
+                                                                    </optgroup>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                            @*@if (ViewBag.AccountsPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#AccountModal">+ </a>
+                                                    </span>
+                                                }*@
+
+                                            <small class="text-red font-weight-bold errorText" id="divFromAccount"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group" id="divFTAccount_ctrl">
+                                        <label> To Account <span class="danger">*</span> </label>
+                                        <div class="input-group divToAccount_ctrl">
+                                            <select class="form-control select2" id="ddlToAccount">
+                                                <option value="0">Select</option>
+                                                @{
+                                                    if (ViewBag.AccountSubTypes != null)
+                                                    {
+                                                        foreach (var item in ViewBag.AccountSubTypes)
+                                                        {
+                                                            if (item.Accounts.Count > 0)
+                                                            {
+                                                                if (item.Type == "Cash" || item.Type == "Bank" || item.Type == "Credit Card")
+                                                                {
+                                                                    <optgroup label="@item.DisplayAs">
+                                                                        @foreach (var inner in item.Accounts)
+                                                                        {
+                                                                            if (ViewBag.Contra.ToAccountId == inner.AccountId)
+                                                                            {
+                                                                                <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                            }
+                                                                        }
+                                                                    </optgroup>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                            @*@if (ViewBag.AccountsPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#AccountModal">+ </a>
+                                                    </span>
+                                                }*@
+
+                                            <small class="text-red font-weight-bold errorText" id="divToAccount"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Amount <span class="danger">*</span></label>
+                                        <input type="number" class="form-control divAmount_ctrl" id="txtAmount" placeholder="" onkeypress="return onlyDecimalKey(event)"
+                                               value="@ViewBag.Contra.Amount">
+                                        <small class="text-red font-weight-bold errorText" id="divAmount"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Date <span class="danger">*</span></label>
+                                        <div class="input-group date" id="_PaymentDate" data-target-input="nearest">
+                                            <input id="txtPaymentDate" type="text" class="form-control datetimepicker-input divPaymentDate_ctrl" data-target="#_PaymentDate"
+                                                   value="@(ViewBag.Contra.PaymentDate != null ? ViewBag.Contra.PaymentDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]):DateTime.Now)" />
+                                            <div class="input-group-append" data-target="#_PaymentDate" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                        @*<input type="datetime-local" class="form-control" id="txtFTPaymentDate" placeholder="">*@
+                                        <small class="text-red font-weight-bold errorText" id="divPaymentDate"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divpaymentMethod @(ViewBag.Contra.Type == "Deposit"?"":"hidden")">
+                                    <div class="form-group divPaymentType_FT_ctrl">
+                                        <label>Deposit Via <span class="danger">*</span></label>
+                                        <select class="form-control select2" id="ddlPaymentType" style="width:100%">
+                                            @*<option value="0">Select</option>*@
+                                            @foreach (var item in ViewBag.PaymentTypes)
+                                            {
+                                                if (ViewBag.Contra.PaymentTypeId == item.PaymentTypeId)
+                                                {
+                                                    <option value="@item.PaymentTypeId" selected>@item.PaymentType</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.PaymentTypeId">@item.PaymentType</option>
+                                                }
+                                            }
+                                        </select>
+                                        <small class="text-red font-weight-bold errorText" id="divPaymentType_FT"></small>
+                                    </div>
+                                </div>
+
+
+                              
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label id="lblProductImage">Attach Document </label>
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input" id="AttachDocument" accept='.png,.jpg,.jpeg' onchange="getAttachDocumentBase64()">
+                                                <label class="custom-file-label" for="AttachDocument">Choose file</label>
+                                            </div>
+                                            <img id="blahAttachDocument" src="@ViewBag.Contra.AttachDocument" alt="" height="60" style="padding-top:10px;">
+                                        </div>
+                                    </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Notes</label>
+                                        <textarea class="form-control" id="txtNotes">@ViewBag.Contra.Notes</textarea>
+                                        @*<input type="text" class="form-control" id="txtFTNotes" placeholder="">*@
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                            <button id="btnSave_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                            @*<a id="btnBack" href="/accounts/AccountType" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is account type?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Account type means the accounts available that the Company provides to the Client, which are the Standard Account, the Copy Trading Account, and/or the other Accounts.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What are the 6 account types? </h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Some people think banks just offer checking and savings accounts, but there are actually other types of bank accounts that financial institutions commonly offer.
+                                    •	Bank accounts at a glance.
+                                    •	Checking accounts.
+                                    •	Savings accounts.
+                                    •	Money market accounts.
+                                    •	Certificates of deposit (CDs)
+                                    •	Individual retirement arrangements (IRAs)
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What account type is cash?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    A cash account is a type of brokerage account in which the investor must pay the full amount for securities purchased. An investor using a cash account is not allowed to borrow funds from his or her broker-dealer in order to pay for transactions in the account (trading on margin).
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What type of account is inventory?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Inventory is a current asset account found on the balance sheet, consisting of all raw materials, work-in-progress, and finished goods that a company has accumulated.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Banking/Contra.js"></script>
+
+

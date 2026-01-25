@@ -1,0 +1,86 @@
+﻿
+
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th style="">Sln</th>
+            <th style="">Date</th>
+            <th style="">Reference No</th>
+            <th style="">Type</th>
+            <th style="">Credit</th>
+            <th style="">Debit</th>
+            <th style="">Balance</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.Stock.StockDetails)
+        {
+
+            <tr>
+                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>
+                <td>@item.Date.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                <td>@item.ReferenceNo</td>
+                <td>@item.Type</td>
+                <td class="success">
+                    @(String.Format("{0:0.##}", item.Credit)) @ViewBag.Stock.UnitName
+                </td>
+                <td class="danger">
+                    @(String.Format("{0:0.##}", item.Debit)) @ViewBag.Stock.UnitName
+                </td>
+                <td>
+                    @(String.Format("{0:0.##}", item.Balance)) @ViewBag.Stock.UnitName
+                </td>
+            </tr>
+            count++;
+        }
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="11">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchStockDetailsList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchStockDetailsList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchStockDetailsList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchStockDetailsList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divAsof').text('Showing Results: (' + @Html.Raw(Json.Encode(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+    @*$('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));*@
+</script>
+

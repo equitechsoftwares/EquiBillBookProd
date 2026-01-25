@@ -1,0 +1,208 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Sub Category";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Sub Category</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/itemsettings/subcategory">Sub Category List</a></li>
+                        <li class="breadcrumb-item active">Edit Sub Category</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/itemsettings/SubCategory" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+
+                            <div class="row">
+                                @*<div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Sub Category Code</label>
+                                        <input disabled type="text" class="form-control" id="txtSubCategoryCode" placeholder="" value="@ViewBag.SubCategory.SubCategoryCode">
+                                        <small class="text-red font-weight-bold errorText" id="divSubCategoryCode"></small>
+                                    </div>
+                                </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Category <span class="danger">*</span></label>
+                                        <div class="input-group divCategory_ctrl">
+                                            <select class="form-control select2" id="ddlCategory">
+                                                <option value="0">Select</option>
+                                                @foreach (var item in ViewBag.Categories)
+                                                {
+                                                    if (ViewBag.SubCategory.CategoryId == item.CategoryId)
+                                                    {
+                                                        <option value="@item.CategoryId" selected>@item.Category</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.CategoryId">@item.Category</option>
+                                                    }
+                                                }
+                                            </select>
+                                            @if (ViewBag.CategoriesPermission.IsAdd == true)
+                                            {
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#categoryModal">+ </a>
+                                                </span>
+                                            }
+                                            </div>
+                                        <small class="text-red font-weight-bold errorText" id="divCategory"></small>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Sub Category Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divSubCategory_ctrl" id="txtSubCategory" placeholder="Enter SubCategory Name" value="@ViewBag.SubCategory.SubCategory">
+                                        <small class="text-red font-weight-bold errorText" id="divSubCategory"></small>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnUpdate" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                            <button id="btnUpdate_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                            @*<a id="btnBack" href="/items/SubCategory" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="categoryModal">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Category</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    @*<div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Category Code <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                            <input type="text" class="form-control" id="txtCategoryCode" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divCategoryCode_M"></small>
+                        </div>
+                    </div>*@
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Category Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divCategory_M_ctrl" id="txtCategory" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divCategory_M"></small>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertCategory()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I add and update product sub categories?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    •	To add a new product sub category, click on the ‘Add New’ button at the top of the screen
+
+                                    •	To update an existing product sub category, click on 'Edit' button beside the name of product sub category you want to change, make your changes and then click the ‘Save’ button at the bottom of the screen.
+
+                                    •	To delete an existing product sub category, tick the box that is to the left of the product sub category you would like to delete and then click the ‘Delete’ button at the top of the list.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Why should I add unit?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    If the product category you are creating is a sub category, choose the main product category.
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Settings/ItemSettings/SubCategory.js"></script>

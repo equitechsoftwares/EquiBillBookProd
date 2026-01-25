@@ -1,0 +1,100 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Payment Confirmed";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Payment Confirmed</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/subscription/index">My Current Plan</a></li>
+                        <li class="breadcrumb-item active">Payment Confirmed</li>
+                    </ol>
+                </div>
+            </div>
+
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <!-- Profile Image -->
+                <div class="card card-primary">
+                    <div class="card-body box-profile">
+                        <div class="text-center">
+                            @* <img class="profile-user-img img-fluid img-circle" src="../../dist/img/user4-128x128.jpg" alt="User profile picture">*@
+                            <i class="nav-icon fas fa-check text-success" style="font-size:5rem"></i>
+                        </div>
+
+                        <h3 class="profile-username text-center text-bold">Payment Successful</h3>
+
+                        <p class="text-muted text-center">Your Order is confirmed. We have sent a copy of your invoice to your registered mail</p>
+
+                        <ul class="list-group list-group-unbordered mb-3">
+                            <li class="list-group-item">
+                                <b>Invoice#</b> <a class="float-right ">@ViewBag.Transaction.TransactionNo</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Date</b> <a class="float-right ">@ViewBag.Transaction.PaidOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Transaction Status</b> <a class="float-right ">Paid</a>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Amount</b> <a class="float-right">@ViewBag.Transaction.PayableCost</a>
+                            </li>
+                        </ul>
+
+                        @if (ViewBag.Transaction.ParentTransactionId == 0)
+                        {
+                            if (ViewBag.Transaction.CurrentPlanId != ViewBag.Transaction.TransactionId)
+                            {
+                                //if (ViewBag.ActivatePlanPermission.IsAdd)
+                                //{
+                                <a href="javascript:void(0)" onclick="ActivatePlan(window.location.href.split('=')[1])" class="btn btn-danger text-center" style="display:block"><b>Deactivate my current plan & activate this plan immediately</b></a>
+                                //}
+
+                                <a href="/subscription/index" class="text-primary text-center mt-2" style="display:block"><b>No i will wait for my current plan to finish</b></a>
+                            }
+                            else
+                            {
+                                <a href="/subscription/index" class="btn btn-primary text-center mt-2" style="display:block"><b>Go To My Plan</b></a>
+                            }
+                        }
+                        else
+                        {
+                            <a href="/subscription/index" class="btn btn-primary text-center mt-2" style="display:block"><b>Go To My Plan</b></a>
+                        }
+
+
+                        <a href="javascript:void(0)" onclick="openInvoice()" class="text-cyan text-center mt-2" style="display:block"><b>Go To Invoice</b></a>
+
+                        @if (ViewBag.Transaction.ParentTransactionId == 0)
+                        {
+                            if (ViewBag.Transaction.CurrentPlanId != ViewBag.Transaction.TransactionId)
+                            {
+                                <p class="text-muted text-center mt-5">You can always go to your <a href="/subscription/index">My Plan</a> menu and activate this plan instantly</p>
+                            }
+                        }
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<script src="~/Content/JQuery/Customer/Billing/UpgradePlan.js"></script>

@@ -1,0 +1,670 @@
+﻿
+@{
+    //ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Print Receipt";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sales Return Receipt - @ViewBag.Sale.InvoiceNo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .receipt-container {
+            max-width: 400px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .receipt-header {
+            background: white;
+            color: #1f2937;
+            padding: 24px 20px;
+            position: relative;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .logo-container img {
+            height: 40px;
+            border-radius: 6px;
+        }
+
+        .header-text {
+            text-align: center;
+        }
+
+        .header-text h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            color: #1f2937;
+        }
+
+        .header-text p {
+            font-size: 12px;
+            margin: 0;
+            color: #6b7280;
+        }
+
+        .receipt-body {
+            padding: 25px 20px;
+        }
+
+        .business-details {
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .receipt-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .info-value.due {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+
+        .items-table th {
+            background: #f8f9fa;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            font-size: 12px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .items-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #f1f3f4;
+            font-size: 12px;
+        }
+
+        .items-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .item-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .item-qty {
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .item-price {
+            text-align: right;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .totals-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .total-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .total-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 13px;
+        }
+
+        .total-value {
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .grand-total {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .grand-total .total-label {
+            color: white;
+            font-size: 16px;
+        }
+
+        .grand-total .total-value {
+            color: white;
+            font-size: 18px;
+        }
+
+        .due-amount {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .due-amount .total-label,
+        .due-amount .total-value {
+            color: white;
+        }
+
+        .payment-info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .payment-info .info-label {
+            color: #1976d2;
+        }
+
+        .receipt-footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .footer-highlight {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .print-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .print-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-pending {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        @@media print {
+            body {
+                background: white;
+            }
+            
+            .receipt-container {
+                box-shadow: none;
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .print-button {
+                display: none;
+            }
+            
+            .hidden-print,
+            .hidden-print * {
+                display: none !important;
+            }
+        }
+
+        @@media (max-width: 480px) {
+            .receipt-container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            
+            .receipt-header,
+            .receipt-body {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <!-- Header Section -->
+        <div class="receipt-header">
+            <div class="header-content">
+                <div class="logo-container">
+                    @if (ViewBag.BusinessSetting.BusinessLogo != null && ViewBag.BusinessSetting.BusinessLogo != "")
+                    {
+                        <img src="@ViewBag.BusinessSetting.BusinessLogo" alt="Business Logo" />
+                    }
+                    else
+                    {
+                        <div style="width:40px;height:40px;border-radius:6px;background:#f3f4f6;color:#111827;display:flex;align-items:center;justify-content:center;font-weight:700;">
+                            @ViewBag.BusinessSetting.BusinessName.Substring(0, 1).ToUpper()
+                        </div>
+                    }
+                </div>
+                <div class="header-text">
+                    <h1>Sales Return Receipt</h1>
+                    <p>@ViewBag.BusinessSetting.BusinessName</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Body Section -->
+        <div class="receipt-body">
+            <div class="business-details">
+                @ViewBag.Sale.Branch.Address<br />
+                Phone: @ViewBag.Sale.Branch.Mobile
+                @if (ViewBag.Sale.Branch.Email != null && ViewBag.Sale.Branch.Email != "")
+                {
+                    <span><br />Email: @ViewBag.Sale.Branch.Email</span>
+                }
+                @if (ViewBag.Sale.Branch.TaxNo != null && ViewBag.Sale.Branch.TaxNo != "")
+                {
+                    <span><br />@ViewBag.Sale.Branch.Tax: @ViewBag.Sale.Branch.TaxNo</span>
+                }
+            </div>
+
+            <!-- Receipt Information -->
+            <div class="receipt-info">
+                <div class="info-row">
+                    <span class="info-label">Date:</span>
+                    <span class="info-value">@ViewBag.Sale.SalesDate.ToString(ViewBag.BusinessSetting.DateFormat)</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Time:</span>
+                    <span class="info-value">@ViewBag.Sale.SalesDate.ToString(ViewBag.BusinessSetting.TimeFormat)</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Invoice No:</span>
+                    <span class="info-value">#@ViewBag.Sale.InvoiceNo</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">
+                        <span class="status-badge @(ViewBag.Sale.IsCancelled == true ? "status-cancelled" : 
+                                                   ViewBag.Sale.Status.ToLower() == "completed" ? "status-completed" : 
+                                                   ViewBag.Sale.Status.ToLower() == "draft" ? "status-draft" : "status-pending")">
+                            @(ViewBag.Sale.IsCancelled == true ? "Cancelled" : ViewBag.Sale.Status)
+                        </span>
+                    </span>
+                </div>
+                @if (ViewBag.Sale.Status != "Draft" && ViewBag.Sale.Due != 0 && ViewBag.Sale.IsCancelled == false)
+                {
+                    <div class="info-row">
+                        <span class="info-label">Due Date:</span>
+                        <span class="info-value due">@ViewBag.Sale.DueDate.ToString(ViewBag.BusinessSetting.DateFormat)</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Items Table -->
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th style="text-align: center;">Qty</th>
+                        <th style="text-align: right;">Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in ViewBag.Sale.SalesDetails)
+                    {
+                        <tr>
+                            <td class="item-name">@item.ItemName</td>
+                            <td class="item-qty">
+                                @(String.Format("{0:0.##}", @item.Quantity))
+                                @if (item.FreeQuantity != 0)
+                                {
+                                    <span style="color: #28a745; font-size: 10px;">+@(String.Format("{0:0.##}", item.FreeQuantity))</span>
+                                }
+                                @item.Unit
+                            </td>
+                            <td class="item-price">
+                                @{
+                                    if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                    {
+                                        @ViewBag.BusinessSetting.CurrencySymbol@(String.Format("{0:0.##}", item.AmountIncTax))
+                                    }
+                                    else
+                                    {
+                                        @(String.Format("{0:0.##}", item.AmountIncTax))@ViewBag.BusinessSetting.CurrencySymbol
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Totals Section -->
+            <div class="totals-section">
+                <div class="total-row">
+                    <span class="total-label">Total Quantity:</span>
+                    <span class="total-value">@(String.Format("{0:0.##}", ViewBag.Sale.TotalQuantity))</span>
+                </div>
+                <div class="total-row">
+                    <span class="total-label">Gross Amount:</span>
+                    <span class="total-value">
+                        @{
+                            if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                            {
+                                @ViewBag.BusinessSetting.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.Sale.Subtotal))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", ViewBag.Sale.Subtotal))@ViewBag.BusinessSetting.CurrencySymbol
+                            }
+                        }
+                    </span>
+                </div>
+                <div class="total-row">
+                    <span class="total-label">Discount:</span>
+                    <span class="total-value">
+                        @{
+                            if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                            {
+                                @ViewBag.BusinessSetting.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.Sale.TotalDiscount))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", ViewBag.Sale.TotalDiscount))@ViewBag.BusinessSetting.CurrencySymbol
+                            }
+                        }
+                    </span>
+                </div>
+                @foreach (var item in ViewBag.Sale.SalesAdditionalCharges)
+                {
+                    if (item.AmountExcTax != 0)
+                    {
+                        <div class="total-row">
+                            <span class="total-label">@item.Name:</span>
+                            <span class="total-value">
+                                @{
+                                    if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                    {
+                                        @ViewBag.BusinessSetting.CurrencySymbol@(String.Format("{0:0.##}", item.AmountExcTax))
+                                    }
+                                    else
+                                    {
+                                        @(String.Format("{0:0.##}", item.AmountExcTax))@ViewBag.BusinessSetting.CurrencySymbol
+                                    }
+                                }
+                            </span>
+                        </div>
+                    }
+                }
+                @foreach (var item in ViewBag.Taxs)
+                {
+                    <div class="total-row">
+                        <span class="total-label">@item.Tax:</span>
+                        <span class="total-value">
+                            @{
+                                if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                {
+                                    @ViewBag.BusinessSetting.CurrencySymbol@(String.Format("{0:0.##}", item.TaxAmount))
+                                }
+                                else
+                                {
+                                    @(String.Format("{0:0.##}", item.TaxAmount))@ViewBag.BusinessSetting.CurrencySymbol
+                                }
+                            }
+                        </span>
+                    </div>
+                }
+                @if (ViewBag.Sale.SpecialDiscount != 0)
+                {
+                    <div class="total-row">
+                        <span class="total-label">Special Discount:</span>
+                        <span class="total-value">
+                            @{
+                                if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                {
+                                    @ViewBag.BusinessSetting.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.Sale.SpecialDiscount))
+                                }
+                                else
+                                {
+                                    @(String.Format("{0:0.##}", ViewBag.Sale.SpecialDiscount))@ViewBag.BusinessSetting.CurrencySymbol
+                                }
+                            }
+                        </span>
+                    </div>
+                }
+                <div class="total-row">
+                    <span class="total-label">Net Amount:</span>
+                    <span class="total-value">
+                        @{
+                            if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                            {
+                                @ViewBag.BusinessSetting.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.Sale.NetAmount))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", ViewBag.Sale.NetAmount))@ViewBag.BusinessSetting.CurrencySymbol
+                            }
+                        }
+                    </span>
+                </div>
+                @if (ViewBag.Sale.RoundOff != 0)
+                {
+                    <div class="total-row">
+                        <span class="total-label">Round Off:</span>
+                        <span class="total-value">
+                            @{
+                                if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                {
+                                    @ViewBag.BusinessSetting.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.Sale.RoundOff))
+                                }
+                                else
+                                {
+                                    @(String.Format("{0:0.##}", ViewBag.Sale.RoundOff))@ViewBag.BusinessSetting.CurrencySymbol
+                                }
+                            }
+                        </span>
+                    </div>
+                }
+            </div>
+
+            <!-- Grand Total -->
+            <div class="grand-total">
+                <div class="total-row">
+                    <span class="total-label">GRAND TOTAL</span>
+                    <span class="total-value">
+                        @{
+                            if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                            {
+                                @ViewBag.BusinessSetting.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.Sale.GrandTotal))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", ViewBag.Sale.GrandTotal))@ViewBag.BusinessSetting.CurrencySymbol
+                            }
+                        }
+                    </span>
+                </div>
+            </div>
+
+            <!-- Due Amount -->
+            @if (ViewBag.Sale.Status != "Draft" && ViewBag.Sale.Due != 0)
+            {
+                <div class="due-amount">
+                    <div class="total-row">
+                        <span class="total-label">DUE AMOUNT</span>
+                        <span class="total-value">
+                            @{
+                                if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                {
+                                    @ViewBag.BusinessSetting.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.Sale.Due))
+                                }
+                                else
+                                {
+                                    @(String.Format("{0:0.##}", ViewBag.Sale.Due))@ViewBag.BusinessSetting.CurrencySymbol
+                                }
+                            }
+                        </span>
+                    </div>
+                </div>
+            }
+
+            <!-- Payment Information -->
+            @if (ViewBag.Sale.Payments != null && ViewBag.Sale.Payments.Count > 0)
+            {
+                <div class="payment-info">
+                    <div class="info-row">
+                        <span class="info-label">Payment Method:</span>
+                        <span class="info-value">
+                            @foreach (var item in ViewBag.Sale.Payments)
+                            {
+                                @item.PaymentType
+                            }
+                        </span>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (ViewBag.Catalogue != null && ViewBag.Catalogue.QRCodeImage != null && ViewBag.Catalogue.QRCodeImage != "")
+        {
+            <div style="text-align: center; padding: 20px; border-top: 1px solid #e9ecef;">
+                <img src="@ViewBag.Catalogue.QRCodeImage" alt="Catalogue QR Code" style="max-width: 100px; height: auto;" />
+                <p style="margin: 8px 0 0 0; color: #6c757d; font-size: 11px;">Scan to browse our catalogue</p>
+            </div>
+        }
+
+        <!-- Footer Section -->
+        <div class="receipt-footer">
+            <div class="footer-text">Thank you for your business!</div>
+            <div class="footer-highlight">Please visit us again</div>
+        </div>
+
+        <!-- Print Button -->
+        <div style="text-align: center; padding: 20px;">
+            <button id="btnPrint" class="print-button hidden-print" onclick="Print()">
+                🖨️ Print Receipt
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function Print() {
+            window.print();
+        }
+        
+        // Auto-print on page load (optional - uncomment if needed)
+        // window.onload = function() {
+        //     setTimeout(function() {
+        //         window.print();
+        //     }, 1000);
+        // };
+    </script>
+</body>
+</html>

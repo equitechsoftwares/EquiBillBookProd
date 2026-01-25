@@ -1,0 +1,268 @@
+﻿
+
+<div class="widget-user-header">
+    <h3 class="">
+        Addons
+        <span onclick="next(3,false)" class="float-right div3 hidden" style="font-size:1rem">
+            <i class="fas fa-minus text-success" aria-hidden="true"></i>
+        </span>
+        <span onclick="next(3, true, true)" class="float-right div33" style="font-size:1rem">
+            <i class="fas fa-plus text-success" aria-hidden="true"></i>
+        </span>
+    </h3>
+    @*<h6 class="">Lead Developer</h6>*@
+</div>
+<div class="p-0 div3 hidden">
+    <div class="col-sm-12  mb-2 ml-2">
+        @if (ViewBag.IsAutoFetch == true)
+        {
+            <input checked id="chkAutoFetch" class="chkIsActive" type="checkbox" onchange="fetchAdons(3)" data-on="Yes" data-off="No" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+        }
+        else
+        {
+            <input id="chkAutoFetch" class="chkIsActive" type="checkbox" onchange="fetchAdons(3)" data-on="Yes" data-off="No" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+        }
+        <label class="font-weight-normal"> Auto fetch the addons of my current plan </label>
+    </div>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            @{
+                var count = 1;
+                foreach (var item in ViewBag.PlanAddons)
+                {
+                    if (item.Type == "Sms")
+                    {
+                        if (ViewBag.Country.CountryId == 2)
+                        {
+                            <input type="hidden" value="@item.SellingPrice.ToString("0.00")" id="hdnUnitCost@(count)" />
+                            <input type="hidden" value="@item.MRP.ToString("0.00")" id="hdnMRP@(count)" />
+                            <input type="hidden" value="@item.DiscountPercentage" id="hdnDiscountPercentage@(count)" />
+                            <input type="hidden" value="@item.Title" id="hdnPlanAddon@(count)" />
+                            <input type="hidden" value="@item.Type" id="hdnType@(count)" />
+                            <input type="hidden" value="@item.PricingType" id="hdnPricingType@(count)" />
+                            if (item.IsCheckbox)
+                            {
+                                <div class="form-group nav-link">
+                                    <div class="checkbox icheck-turquoise">
+                                        @if (ViewBag.IsAutoFetch == true)
+                                        {
+                                            if (item.IsTaken == true)
+                                            {
+                                                <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" checked />
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                        }
+                                        <label for="chkPlanAddon@(count)" class="font-weight-normal">
+                                            @item.Title
+                                            @*@if (item.Description != "")
+                                                {
+                                                    <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print " role="button" data-toggle="popover" data-trigger="focus" data-content="@item.Description"></i>
+                                                }*@
+                                            @if (item.DiscountPercentage != 0)
+                                            {
+                                                <span class="badge bg-warning" style="position: absolute;bottom:10px;">@(String.Format("{0:0.##}", item.DiscountPercentage))% OFF</span>
+                                            }
+                                        </label>
+
+                                        <span class="float-right text-bold" id="lblPlanAddonSellingPrice@(count)">
+                                            @(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(String.Format("{0:0.##}", item.SellingPrice))/month
+                                        </span><br />
+                                        @*<span class="float-right danger" style="text-decoration:line-through;font-size:0.9rem">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(String.Format("{0:0.##}", item.MRP))/month</span>*@<br />
+                                        <input type="hidden" id="txtPlanAddonQuantity@(count)" value="1" />
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="nav-link">
+                                    <div class="form-group row">
+                                        <div class="col-sm-6 checkbox icheck-turquoise">
+                                            @if (ViewBag.IsAutoFetch == true)
+                                            {
+                                                if (item.IsTaken == true)
+                                                {
+                                                    <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" checked />
+                                                }
+                                                else
+                                                {
+                                                    <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                            }
+
+                                            <label for="chkPlanAddon@(count)" class="font-weight-normal">
+                                                @item.Title
+                                                @*@if (item.Description != "")
+                                                    {
+                                                        <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print" role="button" data-toggle="popover" data-trigger="focus" data-content="@item.Description"></i>
+                                                    }*@
+                                                @if (item.DiscountPercentage != 0)
+                                                {
+                                                    <span class="badge bg-warning" style="position: absolute;bottom:10px;">@(String.Format("{0:0.##}", item.DiscountPercentage))% OFF</span>
+                                                }
+                                            </label>
+
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            @if (ViewBag.IsAutoFetch == true)
+                                            {
+                                                if (item.IsTaken == true)
+                                                {
+                                                    <input min="1" type="number" class="form-control" id="txtPlanAddonQuantity@(count)" placeholder="" onchange="calculatePrice()" value="@item.Quantity">
+                                                }
+                                                else
+                                                {
+                                                    <input disabled min="1" type="number" class="form-control" id="txtPlanAddonQuantity@(count)" placeholder="" onchange="calculatePrice()">
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <input disabled min="1" type="number" class="form-control" id="txtPlanAddonQuantity@(count)" placeholder="" onchange="calculatePrice()">
+                                            }
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span class="float-right text-bold" id="lblPlanAddonSellingPrice@(count)">
+                                                @(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(String.Format("{0:0.##}", item.SellingPrice))/@item.PricingPer
+                                            </span><br />
+                                            @*<span class="float-right danger" style="text-decoration:line-through;font-size:0.9rem">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(String.Format("{0:0.##}", item.MRP))/@item.PricingPer</span>*@<br />
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <input type="hidden" value="@item.SellingPrice.ToString("0.00")" id="hdnUnitCost@(count)" />
+                        <input type="hidden" value="@item.MRP.ToString("0.00")" id="hdnMRP@(count)" />
+                        <input type="hidden" value="@item.DiscountPercentage" id="hdnDiscountPercentage@(count)" />
+                        <input type="hidden" value="@item.Title" id="hdnPlanAddon@(count)" />
+                        <input type="hidden" value="@item.Type" id="hdnType@(count)" />
+                        <input type="hidden" value="@item.PricingType" id="hdnPricingType@(count)" />
+                        if (item.IsCheckbox)
+                        {
+                            <div class="form-group nav-link">
+                                <div class="checkbox icheck-turquoise">
+                                    @if (ViewBag.IsAutoFetch == true)
+                                    {
+                                        if (item.IsTaken == true)
+                                        {
+                                            <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" checked />
+                                        }
+                                        else
+                                        {
+                                            <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                    }
+                                    <label for="chkPlanAddon@(count)" class="font-weight-normal">
+                                        @item.Title
+                                        @*@if (item.Description != "")
+            {
+                <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print " role="button" data-toggle="popover" data-trigger="focus" data-content="@item.Description"></i>
+            }*@
+                                        @if (item.DiscountPercentage != 0)
+                                        {
+                                            <span class="badge bg-warning" style="position: absolute;bottom:10px;">@(String.Format("{0:0.##}", item.DiscountPercentage))% OFF</span>
+                                        }
+                                    </label>
+                                    @if (item.Type == "Purchase")
+                                    {
+                                        <br />
+                                        <span class="text-danger" style="font-size: 12px; margin-left: 3%; font-weight: bold;">(900 bills/month)</span>
+                                    }
+                                    <span class="float-right text-bold" id="lblPlanAddonSellingPrice@(count)">
+                                        @(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(String.Format("{0:0.##}", item.SellingPrice))/month
+                                    </span><br />
+                                    @*<span class="float-right danger" style="text-decoration:line-through;font-size:0.9rem">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(String.Format("{0:0.##}", item.MRP))/month</span><br />*@
+                                    <input type="hidden" id="txtPlanAddonQuantity@(count)" value="1" />
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="nav-link">
+                                <div class="form-group row">
+                                    <div class="col-sm-6 checkbox icheck-turquoise">
+                                        @if (ViewBag.IsAutoFetch == true)
+                                        {
+                                            if (item.IsTaken == true)
+                                            {
+                                                <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" checked />
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                        }
+
+                                        <label for="chkPlanAddon@(count)" class="font-weight-normal">
+                                            @item.Title
+                                            @*@if (item.Description != "")
+                                                {
+                                                    <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print" role="button" data-toggle="popover" data-trigger="focus" data-content="@item.Description"></i>
+                                                }*@
+                                            @if (item.DiscountPercentage != 0)
+                                            {
+                                                <span class="badge bg-warning" style="position: absolute;bottom:10px;">@(String.Format("{0:0.##}", item.DiscountPercentage))% OFF</span>
+                                            }
+                                        </label>
+
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        @if (ViewBag.IsAutoFetch == true)
+                                        {
+                                            if (item.IsTaken == true)
+                                            {
+                                                <input min="1" type="number" class="form-control" id="txtPlanAddonQuantity@(count)" placeholder="" onchange="calculatePrice()" value="@item.Quantity">
+                                            }
+                                            else
+                                            {
+                                                <input disabled min="1" type="number" class="form-control" id="txtPlanAddonQuantity@(count)" placeholder="" onchange="calculatePrice()">
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <input disabled min="1" type="number" class="form-control" id="txtPlanAddonQuantity@(count)" placeholder="" onchange="calculatePrice()">
+                                        }
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <span class="float-right text-bold" id="lblPlanAddonSellingPrice@(count)">
+                                            @(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(String.Format("{0:0.##}", item.SellingPrice))/@item.PricingPer
+                                        </span><br />
+                                        @*<span class="float-right danger" style="text-decoration:line-through;font-size:0.9rem">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(String.Format("{0:0.##}", item.MRP))/@item.PricingPer</span><br />*@
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    count++;
+                }
+            }
+
+        </li>
+        @*<li class="nav-item">
+                <div class="card-footer nav-link">
+                    <button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="next(4,true)">Next</button>
+                </div>
+            </li>*@
+    </ul>
+</div>

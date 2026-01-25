@@ -1,0 +1,870 @@
+﻿@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add Recurring Sale";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+<style>
+    .ui-datepicker {
+        z-index: 99999 !important
+    }
+
+    .ui-widget-content {
+        background: #fff !important;
+    }
+
+    .note-editor.note-frame {
+        border: none !important;
+    }
+
+    /* Fix autocomplete dropdown positioning within modals */
+    .ui-autocomplete {
+        z-index: 9999 !important;
+        max-height: 200px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+        .ui-autocomplete .ui-menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+            .ui-autocomplete .ui-menu-item:hover,
+            .ui-autocomplete .ui-menu-item.ui-state-focus {
+                background-color: #007bff;
+                color: white;
+            }
+
+            .ui-autocomplete .ui-menu-item:last-child {
+                border-bottom: none;
+            }
+
+    /* Ensure autocomplete appears above modal backdrop */
+    .modal-open .ui-autocomplete {
+        z-index: 9999 !important;
+    }
+</style>
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Recurring Sale</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+
+                        <li class="breadcrumb-item"><a href="/recurringsales/index">Recurring Sale List</a></li>
+
+                        <li class="breadcrumb-item active">Add Recurring Sale</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/recurringsales/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+                    @*<div class="card-header">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>*@
+                    <div class="card-body">
+                        <div class="card card-outline">
+                            @*<div class="card-header bg-info">
+                                    <h3 class="card-title">Customer Info</h3>
+                                </div>*@
+                            <!-- form start -->
+
+                            <div class="card-body">
+
+                                <div class="row">
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Business Location <span class="danger">*</span> </label>
+                                            <div class="input-group divBranch_ctrl">
+                                                <select class="form-control select2" style="width: 100%;" id="ddlBranch"
+                                                        onchange="fetchUpdatedItems(true)">
+                                                    @*<option value="0">Select</option>*@
+                                                    @foreach (var item in ViewBag.Branchs)
+                                                    {
+                                                        <option value="@item.BranchId">@item.Branch</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Customer Name <span class="danger">*</span></label>
+                                            <div class="input-group divSupplier divCustomer_ctrl">
+                                                <select class="form-control select2" id="ddlCustomer" onchange="FetchUserCurrency()">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.Users)
+                                                    {
+                                                        <option value="@item.UserId">
+                                                            @item.Name
+                                                            @if (item.MobileNo != null && item.MobileNo != "")
+                                                            {
+                                                                <span>- @item.MobileNo</span>
+                                                            }
+                                                        </option>
+                                                    }
+                                                </select>
+                                                @if (ViewBag.CustomersPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" onclick="openCustomerModal()">+ </a>
+                                                    </span>
+                                                }
+
+                                            </div>
+                                            <input type="text" hidden class="form-control" id="txtTaxExemptionId">
+                                            <small class="text-red font-weight-bold" id="divCustomer"></small>
+                                        </div>
+                                    </div>
+                                    @if (ViewBag.BusinessSetting.CountryId == 2)
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divPlaceOfSupply">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Place Of Supply <span class="danger">*</span></label>
+                                                <div class="input-group divPlaceOfSupply_ctrl">
+                                                    <select class="form-control select2" id="ddlPlaceOfSupply" onchange="fetchUpdatedItems()">
+                                                        <option value="0">Select</option>
+                                                        @foreach (var item in ViewBag.PlacesOfSupply)
+                                                        {
+                                                            if (ViewBag.MainBranch.StateId == item.StateId)
+                                                            {
+                                                                <option value="@item.StateId" selected>@item.State</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.StateId">@item.State</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <small class="text-red font-weight-bold errorText" id="divPlaceOfSupply"></small>
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divRecurringSalesType hidden">
+                                        <div class="form-group divRecurringSalesType_ctrl">
+                                            <label>Type</label>
+                                            <select class="form-control" id="ddlRecurringSalesType">
+                                                <option value="Sales" selected>Sales Invoice</option>
+                                                <option value="Bill Of Supply">Bill Of Supply</option>
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divRecurringSalesType"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Payment Term</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlPaymentTerm_M" onchange="setDueDate()">
+                                                    @{
+                                                        <option value="0" selected>None </option>
+                                                        foreach (var item in ViewBag.PaymentTerms)
+                                                        {
+                                                            if (item.IsDueUponReceipt == true)
+                                                            {
+                                                                <option value="@item.PaymentTermId" selected> @item.PaymentTerm </option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.PaymentTermId"> @item.PaymentTerm </option>
+                                                            }
+                                                        }
+                                                    }
+                                                </select>
+                                                @if (ViewBag.PaymentTermPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#paymentTermModal">+ </a>
+                                                    </span>
+                                                }
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Display Name <span class="danger">*</span> </label>
+                                            <input type="text" class="form-control divDisplayName_ctrl" id="txtDisplayName">
+                                            <small class="text-red font-weight-bold errorText" id="divDisplayName"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Repeat Every</label>
+                                            <div class="input-group">
+                                                <input type="number" min="0" class="form-control" id="txtRepeatEveryNumber"
+                                                       value="1">
+                                                <select class="form-control" id="ddlRepeatEvery" style="min-width:80px">
+                                                    <option value="Day">Day</option>
+                                                    <option value="Week">Week</option>
+                                                    <option value="Month">Month</option>
+                                                    <option value="Year">Year</option>
+                                                </select>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divRepeatEveryNumber"></small>
+                                            <small class="text-red font-weight-bold errorText" id="divRepeatEvery"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <br />
+                                            <div class="checkbox icheck-turquoise">
+                                                <input type="checkbox" id="chkIsNeverExpires" onchange="toggleNeverExpires()">
+                                                <label for="chkIsNeverExpires" class="mt-2">
+                                                    Never Expires
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Start Date <span class="danger">*</span></label>
+                                            <div class="input-group date" id="_StartDate" data-target-input="nearest">
+                                                <input id="txtStartDate" value="" type="text" class="form-control datetimepicker-input divStartDate_ctrl" data-target="#_StartsOnDate" />
+                                                <div class="input-group-append" data-target="#_StartDate" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divStartDate"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divEndDate">
+                                        <div class="form-group">
+                                            <label>End Date <span class="danger">*</span></label>
+                                            <div class="input-group date" id="_EndDate" data-target-input="nearest">
+                                                <input id="txtEndDate" value="" type="text" class="form-control datetimepicker-input divEndDate_ctrl" data-target="#_StartsOnDate" />
+                                                <div class="input-group-append" data-target="#_EndDate" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divEndDate"></small>
+                                        </div>
+                                    </div>
+                                    @if (ViewBag.ItemSetting.EnableSellingPriceGroup == true)
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <div class="form-group">
+                                                <label>Selling Price Group <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print " role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Selling Price Group in which you want to sell. <br/> If the customer already belongs to a particular customer group, then that customer group price will be used" data-original-title=""></i></label>
+                                                <div class="input-group" id="p_SellingPriceGroup_Dropdown">
+                                                    <select class="form-control select2" style="width: 100%;" id="ddlSellingPriceGroup" onchange="changeSellingPriceGroup()">
+                                                        <option value="0">Default Selling Price</option>
+                                                        @foreach (var item in ViewBag.SellingPriceGroups)
+                                                        {
+                                                            <option value="@item.SellingPriceGroupId">@item.SellingPriceGroup</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 hidden divCurrencyExchange">
+                                        <div class="form-group">
+                                            <label>Exchange Rate</label>
+                                            <div class="input-group">
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn bg-gray">1 <span class="lblCurrencySymbol"></span> = </a>
+                                                </span>
+                                                <input type="number" class="form-control" id="txtExchangeRate" placeholder="Conversion Rate"
+                                                       onkeypress="return onlyDecimalKey(event)" onchange="updateCurrencyExchange()" value="1">
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn bg-gray"><span class="lblDefaultCurrencySymbol"></span> </a>
+                                                </span>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divExchangeRate"></small>
+                                        </div>
+                                    </div>
+
+                                    @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" style="display:@(ViewBag.BusinessSetting.CountryId == 2 ? "" : "none")">
+            <div class="form-group">
+                <div class="checkbox icheck-turquoise">
+                    <input type="checkbox" id="chkIsReverseCharge" onchange="toggleReverseCharge()">
+                    <label for="chkIsReverseCharge" class="mt-2">
+                        This transaction is applicable for reverse charge
+                    </label>
+                </div>
+            </div>
+        </div>*@
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divPayTaxForExport" style="display:none">
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                <input type="checkbox" id="chkPayTaxForExport" onchange="togglePayTaxForExport()" />
+                                                <label for="chkPayTaxForExport" class="mt-2">
+                                                    I will pay tax on this export since I do not possess a Letter of Undertaking or Bond
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divTaxCollectedFromCustomer" style="display:none">
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                <input type="checkbox" id="chkTaxCollectedFromCustomer" />
+                                                <label for="chkTaxCollectedFromCustomer" class="mt-2">
+                                                    The buyer is responsible for paying the taxes
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Attach Document</label>
+                                            <div class="custom-file">
+                                                <input type="file" id="AttachDocument" class="custom-file-input" accept='image/*' onchange="getAttachDocumentBase64()">
+                                                <label class="custom-file-label" for="Logo">Choose file</label>
+                                            </div>
+                                            <img id="blahAttachDocument" alt="" height="60" style="padding-top:10px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+
+                        <div class="card card-outline">
+                            <div class="card-header bg-info">
+                                <h3 class="card-title">Search Items</h3>
+                            </div>
+                            <!-- form start -->
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-12 mb-3">
+                                        <div class="input-group ">
+                                            @*<div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                                                </div>*@<div class="input-group-prepend">
+                                                <span class="btn btn-primary" onclick="openSaltSearchModal()"><i class="fas fa-search"></i>Salt</span>
+                                            </div>
+                                            <input type="text" class="form-control divtags_ctrl" placeholder="Sku Code/ Item Name" id="txttags">
+                                            @*@if (ViewBag.ItemsPermission.IsAdd == true)
+                                                {*@
+                                            <span class="input-group-append">
+                                                <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#ItemModal"><i class="fas fa-plus"></i> Item </a>
+                                            </span>
+                                            @*}*@
+
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divtags"></small>
+                                    </div>
+                                </div>
+                                <div class="row ">
+                                    <div class="col-sm-12 table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Item</th>
+                                                    @*<th class="@(ViewBag.ItemSetting.EnableLotNo == true ?"":"hidden")">Lot No</th>*@
+                                                    @*<th>Unit</th>*@
+                                                    @*<th>Avl Qty</th>*@
+                                                    <th>Qty</th>
+                                                    <th class="@(ViewBag.SaleSetting.EnableFreeQuantity == true ?"":"hidden")">Free Qty</th>
+                                                    <th>Unit Cost</th>
+                                                    <th>Discount</th>
+                                                    @*<th>Unit Price (Before Tax)</th>*@
+                                                    @*<th>Subtotal (Before Tax)</th>*@
+                                                    <th class="@(ViewBag.BusinessSetting.IsBusinessRegistered == 1
+                                                            && ViewBag.BusinessSetting.BusinessRegistrationType == "Composition" ? "hidden":"")">
+                                                        Tax <span id="lblReverseCharge" style="display:none">(Reverse Charge)</span>
+                                                    </th>
+                                                    @*<th>Net Cost</th>*@
+                                                    <th>Line Total</th>
+                                                    @*<th class="@(ViewBag.ItemSetting.EnableWarranty == true ?"":"hidden")">Warranty</th>*@
+                                                    <th>
+                                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteFullCombo()">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                        <input type="hidden" id="hdnSalePriceIsMinSellingPrice" value="@(ViewBag.SaleSetting.SalePriceIsMinSellingPrice.ToString())" />
+                                                        <input type="hidden" id="hdnEnableLotNo" value="@(ViewBag.ItemSetting.EnableLotNo.ToString())" />
+                                                        <input type="hidden" id="hdnEnableItemExpiry" value="@(ViewBag.ItemSetting.EnableItemExpiry.ToString())" />
+                                                        <input type="hidden" id="hdnOnItemExpiry" value="@(ViewBag.ItemSetting.OnItemExpiry)" />
+                                                        <input type="hidden" id="hdnEnableFreeQuantity" value="@ViewBag.SaleSetting.EnableFreeQuantity.ToString()" />
+                                                        <input type="hidden" id="hdnEnableWarranty" value="@ViewBag.ItemSetting.EnableWarranty.ToString()" />
+                                                        <input type="hidden" id="hdnEnableRoundOff" value="@ViewBag.SaleSetting.EnableRoundOff.ToString()" />
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="divCombo" class="rows">
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="row">
+                                            <div class="col-sm-6 mt-2">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label">Discount on All</label>
+                                                    <div class="input-group col-sm-7">
+                                                        <input type="number" min="0" class="form-control" id="txtDiscAll" placeholder="" onchange="updateExtraDiscounts()" value="@ViewBag.SaleSetting.DefaultSaleDiscount">
+                                                        <select class="form-control" id="ddlDiscAll" onchange="updateExtraDiscounts()" style="min-width:80px">
+                                                            @if (ViewBag.SaleSetting.DiscountType == "Fixed")
+                                                            {
+                                                                <option selected value="Fixed">Fixed</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="Fixed">Fixed</option>
+                                                            }
+                                                            @if (ViewBag.SaleSetting.DiscountType == "Percentage")
+                                                            {
+                                                                <option selected value="Percentage">Percentage</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="Percentage">Percentage</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 mt-2 hidden">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label">Tax</label>
+                                                    <div class="input-group col-sm-7">
+                                                        <select class="form-control select2" id="ddlTax" onchange="discallcalc()">
+                                                            <option value="0">None</option>
+                                                            @foreach (var item in ViewBag.Taxs)
+                                                            {
+                                                                <option value="@item.TaxId-@item.TaxPercent.ToString("0")">@item.Tax</option>
+                                                            }
+                                                        </select>
+                                                        @if (ViewBag.TaxListPermission.IsAdd == true)
+                                                        {
+                                                            <span class="input-group-append">
+                                                                <a href="javascript:void(0)" class="btn btn-info" onclick="openTaxModal()">+ </a>
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="divAdditionalCharges" class="@(ViewBag.BusinessSetting.IsBusinessRegistered == 1
+                                                            && ViewBag.BusinessSetting.BusinessRegistrationType == "Composition" ? "hidden":"")">
+                                        </div>
+                                        @if (ViewBag.SaleSetting.EnableSpecialDiscount == true)
+                                        {
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <div class="form-group row">
+                                                        <label for="inputEmail3" class="col-sm-5 col-form-label"> Special Discount </label>
+                                                        <div class="col-sm-7">
+                                                            <input class="form-control" id="txtSpecialDiscount" onchange="discallcalc()" value="0" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (ViewBag.SaleSetting.EnableNotes == true)
+                                        {
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group row">
+                                                        <label for="inputEmail3" class="col-sm-5 col-form-label">Notes</label>
+                                                        <div class="col-sm-12">
+                                                            <textarea rows="2" class="form-control" id="txtNotes" placeholder=""></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (ViewBag.SaleSetting.EnableTerms == true)
+                                        {
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group row">
+                                                        <label for="inputEmail3" class="col-sm-5 col-form-label">Terms & Conditions</label>
+                                                        <div class="col-sm-12">
+                                                            <textarea rows="2" class="form-control" id="txtTerms" placeholder=""></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="row">
+                                            <div class="col-12" style="display:none;">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Total Quantities :</label>
+                                                    <label for="inputEmail3" class="col-form-label" id="divTotalQty"></label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Gross Amount :</label>
+                                                    <input type="number" class="form-control" id="hdndivTotalAmount" hidden>
+                                                    <label for="inputEmail3" class="col-form-label" id="divTotalAmount">
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Discount(-) :</label>
+                                                    <input type="number" class="form-control" id="hdndivDiscount" hidden>
+                                                    <label for="inputEmail3" class="col-form-label" id="divDiscount"></label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 no_reversecharge" id="divTaxSummary">
+                                                @*<div class="row">
+                                                        <label for="inputEmail3" class="col-8 col-form-label text-right">Tax(-) :</label>
+                                                        <input type="number" class="form-control" id="hdndivTax" hidden>
+                                                        <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTax"></label>
+                                                    </div>*@
+                                            </div>
+                                            @if (ViewBag.SaleSetting.EnableSpecialDiscount == true)
+                                            {
+                                                <div class="col-12">
+                                                    <div class="text-right">
+                                                        <label for="inputEmail3" class="col-form-label">Special Discount(-) :</label>
+                                                        <label for="inputEmail3" class="col-form-label" id="divSpecialDiscount"></label>
+                                                    </div>
+                                                </div>
+                                            }
+                                            <div class="col-12 no_reversecharge">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Net Amount :</label>
+                                                    <label for="inputEmail3" class="col-form-label" id="divNetAmount"></label>
+                                                </div>
+                                            </div>
+                                            @if (ViewBag.SaleSetting.EnableRoundOff == true)
+                                            {
+                                                <div class="col-12 no_reversecharge">
+                                                    <div class="text-right">
+                                                        <label for="inputEmail3" class="col-form-label">Round Off :</label>
+                                                        <label for="inputEmail3" class="col-form-label" id="divRoundOff"></label>
+                                                    </div>
+                                                </div>
+                                            }
+
+                                            @*<div class="col-12">
+                                                    <div class="row">
+                                                        <label for="inputEmail3" class="col-sm-8 col-form-label text-right">Shipping Charges(-) :</label>
+                                                        <input type="email" class="form-control" id="hdndivDiscount" hidden>
+                                                        <label for="inputEmail3" class="col-sm-4 col-form-label text-left" id="divDiscount"></label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="row">
+                                                        <label for="inputEmail3" class="col-sm-8 col-form-label text-right">Packaging Charges(-) :</label>
+                                                        <input type="email" class="form-control" id="hdndivDiscount" hidden>
+                                                        <label for="inputEmail3" class="col-sm-4 col-form-label text-left" id="divDiscount"></label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="row">
+                                                        <label for="inputEmail3" class="col-sm-8 col-form-label text-right">Other Charges(+) :</label>
+                                                        <input type="email" class="form-control" id="hdndivOtherCharges" hidden>
+                                                        <label for="inputEmail3" class="col-sm-4 col-form-label text-left" id="divOtherCharges"></label>
+                                                    </div>
+                                                </div>*@
+
+                                            <div class="col-12 no_reversecharge">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Total :</label>
+                                                    <label for="inputEmail3" class="col-form-label" id="divGrandTotal"></label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 reversecharge" style="display:none">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Net Amount :</label>
+                                                    <label for="inputEmail3" class="col-form-label" id="divNetAmount_reversecharge"></label>
+                                                </div>
+                                            </div>
+                                            @if (ViewBag.SaleSetting.EnableRoundOff == true)
+                                            {
+                                                <div class="col-12 reversecharge" style="display:none">
+                                                    <div class="text-right">
+                                                        <label for="inputEmail3" class="col-form-label">Round Off :</label>
+                                                        <label for="inputEmail3" class="col-form-label" id="divRoundOff_reversecharge"></label>
+                                                    </div>
+                                                </div>
+                                            }
+                                            <div class="col-12 reversecharge" style="display:none">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Total :</label>
+                                                    <label for="inputEmail3" class="col-form-label" id="divGrandTotal_reversecharge"></label>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                        @*<div class="card card-outline divPaymentInfo @(ViewBag.Status != "Draft"?"":"hidden")">*@
+                        <div class="card card-outline" style="display:none">
+                            <div class="card-header bg-info">
+                                <h3 class="card-title">Payment Info </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="form-group">
+                                            <label class="text-info">Advance Balance</label>
+                                            <span id="txtAdvBalance">
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Amount</label>
+                                            <input type="number" class="form-control" id="txtAmount" onchange="fetCurrentDate()">
+                                            <small class="text-red font-weight-bold errorText" id="divPAmount"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Paid On</label>
+                                            <div class="input-group date" id="_PaymentDate" data-target-input="nearest">
+                                                <input id="txtPaymentDate" type="text" class="form-control datetimepicker-input" data-target="#_PaymentDate" />
+                                                <div class="input-group-append" data-target="#_PaymentDate" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                            @*<input type="datetime-local" class="form-control" id="txtPaymentDate">*@
+                                            <small class="text-red font-weight-bold errorText" id="divPaymentDate"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Payment Method</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlPaymentType" onchange="checkPaymentType()"
+                                                        @*onchange="fetchAccountMapped(1)"*@>
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.PaymentTypes)
+                                                    {
+                                                        if (item.IsDefault == true)
+                                                        {
+                                                            <option value="@item.PaymentTypeId" selected>@item.PaymentType</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.PaymentTypeId">@item.PaymentType</option>
+                                                        }
+                                                    }
+                                                </select>
+                                                @if (ViewBag.PaymentMethodsPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info " onclick="openPaymentMethodModal()">+ </a>
+                                                    </span>
+                                                }
+
+                                            </div>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divPaymentType"></small>
+                                    </div>
+                                    @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <div class="form-group">
+                                                <label>Payment Method</label>
+                                                <select class="form-control" style="width: 100%;" id="ddlPaymentType" onchange="fetchAccountMapped(1)">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.PaymentTypes)
+                                                    {
+                                                        <option value="@item.PaymentTypeId">@item.PaymentType</option>
+                                                    }
+                                                </select>
+                                                <small class="text-red font-weight-bold errorText" id="divPaymentType"></small>
+                                            </div>
+                                        </div>*@
+                                    @*@if (ViewBag.IsAccounts == true)
+                                        {*@
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.IsAccountsAddon == true ? "" : "hidden")">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Deposit To </label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlAccount">
+                                                    <option value="0">Select</option>
+                                                    @{
+                                                        if (ViewBag.AccountSubTypes != null)
+                                                        {
+                                                            foreach (var item in ViewBag.AccountSubTypes)
+                                                            {
+                                                                if (item.Accounts.Count > 0)
+                                                                {
+                                                                    <optgroup label="@item.DisplayAs">
+                                                                        @foreach (var inner in item.Accounts)
+                                                                        {
+                                                                            if (inner.Type == "Petty Cash")
+                                                                            {
+                                                                                <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                            }
+                                                                        }
+                                                                    </optgroup>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                </select>
+                                                @*@if (ViewBag.AccountsPermission.IsAdd == true)
+                                                    {
+                                                        <span class="input-group-append">
+                                                            <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#AccountModal">+ </a>
+                                                        </span>
+                                                    }*@
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @*}*@
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Attach Document</label>
+                                            <div class="custom-file">
+                                                <input type="file" id="PaymentAttachDocument" class="custom-file-input" accept='image/*' onchange="getPaymentAttachDocumentBase64()">
+                                                <label class="custom-file-label" for="Logo">Choose file</label>
+                                            </div>
+                                            <img id="blahPaymentAttachDocument" alt="" height="60" style="padding-top:10px;">
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divReferenceNo">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Reference No</label>
+                                            <input type="text" class="form-control" id="txtReferenceNo" />
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Notes</label>
+                                            <textarea rows="2" class="form-control" id="txtPaymentNotes" placeholder="Enter Notes"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <input type="hidden" value="@ViewBag.BusinessSetting.CountryId" id="hdnCountryId" />
+                        <input type="hidden" id="hdnIsBusinessRegistered" value="@(ViewBag.BusinessSetting.IsBusinessRegistered)" />
+                        <input type="hidden" id="hdnBusinessRegistrationType" value="@(ViewBag.BusinessSetting.BusinessRegistrationType)" />
+                        <input type="number" class="form-control" id="hdndivTax" hidden>
+                        <input type="number" class="form-control" id="hdndivTotalTax" hidden>
+                        <button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="insert(1)"><i class="fas fa-save"></i> Save</button>
+                        <button id="btnSave_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="insert(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div id="modalContainer">
+    <!-- Modal will load here -->
+</div>
+
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+      rel="stylesheet">
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="~/Content/JQuery/Customer/Sales/RecurringSales.js"></script>
+
+<script>
+    setTimeout(function () {
+        @*var PurchaseDetails = @Html.Raw(Json.Encode(ViewBag.Purchase.PurchaseDetails));
+            $.each(PurchaseDetails, function (index, value) {
+                skuCodes.push(value.SKU);
+            });*@
+
+        $.ajax({
+            url: '/Sales/LoadModals',
+            datatype: "json",
+            data: {},
+            type: "post",
+            success: function (data) {
+                $("#modalContainer").html(data);
+
+                $('#tblData').DataTable({
+                    lengthChange: false,
+                    searching: false,
+                    autoWidth: false,
+                    responsive: true,
+                    paging: false,
+                    bInfo: false
+                });
+
+                $('.errorText').hide();
+
+                $('textarea#txtDescription').summernote({
+                    placeholder: '',
+                    tabsize: 2,
+                    height: 100,
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'italic', 'underline', 'clear']],
+                        // ['font', ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', 'clear']],
+                        //['fontname', ['fontname']],
+                        // ['fontsize', ['fontsize']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['height', ['height']],
+                        ['table', ['table']],
+                        ['insert', ['link', 'picture', 'hr']],
+                        //['view', ['fullscreen', 'codeview']],
+                        ['help', ['help']]
+                    ],
+                });
+
+                $('.select2').select2();
+
+                init();
+            },
+            error: function (xhr) {
+                $("#divLoading").hide();
+            }
+        });
+
+    }, 2000);
+</script>

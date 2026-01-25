@@ -1,0 +1,352 @@
+﻿
+
+
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th>Sln</th>
+            <th class="hide noPrint">Action</th>
+            <th>Joining Date</th>
+            @*<th>Customer Code</th>*@
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            <th>Payment Term</th>
+            @*<th>Address</th>*@
+            @*<th>Tax Number</th>*@
+            <th>Credit Limit</th>
+            <th>Opening Balance</th>
+            <th>Unused Credits</th>
+            <th>Total Sales</th>
+            @*<th>Total Paid</th>*@
+            <th>Total Due</th>
+            @*<th>Total Return </th>
+                <th>Total Return Due</th>*@
+            <th class="hidden">Status</th>
+            <th class="hide">Status</th>
+            @*<th>Added By</th>
+                <th>Added On</th>
+                <th>Last Modified By</th>
+                <th>Last Modified On</th>*@
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.Users)
+        {
+            <tr>
+                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1)+count)</td>
+                <td class="hide noPrint">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-info">Action</button>
+                        <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <div class="dropdown-menu" role="menu">
+                            @if (ViewBag.MenuPermission.IsEdit)
+                            {
+                                <a class="dropdown-item" href="/customers/edit?UserId=@item.UserId" id="Edit"><i class="fas fa-edit"></i> Edit</a>
+                            }
+                            <a class="dropdown-item" href="javascript:void(0)" id="" onclick="View(@item.UserId)"><i class="fas fa-eye"></i> View</a>
+                            @*@if (ViewBag.CustomerPaymentPermission.IsAdd)
+                            {
+                                <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openPaymentModal(true,@item.UserId,'Customer Payment')"><i class="fas fa-plus"></i> Add Payment </a>
+                            }*@
+
+                            @*@if (ViewBag.CustomerRefundPermission.IsAdd)
+                            {
+                                if (item.TotalSalesReturnDue > 0)
+                                {
+                                    <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openPaymentModal(true,@item.UserId,'Customer Refund')"><i class="fas fa-plus"></i> Add Refund</a>
+                                }
+                            }*@
+
+                            @if (ViewBag.MenuPermission.IsDelete)
+                            {
+                                if (item.IsWalkin == false)
+                                {
+                                    <a class="dropdown-item" href="javascript:void(0)" id="Edit" onclick="Delete(@item.UserId,'@Html.Raw(HttpUtility.JavaScriptStringEncode(item.Name))')"><i class="fas fa-trash-alt"></i> Delete</a>
+                                }
+                            }
+                            @*<div class="dropdown-divider"></div>
+                            @if (ViewBag.CustomerPaymentPermission.IsView)
+                            {
+                                <a class="dropdown-item" href="/customers/payment?CustomerId=@item.UserId&CustomerName=@item.Name" id="Pay"><i class="far fa-circle nav-icon"></i> Payments</a>
+                            }
+                            @if (ViewBag.CustomerRefundPermission.IsView)
+                            {
+                                <a class="dropdown-item" href="/customers/refund?CustomerId=@item.UserId&CustomerName=@item.Name" id="Pay"><i class="far fa-circle nav-icon"></i> Refunds</a>
+                            }
+                            @if (ViewBag.SalesPermission.IsView)
+                            {
+                                <a class="dropdown-item" href="/sales?CustomerId=@(item.UserId)&CustomerName=@item.Name"><i class="far fa-circle nav-icon"></i> Sales</a>
+                            }
+                            @if (ViewBag.SalesReturnPermission.IsView)
+                            {
+                                <a class="dropdown-item" href="/sales/salesreturn?CustomerId=@(item.UserId)&CustomerName=@item.Name"><i class="far fa-circle nav-icon"></i> Sales Return</a>
+                            }
+                            @if (ViewBag.QuotationPermission.IsView)
+                            {
+                                <a class="dropdown-item" href="/salesquotation/index?CustomerId=@(item.UserId)&CustomerName=@item.Name"><i class="far fa-circle nav-icon"></i> Sales Quotation</a>
+                            }
+                            @if (ViewBag.OrderPermission.IsView)
+                            {
+                                <a class="dropdown-item" href="/salesorder/index?CustomerId=@(item.UserId)&CustomerName=@item.Name"><i class="far fa-circle nav-icon"></i> Sales Order</a>
+                            }
+                            @if (ViewBag.ProformaPermission.IsView)
+                            {
+                                <a class="dropdown-item" href="/salesproforma/index?CustomerId=@(item.UserId)&CustomerName=@item.Name"><i class="far fa-circle nav-icon"></i> Sales Proforma</a>
+                            }
+                            @if (ViewBag.DeliveryChallanPermission.IsView)
+                            {
+                                <a class="dropdown-item" href="/deliverychallan/index?CustomerId=@(item.UserId)&CustomerName=@item.Name"><i class="far fa-circle nav-icon"></i> Delivery Challan</a>
+                            }
+                            @if (ViewBag.ExpensePermission.IsView)
+                            {
+                                <a class="dropdown-item" href="/expense/index?CustomerId=@(item.UserId)&CustomerName=@item.Name"><i class="far fa-circle nav-icon"></i> Expense</a>
+                            }
+                            @if (ViewBag.JournalPermission.IsView)
+                            {
+                                <a class="dropdown-item" href="/sales?CustomerId=@(item.UserId)"><i class="far fa-circle nav-icon"></i> Journals</a>
+                            }
+                            @if (ViewBag.CustomerStatementPermission.IsView)
+                            {
+                                <a class="dropdown-item" href="/receivablesreports/customerledger?CustomerId=@(item.UserId)&CustomerName=@item.Name"><i class="far fa-circle nav-icon"></i> Ledger</a>
+                            }*@
+                        </div>
+                    </div>
+                </td>
+                <td>@(item.JoiningDate != null ? item.JoiningDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) : item.JoiningDate)</td>
+                @*<td>@item.Username</td>*@
+                <td>@item.Name</td>
+                <td>@item.MobileNo</td>
+                <td>@item.EmailId</td>
+                <td>@item.PaymentTerm</td>
+                @*<td>@item.Address</td>*@
+                @*<td>@item.TaxNo</td>*@
+            <td>
+                @(String.Format("{0:0.##}", item.CreditLimit))
+                @if (item.CreditLimit > 0)
+                {
+                    <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available: @(String.Format("{0:0.##}",item.CreditLimit - item.TotalSalesDue))"></i>
+                    @*<br />
+                    <small class="danger">Available: @(String.Format("{0:0.##}",item.CreditLimit - item.TotalSalesDue)) </small>*@
+                }
+            </td>
+            <td>
+                @(String.Format("{0:0.##}", item.OpeningBalance))
+                @if (item.OpeningBalance > 0)
+                {
+                    <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Due: @(String.Format("{0:0.##}",item.OpeningBalance - item.CustomerOpeningBalancePaid))"></i>
+                    @*<br />
+                    <small class="danger">Due: @(String.Format("{0:0.##}",item.OpeningBalance - item.CustomerOpeningBalancePaid)) </small>*@
+                }
+            </td>
+                <td>
+                    @if (item.AdvanceBalance > 0)
+                    {
+                        <a href="javascript:void(0)" onclick="ViewUnusedAdvanceBalance(@item.UserId)">@(String.Format("{0:0.##}", item.AdvanceBalance))</a>
+                    }
+                    else
+                    {
+                        <span>@(String.Format("{0:0.##}", item.AdvanceBalance))</span>
+                    }
+                </td>
+                <td>
+                    <a href="/salesreports/salesdetailsbycustomer?CustomerId=@item.UserId&CustomerName=@item.Name&Page=customers">
+                        @(String.Format("{0:0.##}", item.TotalSales))
+                    </a>
+                </td>
+                @*<td>
+                        @(String.Format("{0:0.##}", item.TotalSalesPaid))
+                    </td>*@
+                <td>
+                    <a href="/salesreports/salesdetailsbycustomer?CustomerId=@item.UserId&CustomerName=@item.Name&PaymentStatus=due&Page=customers">
+                        @(String.Format("{0:0.##}", item.TotalSalesDue))
+                    </a>
+                </td>
+                @*<td>
+                        <a href="/salesreports/salesreturndetailsbycustomer?CustomerId=@item.UserId&CustomerName=@item.Name&Page=customers">
+                            @(String.Format("{0:0.##}", item.TotalSalesReturn))
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/salesreports/salesreturndetailsbycustomer?CustomerId=@item.UserId&CustomerName=@item.Name&PaymentStatus=due&Page=customers">
+                            @(String.Format("{0:0.##}", item.TotalSalesReturnDue))
+                        </a>
+                    </td>*@
+                @*<td>0</td>*@
+                <td class="hidden">@(item.IsActive==true?"Active":"Inactive")</td>
+                <td class="hide">
+                    @if (item.IsActive)
+                    {
+                        if (ViewBag.MenuPermission.IsEdit)
+                        {
+                            <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.UserId,false)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                        else
+                        {
+                            <input disabled class="chkIsActive" type="checkbox" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                    }
+                    else
+                    {
+                        if (ViewBag.MenuPermission.IsEdit)
+                        {
+                            <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.UserId,true)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                        else
+                        {
+                            <input disabled class="chkIsActive" type="checkbox" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                    }
+                </td>
+                @*<td>@item.AddedByCode</td>
+                    <td>@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                    <td>@item.ModifiedByCode</td>
+                    <td>@(item.ModifiedOn != null ? item.ModifiedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1]) : "")</td>*@
+            </tr>
+            count++;
+        }
+    </tbody>
+    <tbody>
+        <tr>
+            <td class="hide noPrint"></td>
+            <td colspan="6" data-title="Total" class="text-right"><b>Total</b></td>
+            <td data-title="Due Amount">
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalCreditLimit))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalCreditLimit))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+            <td data-title="Due Amount">
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalOpeningBalance))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalOpeningBalance))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+            <td data-title="Due Amount">
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalAdvanceBalance))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalAdvanceBalance))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+            <td data-title="Due Amount">
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalSales))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalSales))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+            <td data-title="Due Amount">
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalSalesDue))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalSalesDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+            @*<td data-title="Due Amount">
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalSalesReturn))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", ViewBag.TotalSalesReturn))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>
+                <td data-title="Due Amount">
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalSalesReturnDue))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", ViewBag.TotalSalesReturnDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>*@
+            <td colspan="8"></td>
+        </tr>
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="20">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divAsof').text('Showing Results: (' + @Html.Raw(Json.Encode(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    $('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));
+</script>
+

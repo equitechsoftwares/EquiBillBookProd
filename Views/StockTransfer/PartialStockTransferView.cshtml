@@ -1,0 +1,302 @@
+﻿
+
+@{
+    if (ViewBag.StockTransfer != null)
+    {
+        <div class="modal-header">
+            <h4 class="modal-title">Stock Transfer Details</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="card-body">
+                <div class="card card-outline">
+                    @*<div class="card-header">
+                            <h3 class="card-title">Parent Purchase Info</h3>
+                        </div>*@
+                    <div class="card-body">
+                        <div class="row">
+
+                            <div class="col-sm-4">
+                                <!-- text input -->
+                                <div class="form-group">
+                                    <label>Reference No</label>
+                                    <span>@ViewBag.StockTransfer.ReferenceNo</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <!-- text input -->
+                                <div class="form-group">
+                                    <label>Date </label>
+                                    <span>@ViewBag.StockTransfer.Date.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label>Status </label>
+                                    @{
+                                        if (ViewBag.StockTransfer.Status == 1)
+                                        {
+                                            <span>Pending</span>
+                                        }
+                                        else if (ViewBag.StockTransfer.Status == 2)
+                                        {
+                                            <span>In Transit</span>
+                                        }
+                                        else if (ViewBag.StockTransfer.Status == 3)
+                                        {
+                                            <span>Completed</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <!-- text input -->
+                                <div class="form-group">
+                                    <label>From Business Location</label>
+                                    @foreach (var item in ViewBag.Branchs)
+                                    {
+                                        if (ViewBag.StockTransfer.FromBranchId == item.BranchId)
+                                        {
+                                            <span>@item.Branch</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <!-- text input -->
+                                <div class="form-group">
+                                    <label>To Business Location </label>
+                                    @foreach (var item in ViewBag.Branchs)
+                                    {
+                                        if (ViewBag.StockTransfer.ToBranchId == item.BranchId)
+                                        {
+                                            <span>@item.Branch</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Reason </label>
+                                    @foreach (var item in ViewBag.StockTransferReasons)
+                                    {
+                                        if (ViewBag.StockTransfer.StockTransferReasonId == item.StockTransferReasonId)
+                                        {
+                                            <span>@item.StockTransferReason</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-outline">
+                    <div class="card-header bg-info">
+                        <h3 class="card-title">Item List</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row table-responsive" >
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        @*<th>#</th>*@
+                                        <th>Item</th>
+                                        <th class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden")">Lot No</th>
+                                        <th>Choose Unit</th>
+                                        @*<th>Avl Qty</th>*@
+                                        <th>Qty</th>
+                                        <th>Unit Cost</th>
+                                        <th>Amount</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var count = 100000000;
+                                        foreach (var item in ViewBag.StockTransfer.StockTransferDetails)
+                                        {
+                                            <tr id="divCombo@(count)">
+                                                @*<td>@count </td>*@
+                                                <td style="min-width:150px">
+                                                    @if (item.ItemName.Length > 15)
+                                                    {
+                                                        <span><b>Name:</b> @item.ItemName.Substring(0, 15)...</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span><b>Name:</b> @item.ItemName</span>
+                                                    }
+
+                                                    @if (item.VariationName != null)
+                                                    {
+                                                        <br /><span> <b>Variation:</b> @item.VariationName</span>
+                                                    }
+                                                    <br /><span><b>SKU:</b> @item.SKU</span>
+                                                </td>
+                                                <td class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden")">
+                                                    <span> Lot No: @item.LotNo</span>
+                                                </td>
+                                                <td style="min-width:100px">
+                                                    <div class="input-group" style="min-width:180px">
+                                                        <span>@item.Unit</span>
+                                                    </div>
+                                                </td>
+                                                @*<td class="divIsDebit">
+                                                        <span>@(String.Format("{0:0.##}", item.QuantityRemaining))</span>
+                                                    </td>*@
+
+                                                <td style="min-width:100px">
+                                                    <div class="input-group" style="min-width:180px">
+                                                        <span>@(String.Format("{0:0.##}", item.Quantity))</span>
+                                                    </div>
+                                                </td>
+                                                <td style="min-width:100px">
+                                                    <span>@(String.Format("{0:0.##}", item.UnitCost))</span>
+                                                </td>
+                                                <td style="min-width:100px">
+                                                    <span>@(String.Format("{0:0.##}", item.Amount))</span>
+                                                </td>
+                                            </tr>
+                                            count++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+
+                        </div>
+                        <div class="row">
+                            <div class="col-md-9">
+                                @*<div class="row mt-2">
+                                    <div class="col-sm-6">
+                                        <div class="form-group row">
+                                            <label class="col-sm-5 col-form-label">Shipping Charge</label>
+                                            <div class="col-sm-5 col-form-label text-left">
+                                                <span>
+                                                    @{
+                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                        {
+                                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", @ViewBag.StockTransfer.ShippingCharge))
+                                                        }
+                                                        else
+                                                        {
+                                                            @(String.Format("{0:0.##}", @ViewBag.StockTransfer.ShippingCharge))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                        }
+                                                    }
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="form-group row">
+                                            <label for="inputEmail3" class="col-sm-5 col-form-label">Packaging Charge</label>
+                                            <div class="col-sm-5 col-form-label text-left">
+                                                <span>
+                                                    @{
+                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                        {
+                                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.StockTransfer.PackingCharge))
+                                                        }
+                                                        else
+                                                        {
+                                                            @(String.Format("{0:0.##}", ViewBag.StockTransfer.PackingCharge))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                        }
+                                                    }
+
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="form-group row">
+                                            <label for="inputEmail3" class="col-sm-5 col-form-label">Other Charges</label>
+                                            <div class="col-sm-5 col-form-label text-left">
+                                                <span>
+                                                    @{
+                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                        {
+                                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1] @(String.Format("{0:0.##}", ViewBag.StockTransfer.OtherCharges))
+                                                        }
+                                                        else
+                                                        {
+                                                            @(String.Format("{0:0.##}", ViewBag.StockTransfer.OtherCharges))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                        }
+                                                    }
+
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>*@
+                                <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="form-group row">
+                                        <label for="inputEmail3" class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 col-form-label">Reason</label>
+                                        <div class="col-sm-12">
+                                            <span>@ViewBag.StockTransfer.Notes</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="row mt-2">
+                                    <div class="col-12" style="display:none;">
+                                        <div class="row">
+                                            <label for="inputEmail3" class="col-8 col-form-label">Total Quantities :</label>
+                                            <span for="inputEmail3" class="col-4 col-form-label text-left" id="divTotalQty">@(String.Format("{0:0.##}", ViewBag.StockTransfer.TotalQuantity))</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <label for="inputEmail3" class="col-8 col-form-label">Net Total Amount :</label>
+                                            <span for="inputEmail3" class="col-4 col-form-label text-left" id="divTotalAmount">
+                                                @{
+                                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                    {
+                                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.StockTransfer.Subtotal))
+                                                    }
+                                                    else
+                                                    {
+                                                        @(String.Format("{0:0.##}", ViewBag.Purchase.Subtotal))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                    }
+                                                }
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="form-group row">
+                                            <label for="inputEmail3" class="col-8 col-form-label ">Total Amount:</label>
+                                            <span for="inputEmail3" class="col-4 col-form-label text-left" id="divGrandTotal">
+                                                @{
+                                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                    {
+                                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.StockTransfer.TotalAmount))
+                                                    }
+                                                    else
+                                                    {
+                                                        @(String.Format("{0:0.##}", ViewBag.StockTransfer.TotalAmount)) @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                    }
+                                                }
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+

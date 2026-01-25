@@ -1,0 +1,380 @@
+
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Customer Points Statement (Detailed)";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Customer Points Statement (Detailed)</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/reports/index">Reports</a></li>
+                        <li class="breadcrumb-item active">Customer Points Statement (Detailed)</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/rewardpointsreports/customerpointsstatement" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+            <div class="col-sm-12">
+                <span id="divAsof" class="text-gray"></span>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            @*<div class="col-12">
+                <div class="card card-primary card-outline collapsed-card">
+                    <div class="card-header" data-card-widget="collapse" title="Collapse">
+                        <h3 class="card-title">Filter</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Date Range:</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="far fa-calendar-alt"></i>
+                                            </span>
+                                        </div>
+                                        <input type="text" class="form-control float-right" id="txtDateRange" value="@(ViewBag.FromDate != null ? ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) : DateTime.Now.AddMonths(-1).ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + DateTime.Now.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]))">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary float-right mt-2" onclick="fetchList(1)">Search</button>
+                        <button type="submit" class="btn btn-warning float-right mt-2 mr-2" onclick="window.location.reload()">Refresh</button>
+                    </div>
+                </div>
+            </div>*@
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Customer: @(ViewBag.Customer != null ? ViewBag.Customer.Name : "N/A")</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-arrow-up"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Earned</span>
+                                        <span class="info-box-number">
+                                            @{
+                                                decimal totalEarned = 0;
+                                                if (ViewBag.Transactions != null && ViewBag.Transactions is System.Collections.IEnumerable)
+                                                {
+                                                    foreach (dynamic t in ViewBag.Transactions)
+                                                    {
+                                                        var tDict = t as System.Collections.Generic.Dictionary<string, object>;
+                                                        string transType = "";
+                                                        if (tDict != null && tDict.ContainsKey("TransactionType"))
+                                                        {
+                                                            transType = tDict["TransactionType"]?.ToString() ?? "";
+                                                        }
+                                                        else
+                                                        {
+                                                            try { transType = ((dynamic)t).TransactionType?.ToString() ?? ""; } catch { }
+                                                        }
+                                                        if (transType == "Earn" || transType == "Return Restore" || transType == "Sale Delete Restore")
+                                                        {
+                                                            decimal points = 0;
+                                                            if (tDict != null && tDict.ContainsKey("Points"))
+                                                            {
+                                                                points = Convert.ToDecimal(tDict["Points"]);
+                                                            }
+                                                            else
+                                                            {
+                                                                try { points = (decimal)((dynamic)t).Points; } catch { }
+                                                            }
+                                                            totalEarned += points;
+                                                        }
+                                                    }
+                                                }
+                                                @String.Format("{0:0.##}", totalEarned)
+                                            }
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger"><i class="fas fa-arrow-down"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Redeemed</span>
+                                        <span class="info-box-number">
+                                            @{
+                                                decimal totalRedeemed = 0;
+                                                if (ViewBag.Transactions != null && ViewBag.Transactions is System.Collections.IEnumerable)
+                                                {
+                                                    foreach (dynamic t in ViewBag.Transactions)
+                                                    {
+                                                        var tDict = t as System.Collections.Generic.Dictionary<string, object>;
+                                                        string transType = "";
+                                                        if (tDict != null && tDict.ContainsKey("TransactionType"))
+                                                        {
+                                                            transType = tDict["TransactionType"]?.ToString() ?? "";
+                                                        }
+                                                        else
+                                                        {
+                                                            try { transType = ((dynamic)t).TransactionType?.ToString() ?? ""; } catch { }
+                                                        }
+                                                        if (transType == "Redeem" || transType == "Return Reversal" || transType == "Sale Delete Reversal" || transType == "Expire")
+                                                        {
+                                                            decimal points = 0;
+                                                            if (tDict != null && tDict.ContainsKey("Points"))
+                                                            {
+                                                                points = Convert.ToDecimal(tDict["Points"]);
+                                                            }
+                                                            else
+                                                            {
+                                                                try { points = (decimal)((dynamic)t).Points; } catch { }
+                                                            }
+                                                            totalRedeemed += points;
+                                                        }
+                                                    }
+                                                }
+                                                @String.Format("{0:0.##}", totalRedeemed)
+                                            }
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-wallet"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Closing Balance</span>
+                                        <span class="info-box-number">@String.Format("{0:0.##}", ViewBag.ClosingBalance != null ? ViewBag.ClosingBalance : 0)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsExport)
+                        {
+                            <div class="dt-buttons noPrint mb-3 mt-3 pt-3 border-top">
+                                <button class="btn btn-secondary buttons-csv buttons-html5 mr-2" tabindex="0" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+                                <button class="btn btn-secondary buttons-excel buttons-html5 mr-2" tabindex="0" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+                                <button class="btn btn-secondary buttons-pdf buttons-html5 mr-2" tabindex="0" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+                                <button class="btn btn-secondary buttons-print" tabindex="0" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+                            </div>
+                        }
+                        <div class="table-responsive">
+                            <table id="tblData" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Invoice No</th>
+                                        <th>Transaction Type</th>
+                                        <th>Points</th>
+                                        <th>Order Amount</th>
+                                        <th>Expiry Date</th>
+                                        <th>Running Balance</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        decimal runningBalance = ViewBag.OpeningBalance != null ? (decimal)ViewBag.OpeningBalance : 0;
+                                        if (ViewBag.Transactions != null && ViewBag.Transactions is System.Collections.IEnumerable)
+                                        {
+                                            foreach (dynamic item in ViewBag.Transactions)
+                                            {
+                                                var itemDict = item as System.Collections.Generic.Dictionary<string, object>;
+                                                
+                                                // Get TransactionType
+                                                string transType = "";
+                                                if (itemDict != null && itemDict.ContainsKey("TransactionType"))
+                                                {
+                                                    transType = itemDict["TransactionType"]?.ToString() ?? "";
+                                                }
+                                                else
+                                                {
+                                                    transType = ((dynamic)item).TransactionType?.ToString() ?? "";
+                                                }
+                                                
+                                                // Get Points
+                                                decimal points = 0;
+                                                if (itemDict != null && itemDict.ContainsKey("Points"))
+                                                {
+                                                    points = Convert.ToDecimal(itemDict["Points"]);
+                                                }
+                                                else
+                                                {
+                                                    points = (decimal)((dynamic)item).Points;
+                                                }
+                                                
+                                                // Get TransactionDate
+                                                DateTime? transDate = null;
+                                                if (itemDict != null && itemDict.ContainsKey("TransactionDate"))
+                                                {
+                                                    var dateVal = itemDict["TransactionDate"];
+                                                    if (dateVal is DateTime)
+                                                    {
+                                                        transDate = (DateTime)dateVal;
+                                                    }
+                                                    else
+                                                    {
+                                                        DateTime parsedDate;
+                                                        if (DateTime.TryParse(dateVal?.ToString(), out parsedDate))
+                                                        {
+                                                            transDate = parsedDate;
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    try { transDate = ((dynamic)item).TransactionDate; } catch { }
+                                                }
+                                                
+                                                // Get InvoiceNo
+                                                string invoiceNo = "";
+                                                if (itemDict != null && itemDict.ContainsKey("InvoiceNo"))
+                                                {
+                                                    invoiceNo = itemDict["InvoiceNo"]?.ToString() ?? "";
+                                                }
+                                                else
+                                                {
+                                                    invoiceNo = ((dynamic)item).InvoiceNo?.ToString() ?? "";
+                                                }
+                                                
+                                                // Get OrderAmount
+                                                decimal orderAmount = 0;
+                                                if (itemDict != null && itemDict.ContainsKey("OrderAmount"))
+                                                {
+                                                    orderAmount = Convert.ToDecimal(itemDict["OrderAmount"]);
+                                                }
+                                                else
+                                                {
+                                                    orderAmount = (decimal)((dynamic)item).OrderAmount;
+                                                }
+                                                
+                                                // Get ExpiryDate
+                                                DateTime? expiryDate = null;
+                                                if (itemDict != null && itemDict.ContainsKey("ExpiryDate") && itemDict["ExpiryDate"] != null)
+                                                {
+                                                    var expVal = itemDict["ExpiryDate"];
+                                                    if (expVal is DateTime)
+                                                    {
+                                                        expiryDate = (DateTime)expVal;
+                                                    }
+                                                    else
+                                                    {
+                                                        DateTime parsedExp;
+                                                        if (DateTime.TryParse(expVal?.ToString(), out parsedExp))
+                                                        {
+                                                            expiryDate = parsedExp;
+                                                        }
+                                                    }
+                                                }
+                                                else if (itemDict == null)
+                                                {
+                                                    try { expiryDate = ((dynamic)item).ExpiryDate; } catch { }
+                                                }
+                                                
+                                                // Get Notes
+                                                string notes = "";
+                                                if (itemDict != null && itemDict.ContainsKey("Notes"))
+                                                {
+                                                    notes = itemDict["Notes"]?.ToString() ?? "";
+                                                }
+                                                else
+                                                {
+                                                    notes = ((dynamic)item).Notes?.ToString() ?? "";
+                                                }
+                                                
+                                                // Update running balance
+                                                if (transType == "Earn" || transType == "Return Restore" || transType == "Sale Delete Restore")
+                                                {
+                                                    runningBalance += points;
+                                                }
+                                                else
+                                                {
+                                                    runningBalance -= points;
+                                                }
+                                                
+                                                <tr>
+                                                    <td>@(transDate.HasValue ? transDate.Value.ToString("dd-MM-yyyy HH:mm") : "-")</td>
+                                                    <td>@(invoiceNo != "" ? invoiceNo : "-")</td>
+                                                    <td>
+                                                        @if (transType == "Earn")
+                                                        {
+                                                            <span class="badge badge-success">Earn</span>
+                                                        }
+                                                        else if (transType == "Redeem")
+                                                        {
+                                                            <span class="badge badge-warning">Redeem</span>
+                                                        }
+                                                        else if (transType == "Expire")
+                                                        {
+                                                            <span class="badge badge-danger">Expire</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge badge-info">@transType</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (transType == "Earn" || transType == "Return Restore" || transType == "Sale Delete Restore")
+                                                        {
+                                                            <span class="text-success">+@String.Format("{0:0.##}", points)</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-danger">-@String.Format("{0:0.##}", points)</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@String.Format("{0:0.##}", orderAmount)
+                                                            }
+                                                            else
+                                                            {
+                                                                @String.Format("{0:0.##}", orderAmount)@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                            }
+                                                        }
+                                                    </td>
+                                                    <td>@(expiryDate.HasValue ? expiryDate.Value.ToString("dd-MM-yyyy") : "-")</td>
+                                                    <td><strong>@String.Format("{0:0.##}", runningBalance)</strong></td>
+                                                    <td>@(notes != "" ? notes : "-")</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="8" class="text-center">No transactions found</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Customer/Reports/RewardPointsReports/CustomerPointsStatementDetailed.js"></script>
+

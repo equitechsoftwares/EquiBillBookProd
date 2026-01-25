@@ -1,0 +1,124 @@
+﻿
+
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th>Sln</th>
+            <th>Invoice Date </th>
+            <th>Invoice# </th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Payment Date </th>
+            <th>Name</th>
+            <th>Email Id</th>
+            <th>Mobile No</th>
+            <th class="hide noPrint">Action</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.Transactions)
+        {
+        <tr>
+            <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1)+count)</td>
+            <td>@item.AddedOn.ToString(Request.Cookies["aBusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["aBusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+            <td>@item.TransactionNo</td>
+            <td>
+                @{
+                    if (item.CurrencySymbolPlacement == 1)
+                    {
+                        @item.CurrencySymbol@(String.Format("{0:0.##}", item.PayableCost))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", item.PayableCost))@item.CurrencySymbol
+                    }
+                }
+            </td>
+            <td>
+                @if (item.Status == 1)
+                {
+                    <span class="bg-danger p-1">Unpaid</span>
+                }
+                else
+                {
+                    <span class="bg-success p-1">Paid</span>
+                }
+            </td>
+            <td>
+                @if (item.Status == 2)
+                {
+                    <span> @(item.PaidOn != null ? item.PaidOn.ToString("yyyy-MM-dd") : DateTime.Now)</span>
+                }
+            </td>
+            <td>@item.Name</td>
+            <td>@item.EmailId</td>
+            <td>@item.MobileNo</td>
+            <td class="hide noPrint">
+                @*@if (ViewBag.MenuPermission.IsEdit)
+        {
+            <a href="/master/cityedit?CityId=@item.CityId" class="btn btn-success btn-sm" id="Edit" data-toggle="tooltip" data-placement="bottom" title="Edit"> <i class="fas fa-edit"></i></a>
+        }*@
+                @*@if (item.Status == 1)
+        {
+            <a href="javascript:void(0)" onclick="Delete(@item.TransactionId,'@Html.Raw(HttpUtility.JavaScriptStringEncode(item.TransactionNo))')" class="btn btn-danger btn-sm" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+        }*@
+                <a href="javascript:void(0)" onclick="PrintInvoice('/adminuser/invoice?invoiceid='+'@item.TransactionNo')" class="btn btn-success btn-sm" id="view" data-toggle="tooltip" data-placement="bottom" title="View"><i class="far fa-eye"></i></a>
+            </td>
+        </tr>
+            count++;
+        }
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="11">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    @*$('#divActiveCount').text('Paid : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('Unpaid : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));*@
+
+
+</script>
+
+
+

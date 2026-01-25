@@ -1,0 +1,313 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add Supplier Payment";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Supplier Payment</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/Supplier/payment">Supplier Payment List</a></li>
+                        <li class="breadcrumb-item active">Add Supplier Payment</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/Supplier/payment" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.Branchs.Count >1 ? "":"hidden")">
+                                    <div class="form-group">
+                                        <label>Business Location</label>
+                                        <select class="form-control select2" id="ddlBranch" style="width:100%">
+                                            @foreach (var item in ViewBag.Branchs)
+                                            {
+                                                <option value="@item.BranchId">@item.Branch</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Supplier Name <span class="danger">*</span></label>
+                                        <div class="input-group divSupplier divSupplier_M_ctrl">
+                                            <select class="form-control select2" id="ddlSupplier" onchange="fetchDue()">
+                                                <option value="0">Select</option>
+                                                @foreach (var item in ViewBag.Users)
+                                                {
+                                                    <option value="@item.UserId">
+                                                        @item.Name
+                                                        @if (item.MobileNo != null && item.MobileNo != "")
+                                                        {
+                                                            <span>- @item.MobileNo</span>
+                                                        }
+                                                    </option>
+                                                }
+                                            </select>
+                                            @*@if (ViewBag.SuppliersPermission.IsAdd == true)
+                        {
+                            <span class="input-group-append">
+                                <a href="javascript:void(0)" class="btn btn-info" onclick="openSupplierModal()">+ </a>
+                            </span>
+                        }*@
+
+                                        </div>
+                                        <small class="text-red font-weight-bold" id="divDue"></small>
+                                        <small class="text-red font-weight-bold errorText" id="divSupplier_M"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Amount <span class="danger">*</span></label>
+                                        <input type="number" class="form-control divAmount_M_ctrl" id="txtAmount" onchange="setAmounts()">
+                                        <small class="text-red font-weight-bold errorText" id="divAmount_M"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Paid On <span class="danger">*</span></label>
+                                        <div class="input-group date" id="_PaymentDate" data-target-input="nearest">
+                                            <input id="txtPaymentDate" type="text" class="form-control datetimepicker-input divPaymentDate_M_ctrl" data-target="#_PaymentDate" />
+                                            <div class="input-group-append" data-target="#_PaymentDate" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                        @*<input type="datetime-local" class="form-control" id="txtPaymentDate">*@
+                                        <small class="text-red font-weight-bold errorText" id="divPaymentDate_M"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Payment Method <span class="danger">*</span></label>
+                                        <div class="input-group divPaymentType_M_ctrl">
+                                            <select class="form-control select2" style="width: 100%;" id="ddlPaymentType">
+                                                @{
+                                                    <option value="0">Select</option>
+                                                    if (ViewBag.PaymentTypes != null)
+                                                    {
+                                                        foreach (var item in ViewBag.PaymentTypes)
+                                                        {
+                                                            if (item.IsDefault == true)
+                                                            {
+                                                                <option value="@item.PaymentTypeId" selected>@item.PaymentType</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.PaymentTypeId">@item.PaymentType</option>
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>                                        
+                                        <small class="text-red font-weight-bold errorText" id="divPaymentType_M"></small>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divLAccount @(ViewBag.IsAccountsAddon == true ? "" : "hidden")">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Paid Through</label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlLAccount">
+                                                @*<option value="0">Select</option>*@
+                                                @{
+                                                    if (ViewBag.AccountSubTypes != null)
+                                                    {
+                                                        foreach (var item in ViewBag.AccountSubTypes)
+                                                        {
+                                                            if (item.Accounts.Count > 0)
+                                                            {
+                                                                <optgroup label="@item.DisplayAs">
+                                                                    @foreach (var inner in item.Accounts)
+                                                                    {
+                                                                        if (inner.Type == "Petty Cash")
+                                                                        {
+                                                                            <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                        }
+                                                                    }
+                                                                </optgroup>
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                            @*@if (ViewBag.AccountsPermission.IsAdd == true)
+            {
+                <span class="input-group-append">
+                    <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#AccountModal">+ </a>
+                </span>
+            }*@
+
+                                        </div>
+                                        @*<small class="text-red font-weight-bold errorText" id="divPaymentType_M"></small>*@
+                                    </div>
+                                </div>
+                               
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Attach Document</label>
+                                            <div class="custom-file">
+                                                <input type="file" id="PaymentAttachDocument" class="custom-file-input" accept='image/*' onchange="getPaymentAttachDocumentBase64()">
+                                                <label class="custom-file-label" for="Logo">Choose file</label>
+                                            </div>
+                                            <img id="blahPaymentAttachDocument" alt="" height="60" style="padding-top:10px;">
+                                        </div>
+                                    </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Reference No <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                                        <input type="text" class="form-control" id="txtReferenceNo" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Notes</label>
+                                        <textarea rows="2" class="form-control" id="txtPaymentNotes" placeholder="Enter Notes"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="table-responsive" id="divDues">
+                                @Html.Partial("PartialDues")
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="insert(1)"><i class="fas fa-save"></i> Save</button>
+                            <button id="btnSave_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="insert(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                            @*<a id="btnBack" href="/accounts/AccountType" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is account type?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Account type means the accounts available that the Company provides to the Client, which are the Standard Account, the Copy Trading Account, and/or the other Accounts.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What are the 6 account types? </h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Some people think banks just offer checking and savings accounts, but there are actually other types of bank accounts that financial institutions commonly offer.
+                                    •	Bank accounts at a glance.
+                                    •	Checking accounts.
+                                    •	Savings accounts.
+                                    •	Money market accounts.
+                                    •	Certificates of deposit (CDs)
+                                    •	Individual retirement arrangements (IRAs)
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What account type is cash?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    A cash account is a type of brokerage account in which the investor must pay the full amount for securities purchased. An investor using a cash account is not allowed to borrow funds from his or her broker-dealer in order to pay for transactions in the account (trading on margin).
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What type of account is inventory?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Inventory is a current asset account found on the balance sheet, consisting of all raw materials, work-in-progress, and finished goods that a company has accumulated.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Purchase/SupplierPayment.js"></script>
+
+

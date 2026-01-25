@@ -1,0 +1,91 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add Floor";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Floor</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantfloor/index">Restaurant Floors</a></li>
+                        <li class="breadcrumb-item active">Add Floor</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/restaurantfloor/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Floor Information</h3>
+                    </div>
+                    <form id="floorForm">
+                        <input type="hidden" id="FloorId" name="FloorId" value="0" />
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <label>Floor Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control divFloorName_ctrl" id="txtFloorName" name="FloorName" placeholder="e.g., Ground Floor">
+                                        <small class="text-red font-weight-bold errorText" id="divFloorName" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <label>Floor Number</label>
+                                        <input type="number" class="form-control divFloorNumber_ctrl" id="txtFloorNumber" name="FloorNumber" placeholder="e.g., 1">
+                                        <small class="text-red font-weight-bold errorText" id="divFloorNumber" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 @(ViewBag.Branchs != null && ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                    <div class="form-group">
+                                        <label>Business Location <span class="text-danger">*</span></label>
+                                        <select class="form-control select2 divBranchId_ctrl" id="ddlBranchId" name="BranchId" style="width: 100%;">
+                                            @* <option value="">Select Branch</option> *@
+                                            @if (ViewBag.Branchs != null)
+                                            {
+                                                foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    <option value="@item.BranchId">@item.Branch</option>
+                                                }
+                                            }
+                                        </select>
+                                        <small class="text-red font-weight-bold errorText" id="divBranchId" style="display: none;"></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button id="btnSave" type="button" class="btn btn-primary float-right" onclick="insertFloor(1)"><i class="fas fa-save"></i> Save</button>
+                            <button id="btnSave_AddAnother" type="button" class="btn btn-success float-right mr-2" onclick="insertFloor(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Customer/Restaurant/RestaurantFloor.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            dropdownAutoWidth: true,
+            width: '100%'
+        });
+    });
+</script>
+

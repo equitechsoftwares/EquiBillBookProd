@@ -1,0 +1,479 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Notification Templates";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<style>
+    .card .nav a {
+        font-size: 1rem;
+    }
+
+    .nav-tabs.flex-column .nav-item.show .nav-link, .nav-tabs.flex-column .nav-link.active {
+        border-color: #dee2e6 transparent #dee2e6 #dee2e6;
+        color: #fff;
+        background: #1589ff;
+    }
+
+    .note-editor.note-frame {
+        border: 1px solid #d0d6db;
+    }
+
+    .divEmailBody .card {
+        box-shadow: none !important;
+    }
+</style>
+
+<style>
+    .category-heading {
+        background-color: #007bff; /* Blue background */
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    .tag {
+        background-color: #f8f9fa; /* Light gray */
+        color: #333;
+        padding: 5px 10px;
+        margin: 5px 3px;
+        border-radius: 4px;
+        display: inline-block;
+        text-decoration: none;
+        border: 1px solid #ddd;
+        cursor: pointer;
+    }
+
+        .tag:hover {
+            background-color: #e2e6ea;
+        }
+</style>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Notification Templates</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item active">Notification Templates</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/settings/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*@if (ViewBag.MenuPermission.IsAdd)
+        {
+            <a id="btnNew" href="/master/cityadd" class="btn btn-primary float-sm-right mr-2"><i class="fas fa-plus"></i> Add New</a>
+        }*@
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- /.card -->
+                @{
+                    int i = 1;
+                    <div class="card card-primary card-outline">
+                        <div class="p-2" style="border: 1px solid #dee2e6;">
+                            @{
+                                int _notificationModuleCount = 1;
+                                <ul class="nav nav-tabs" id="custom-tabs-one-tab" role="tablist">
+                                    @foreach (var item in ViewBag.NotificationModules)
+                                    {
+                                        <li class="nav-item text-center">
+                                            <a class="nav-link @(_notificationModuleCount == 1 ? "active" : "")" id="tab@(item.NotificationModulesId)-NotificationModule" data-toggle="pill" href="#tab@(item.NotificationModulesId)NotificationModule" role="tab">@(item.Title)</a>
+                                        </li>
+                                        _notificationModuleCount++;
+                                    }
+                                </ul>
+                            }
+                            <div class="tab-content" id="custom-tabs-one-tabContent">
+                                @{
+                                    int _notificationModuleCount1 = 1;
+                                    foreach (var item in ViewBag.NotificationModules)
+                                    {
+                                        <div class="tab-pane fade @(_notificationModuleCount1 == 1 ? "show active" : "")" id="tab@(item.NotificationModulesId)NotificationModule" role="tabpanel">
+                                            <div class="card-body">
+                                                @*<h4>Left Sided</h4>*@
+                                                <div class="row">
+                                                    <div class="col-sm-3">
+                                                        <div class="nav flex-column nav-tabs h-100 " id="vert-tabs-tab" role="tablist" aria-orientation="vertical">
+                                                            @{
+                                                                var a = 1;
+                                                                foreach (var inner in item.NotificationModulesDetails)
+                                                                {
+                                                                    <a class="nav-link @(a==1?"active":"")" id="business-tab@(inner.NotificationModulesDetailsId)" data-toggle="pill" href="#business@(inner.NotificationModulesDetailsId)" role="tab" aria-controls="business@(inner.NotificationModulesDetailsId)" aria-selected="false">@inner.Title</a>
+                                                                    a++;
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-9">
+                                                        <div class="tab-content" id="vert-tabs-tabContent">
+                                                            @{
+                                                                var b = 1;
+                                                                foreach (var inner in item.NotificationModulesDetails)
+                                                                {
+                                                                    <div class="tab-pane text-left fade @(b == 1 ? "active show" : "") " id="business@(inner.NotificationModulesDetailsId)" role="tabpanel" aria-labelledby="business-tab@(inner.NotificationModulesDetailsId)">
+                                                                        <div id="quickForm">
+                                                                            <div class="row">
+                                                                                <div class="col-sm-12">
+                                                                                    <div class="card" style="border: 1px solid #dee2e6;box-shadow:none;">
+
+                                                                                        <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                                                                            <b>
+                                                                                                Available Tags
+                                                                                                <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")"
+                                                                                                   role="button" data-toggle="popover" data-trigger="focus" title=""
+                                                                                                   data-content="Click on any tag to copy it">
+                                                                                                </i>
+                                                                                            </b>
+                                                                                            <div class="card-tools">
+                                                                                                <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                                                                                    <i class="fas fa-minus"></i>
+                                                                                                </button>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div class="card-body" style="display: block;">
+                                                                                            @{
+                                                                                                string json = inner.AvailableTags;
+
+                                                                                                var categories = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(json);
+
+                                                                                                foreach (var category in categories)
+                                                                                                {
+                                                                                                    <h6 class="category-heading">@category.Category</h6><br>
+                                                                                                    foreach (var tag in category.Fields)
+                                                                                                    {
+                                                                                                        <a href="javascript:void(0)" onclick="setAvailableTags('@tag')" class="tag">@tag</a>
+                                                                                                    }
+                                                                                                    <br>
+                                                                                                }
+                                                                                            }
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <script>
+                                                                                    function setAvailableTags(tag) {
+                                                                                        navigator.clipboard.writeText(tag);
+                                                                                        alert("Copied: " + tag);
+                                                                                    }
+                                                                                </script>
+                                                                            </div>
+                                                                            <div class="row">
+                                                                                <div class="col-sm-12">
+                                                                                    <div class="p-2" style="border: 1px solid #dee2e6;">
+                                                                                        @{
+                                                                                            int _templateCount = 1;
+                                                                                            if (inner.NotificationTemplates.Count > 1)
+                                                                                            {
+                                                                                                <ul class="nav nav-tabs" id="custom-tabs-one-tab" role="tablist">
+                                                                                                    @foreach (var inner1 in inner.NotificationTemplates)
+                                                                                                    {
+                                                                                                        <li class="nav-item text-center">
+                                                                                                            <a class="nav-link @(_templateCount == 1 ? "active" : "")" id="tab@(inner1.NotificationTemplatesId)-tab" data-toggle="pill" href="#tab@(inner1.NotificationTemplatesId)" role="tab">@(inner1.Title)</a>
+                                                                                                        </li>
+                                                                                                        _templateCount++;
+                                                                                                    }
+
+                                                                                                </ul>
+                                                                                            }
+
+                                                                                        }
+                                                                                        <div class="tab-content p-3" id="custom-tabs-one-tabContent">
+                                                                                            @{
+                                                                                                int _templateCount1 = 1;
+                                                                                                foreach (var inner1 in inner.NotificationTemplates)
+                                                                                                {
+                                                                                                    <div class="tab-pane fade @(_templateCount1 == 1 ? "show active" : "")" id="tab@(inner1.NotificationTemplatesId)" role="tabpanel">
+                                                                                                        <div class="row">
+                                                                                                            <div class="col-sm-12">
+                                                                                                                <div class="form-group">
+                                                                                                                    <label>Email Subject <span class="danger">*</span> <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available Tags can be used to frame a subject.<br><small class='text-muted'>{Business Logo} tag will not work in subject </small>"></i></label>
+                                                                                                                    <input type="text" class="form-control" id="txtEmailSubject@(inner1.NotificationTemplatesId)" placeholder="" value="@(inner1.NotificationModulesSetting != null ? inner1.NotificationModulesSetting.EmailSubject : "")">
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                            <div class="col-sm-12">
+                                                                                                                <div class="form-group">
+                                                                                                                    <label>CC <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Add as many CC using coma separated<br><small class='text-muted'>Eg: demo1@gmail.com,demo2@gmail.com,demo3@gmail.com </small>"></i></label>
+                                                                                                                    <input type="text" class="form-control" id="txtCC@(inner1.NotificationTemplatesId)" placeholder="" value="@(inner1.NotificationModulesSetting != null ? inner1.NotificationModulesSetting.CC : "")">
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                            <div class="col-sm-12">
+                                                                                                                <div class="form-group">
+                                                                                                                    <label>BCC <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Add as many Bcc using coma separated<br><small class='text-muted'>Eg: demo1@gmail.com,demo2@gmail.com,demo3@gmail.com </small>"></i></label>
+                                                                                                                    <input type="text" class="form-control" id="txtBCC@(inner1.NotificationTemplatesId)" placeholder="" value="@(inner1.NotificationModulesSetting != null ? inner1.NotificationModulesSetting.BCC : "")">
+                                                                                                                </div>
+                                                                                                            </div>
+
+                                                                                                            <div class="col-sm-12 divEmailBody">
+                                                                                                                <div class="form-group">
+                                                                                                                    <label id="lblProductDescription">Email Body <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available Tags can be used to frame the Email Body"></i></label>
+                                                                                                                    <br />
+                                                                                                                    <textarea id="txtEmailBody@(inner1.NotificationTemplatesId)" class="txtEmailBody">@(inner1.NotificationModulesSetting != null ? inner1.NotificationModulesSetting.EmailBody : "")</textarea>
+                                                                                                                </div>
+                                                                                                            </div>
+
+                                                                                                            <div class="col-sm-4">
+                                                                                                                <div class="form-group">
+                                                                                                                    <div class="checkbox icheck-turquoise">
+                                                                                                                        @if (inner1.NotificationModulesSetting == null)
+                                                                                                                        {
+                                                                                                                            <input type="checkbox" id="chkAutoSendEmail@(inner1.NotificationTemplatesId)">
+                                                                                                                        }
+                                                                                                                        else
+                                                                                                                        {
+                                                                                                                            if (inner1.NotificationModulesSetting.AutoSendEmail == true)
+                                                                                                                            {
+                                                                                                                                <input type="checkbox" id="chkAutoSendEmail@(inner1.NotificationTemplatesId)" checked>
+                                                                                                                            }
+                                                                                                                            else
+                                                                                                                            {
+                                                                                                                                <input type="checkbox" id="chkAutoSendEmail@(inner1.NotificationTemplatesId)">
+                                                                                                                            }
+
+                                                                                                                        }
+                                                                                                                        <label for="chkAutoSendEmail@(inner1.NotificationTemplatesId)" class="mt-2">
+                                                                                                                            Auto Send Email
+                                                                                                                            <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Enable this to auto send email"></i>
+                                                                                                                        </label>
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                        <hr />
+                                                                                                        <div class="row">
+
+                                                                                                            <div class="col-sm-12 ">
+                                                                                                                <div class="form-group">
+                                                                                                                    <label id="lblProductDescription">Sms Body <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available Tags can be used to frame a subject.<br><small class='text-muted'>{Business Logo} tag will not work in subject </small>"></i></label>
+                                                                                                                    <br />
+                                                                                                                    <textarea id="txtSmsBody@(inner1.NotificationTemplatesId)" class="form-control">@(inner1.NotificationModulesSetting != null ? inner1.NotificationModulesSetting.SmsBody : "")</textarea>
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                            <div class="col-sm-4">
+                                                                                                                <div class="form-group">
+                                                                                                                    <div class="checkbox icheck-turquoise">
+                                                                                                                        @if (inner1.NotificationModulesSetting == null)
+                                                                                                                        {
+                                                                                                                            <input type="checkbox" id="chkAutoSendSms@(inner1.NotificationTemplatesId)">
+                                                                                                                        }
+                                                                                                                        else
+                                                                                                                        {
+                                                                                                                            if (inner1.NotificationModulesSetting.AutoSendSms == true)
+                                                                                                                            {
+                                                                                                                                <input type="checkbox" id="chkAutoSendSms@(inner1.NotificationTemplatesId)" checked>
+                                                                                                                            }
+                                                                                                                            else
+                                                                                                                            {
+                                                                                                                                <input type="checkbox" id="chkAutoSendSms@(inner1.NotificationTemplatesId)">
+                                                                                                                            }
+                                                                                                                        }
+
+                                                                                                                        <label for="chkAutoSendSms@(inner1.NotificationTemplatesId)" class="mt-2">
+                                                                                                                            Auto Send Sms
+                                                                                                                            <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Enable this to auto send sms"></i>
+                                                                                                                        </label>
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                        <hr />
+                                                                                                        <div class="row">
+
+                                                                                                            <div class="col-sm-12 ">
+                                                                                                                <div class="form-group">
+                                                                                                                    <label id="lblProductDescription">Whatsapp Text <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available Tags can be used to frame a subject.<br><small class='text-muted'>{Business Logo} tag will not work in subject </small>"></i></label>
+                                                                                                                    <br />
+                                                                                                                    <textarea id="txtWhatsappBody@(inner1.NotificationTemplatesId)" class="form-control txtEmailBody">@(inner1.NotificationModulesSetting != null ? inner1.NotificationModulesSetting.WhatsappBody : "")</textarea>
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                            <div class="col-sm-4">
+                                                                                                                <div class="form-group">
+                                                                                                                    <div class="checkbox icheck-turquoise">
+                                                                                                                        @if (inner1.NotificationModulesSetting == null)
+                                                                                                                        {
+                                                                                                                            <input type="checkbox" id="chkAutoSendWhatsapp@(inner1.NotificationTemplatesId)">
+                                                                                                                        }
+                                                                                                                        else
+                                                                                                                        {
+                                                                                                                            if (inner1.NotificationModulesSetting.AutoSendWhatsapp == true)
+                                                                                                                            {
+                                                                                                                                <input type="checkbox" id="chkAutoSendWhatsapp@(inner1.NotificationTemplatesId)" checked>
+                                                                                                                            }
+                                                                                                                            else
+                                                                                                                            {
+                                                                                                                                <input type="checkbox" id="chkAutoSendWhatsapp@(inner1.NotificationTemplatesId)">
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                        <label for="chkAutoSendWhatsapp@(inner1.NotificationTemplatesId)" class="mt-2">
+                                                                                                                            Auto Send Whatsapp
+                                                                                                                            <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Enable this to auto send whatsapp"></i>
+                                                                                                                        </label>
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                        <div class="card-footer">
+                                                                                                            <button type="submit" class="btn btn-primary float-right" onclick="NotificationTemplateUpdate(@item.NotificationModulesId,@inner.NotificationModulesDetailsId,@inner1.NotificationTemplatesId)"><i class="fas fa-edit"></i> Update</button>
+                                                                                                            @*<button type="submit" class="btn btn-secondary float-right mr-2" onclick="SetPredefinedTemplates(@item.NotificationModulesId,@inner.NotificationModulesDetailsId)">Set To Pre-Defined Templates</button>*@
+                                                                                                        </div>
+
+                                                                                                    </div>
+                                                                                                    _templateCount1++;
+                                                                                                }
+                                                                                            }
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <!-- /.card-body -->
+
+                                                                        </div>
+                                                                    </div>
+                                                                    b++;
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        _notificationModuleCount1++;
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="../Content/JQuery/Customer/Settings/NotificationSettings/NotificationTemplates.js"></script>

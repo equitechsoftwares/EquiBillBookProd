@@ -1,0 +1,190 @@
+@model EquiBillBook.Models.PublicCatalogueProductGridViewModel
+@using System
+@using System.Collections.Generic
+
+@{
+    var products = Model?.Products ?? new List<EquiBillBook.Models.PublicCatalogueProductVm>();
+    bool showPrices = Model?.ShowPrices ?? false;
+    bool showMRP = Model?.ShowMRP ?? false;
+    bool showDiscount = Model?.ShowDiscount ?? false;
+    bool showStock = Model?.ShowStock ?? false;
+    bool showOutOfStock = Model?.ShowOutOfStock ?? false;
+    bool showProductCode = Model?.ShowProductCode ?? false;
+    bool showImages = Model?.ShowImages ?? true;
+    int pageIndex = Model?.PageIndex > 0 ? Model.PageIndex : 1;
+    int pageSize = Model?.PageSize ?? 0;
+    int totalCount = Model?.TotalCount ?? 0;
+    bool hasMore = Model?.HasMore ?? false;
+    int nextPageIndex = Model?.NextPageIndex > 0 ? Model.NextPageIndex : (pageIndex + 1);
+}
+
+@if (products.Count == 0)
+{
+    <div class="col-12">
+        <div class="alert alert-light border text-muted text-center py-5 mb-0">
+            No products are available right now.
+        </div>
+    </div>
+}
+else
+{
+    foreach (var item in products)
+    {
+        var itemName = string.IsNullOrWhiteSpace(item.ItemName) ? "Product" : item.ItemName;
+        var isVariable = !string.IsNullOrWhiteSpace(item.ProductType) && item.ProductType.ToLower() == "variable";
+        var hasVariants = isVariable && item.Variants != null && item.Variants.Any();
+        
+        // Build display name with variation if single product
+        var displayName = itemName;
+        if (!isVariable && !string.IsNullOrWhiteSpace(item.VariationName))
+        {
+            displayName = itemName + " - " + item.VariationName;
+        }
+        displayName = displayName.Length > 48 ? displayName.Substring(0, 45).TrimEnd() + "..." : displayName;
+        
+        var fullName = displayName;
+        var description = item.Description ?? string.Empty;
+        var productCode = !string.IsNullOrWhiteSpace(item.SKU) ? item.SKU : (item.ProductCode ?? string.Empty);
+        var attributesJson = string.IsNullOrWhiteSpace(item.AttributesJson) ? "{}" : item.AttributesJson;
+        var encodedAttributes = System.Web.HttpUtility.HtmlAttributeEncode(attributesJson);
+        var encodedDescription = System.Web.HttpUtility.HtmlAttributeEncode(description);
+        var encodedCode = System.Web.HttpUtility.HtmlAttributeEncode(productCode ?? string.Empty);
+        var encodedName = System.Web.HttpUtility.HtmlAttributeEncode(fullName ?? string.Empty);
+        var encodedSku = System.Web.HttpUtility.HtmlAttributeEncode(item.SKU ?? string.Empty);
+        
+        // Encode variants JSON for data attribute
+        var variantsJson = hasVariants ? Newtonsoft.Json.JsonConvert.SerializeObject(item.Variants) : "[]";
+        var encodedVariants = System.Web.HttpUtility.HtmlAttributeEncode(variantsJson);
+
+        var imageCandidate = item.ProductImage ?? string.Empty;
+        var productImage = Url.Content("~/Content/assets/img/item.jpg");
+        if (!string.IsNullOrWhiteSpace(imageCandidate))
+        {
+            var trimmedImage = imageCandidate.Trim();
+            if (trimmedImage.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                productImage = trimmedImage;
+            }
+            else if (trimmedImage.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+            {
+                productImage = "https:" + trimmedImage;
+            }
+            else if (trimmedImage.StartsWith("~/", StringComparison.Ordinal))
+            {
+                productImage = Url.Content(trimmedImage);
+            }
+            else if (trimmedImage.StartsWith("/", StringComparison.Ordinal))
+            {
+                productImage = Url.Content("~" + trimmedImage);
+            }
+            else
+            {
+                productImage = Url.Content("~/" + trimmedImage);
+            }
+        }
+
+        var salesPrice = item.SalesIncTax;
+        var mrp = item.DefaultMrp;
+        var discountPercent = item.DiscountPercent;
+        var stockQuantity = item.Quantity;
+        var isOutOfStock = stockQuantity <= 0m;
+        var stockStatusText = string.Empty;
+        var stockStatusClass = "text-muted";
+
+        if (isOutOfStock)
+        {
+            if (showOutOfStock)
+            {
+                stockStatusText = "Out of stock";
+                stockStatusClass = "text-danger";
+            }
+        }
+        else if (showStock)
+        {
+            var isWhole = stockQuantity == Math.Truncate(stockQuantity);
+            var stockDisplay = isWhole ? ((long)stockQuantity).ToString() : stockQuantity.ToString("0.##");
+            stockStatusText = stockDisplay + " in stock";
+            stockStatusClass = "text-success";
+        }
+
+        var showPriceRow = showPrices;
+        var showOldPrice = showPrices && showMRP && mrp > salesPrice && mrp > 0m;
+        var effectiveDiscount = 0m;
+
+        if (mrp > salesPrice && mrp > 0m)
+        {
+            effectiveDiscount = Math.Round(((mrp - salesPrice) / mrp) * 100m);
+        }
+        else if (discountPercent > 0m)
+        {
+            effectiveDiscount = Math.Round(discountPercent);
+        }
+
+        var showDiscountTag = showPrices && showDiscount && effectiveDiscount > 0m;
+        
+        // For variable products, show price range
+        string priceDisplay = "";
+        if (hasVariants && item.MinPrice.HasValue && item.MaxPrice.HasValue)
+        {
+            if (item.MinPrice == item.MaxPrice)
+            {
+                priceDisplay = "&#8377;" + item.MinPrice.Value.ToString("0.##");
+            }
+            else
+            {
+                priceDisplay = "&#8377;" + item.MinPrice.Value.ToString("0.##") + " - &#8377;" + item.MaxPrice.Value.ToString("0.##");
+            }
+        }
+        else
+        {
+            priceDisplay = "&#8377;" + salesPrice.ToString("0.##");
+        }
+
+        <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+            <div class="product-card @(hasVariants ? "product-card-variable" : "")"
+                 data-attrs="@encodedAttributes"
+                 data-desc="@encodedDescription"
+                 data-code="@encodedCode"
+                 data-name="@encodedName"
+                 data-sku="@encodedSku"
+                 data-item-id="@item.ItemId"
+                 data-item-details-id="@item.ItemDetailsId"
+                 data-product-type="@(isVariable ? "variable" : "single")"
+                 data-variants="@encodedVariants"
+                 data-price="@salesPrice.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)"
+                 data-mrp="@mrp.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)">
+                @if (showImages)
+                {
+                    <div class="product-image-wrapper">
+                        <img class="thumb" src="@productImage" alt="@itemName" data-default-image="@productImage" />
+                    </div>
+                }
+                <div class="p-3 p-md-3">
+                    @if (!string.IsNullOrWhiteSpace(stockStatusText))
+                    {
+                        <div class="stock-status small fw-semibold @stockStatusClass">@stockStatusText</div>
+                    }
+                    <div class="fw-semibold mt-1">@displayName</div>
+
+                    @if (showPriceRow)
+                    {
+                        <div class="d-flex align-items-center mt-3">
+                            <div class="price">@Html.Raw(priceDisplay)</div>
+                            <div class="price-old" style="@(showOldPrice ? string.Empty : "display:none;")">&#8377;@mrp.ToString("0.##")</div>
+                            <div class="off" style="@(showDiscountTag ? string.Empty : "display:none;")">@effectiveDiscount.ToString("0")% off</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<div class="product-sentinel"
+     data-products-meta="true"
+     data-page-index="@pageIndex"
+     data-next-page="@nextPageIndex"
+     data-page-size="@pageSize"
+     data-total-count="@totalCount"
+     data-has-more="@(hasMore.ToString().ToLowerInvariant())"></div>
+

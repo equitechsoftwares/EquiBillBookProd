@@ -1,0 +1,45 @@
+@{
+    var tablePerformance = ViewBag.TablePerformance as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+}
+
+<thead id="thead">
+    <tr>
+        <th>Table No</th>
+        <th>Table Name</th>
+        <th>Capacity</th>
+        <th>Total Bookings</th>
+        <th>Confirmed</th>
+        <th>Completed</th>
+        <th>Cancelled</th>
+        <th>Total Revenue</th>
+        <th>Occupancy Hours</th>
+        <th>Avg Guests</th>
+        <th>Avg Duration (min)</th>
+        <th>Occupancy Rate (%)</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (tablePerformance != null && tablePerformance.Count > 0)
+    {
+        foreach (dynamic table in tablePerformance)
+        {
+            var dict = table as System.Collections.Generic.Dictionary<string, object>;
+            <tr>
+                <td>@(dict != null && dict.ContainsKey("TableNo") ? (dict["TableNo"]?.ToString() ?? "-") : "-")</td>
+                <td>@(dict != null && dict.ContainsKey("TableName") ? (dict["TableName"]?.ToString() ?? (dict.ContainsKey("TableNo") ? dict["TableNo"]?.ToString() : "-")) : "-")</td>
+                <td>@(dict != null && dict.ContainsKey("Capacity") ? (dict["Capacity"]?.ToString() ?? "0") : "0")</td>
+                <td>@(dict != null && dict.ContainsKey("TotalBookings") ? (dict["TotalBookings"]?.ToString() ?? "0") : "0")</td>
+                <td>@(dict != null && dict.ContainsKey("ConfirmedBookings") ? (dict["ConfirmedBookings"]?.ToString() ?? "0") : "0")</td>
+                <td>@(dict != null && dict.ContainsKey("CompletedBookings") ? (dict["CompletedBookings"]?.ToString() ?? "0") : "0")</td>
+                <td>@(dict != null && dict.ContainsKey("CancelledBookings") ? (dict["CancelledBookings"]?.ToString() ?? "0") : "0")</td>
+                <td>@(dict != null && dict.ContainsKey("TotalRevenue") && dict["TotalRevenue"] != null ? Convert.ToDecimal(dict["TotalRevenue"]).ToString("N2") : "0.00")</td>
+                <td>@(dict != null && dict.ContainsKey("TotalOccupancyHours") && dict["TotalOccupancyHours"] != null ? Convert.ToDouble(dict["TotalOccupancyHours"]).ToString("N2") : "0.00")</td>
+                <td>@(dict != null && dict.ContainsKey("AverageGuests") && dict["AverageGuests"] != null ? Convert.ToDouble(dict["AverageGuests"]).ToString("N1") : "0.0")</td>
+                <td>@(dict != null && dict.ContainsKey("AverageDuration") && dict["AverageDuration"] != null ? Convert.ToDouble(dict["AverageDuration"]).ToString("N1") : "0.0")</td>
+                <td>@(dict != null && dict.ContainsKey("OccupancyRate") && dict["OccupancyRate"] != null ? Convert.ToDouble(dict["OccupancyRate"]).ToString("N2") : "0.00")</td>
+            </tr>
+        }
+    }
+</tbody>
+

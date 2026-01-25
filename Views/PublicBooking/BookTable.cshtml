@@ -1,0 +1,477 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.PageTitle</title>
+    <meta name="description" content="@ViewBag.MetaDescription">
+    <link rel="canonical" href="@ViewBag.CanonicalUrl">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Toastr CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .booking-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .booking-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .booking-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        .booking-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .booking-body {
+            padding: 40px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            padding: 12px 15px;
+            transition: all 0.3s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .table-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+            min-width: 200px;
+            max-width: 250px;
+            vertical-align: top;
+        }
+        .table-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .table-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .table-card.unavailable {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f5f5f5;
+        }
+        .public-table-item {
+            position: absolute;
+            width: 90px;
+            height: 70px;
+            border: 3px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            user-select: none;
+            font-size: 0.85rem;
+        }
+        .public-table-item:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 15;
+        }
+        .public-table-item.selected {
+            border: 4px solid #667eea;
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+            z-index: 20;
+        }
+        #publicTableLayoutCanvas {
+            min-height: 350px;
+        }
+        .table-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .table-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+        .table-capacity {
+            color: #666;
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+        #tablesContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 5px;
+        }
+        .success-message {
+            color: #28a745;
+            font-size: 0.875rem;
+            margin-top: 5px;
+        }
+        .time-slot-btn {
+            margin: 5px;
+            padding: 8px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .time-slot-btn:hover {
+            border-color: #667eea;
+        }
+        .time-slot-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .time-slot-btn.unavailable {
+            opacity: 0.4 !important;
+            background-color: #f5f5f5 !important;
+            color: #999 !important;
+            border-color: #ddd !important;
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+        }
+        .time-slot-btn.unavailable:hover {
+            border-color: #ddd !important;
+            background-color: #f5f5f5 !important;
+            color: #999 !important;
+        }
+        @@media (max-width: 768px) {
+            .booking-body {
+                padding: 20px;
+            }
+            .booking-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="booking-container">
+        <div class="booking-header">
+            <h1><i class="fas fa-calendar-check"></i> Book Your Table</h1>
+            <p>@ViewBag.BusinessName</p>
+            @if (ViewBag.TableId != null && ViewBag.TableId > 0)
+            {
+                <p style="margin-top:6px; font-size:0.95rem; opacity:0.95;">
+                    <strong>Table:</strong>
+                    @ViewBag.TableNo
+                    @if (!string.IsNullOrEmpty(Convert.ToString(ViewBag.TableName)))
+                    {
+                        @: - @ViewBag.TableName
+                    }
+                    @if (!string.IsNullOrEmpty(Convert.ToString(ViewBag.FloorName)))
+                    {
+                        @: &nbsp;|&nbsp; <strong>Floor:</strong> @ViewBag.FloorName
+                    }
+                    @if (ViewBag.TableCapacity != null && ViewBag.TableCapacity > 0)
+                    {
+                        @: &nbsp;|&nbsp; <strong>Capacity:</strong> @ViewBag.TableCapacity guests
+                    }
+                </p>
+            }
+        </div>
+        
+        <div class="booking-body">
+            <form id="bookingForm">
+                <input type="hidden" id="slug" value="@ViewBag.Slug" />
+                
+                <!-- Deposit Information -->
+                @if (ViewBag.RequireDeposit != null && Convert.ToBoolean(ViewBag.RequireDeposit))
+                {
+                    <div class="form-group" id="depositInfoGroup">
+                        <div class="alert alert-info" style="background-color: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 8px; padding: 15px;">
+                            <h6 style="color: #1976d2; margin-bottom: 10px; font-weight: 600;">
+                                <i class="fas fa-info-circle" style="color: #1976d2;"></i> Deposit Required
+                            </h6>
+                            <p class="mb-2" style="color: #424242;">
+                                A deposit of 
+                                <strong id="depositAmount" style="color: #1976d2;">
+                                    @if (ViewBag.DepositMode != null && ViewBag.DepositMode.ToString().Equals("PerGuest", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <text>₹@(Convert.ToDecimal(ViewBag.DepositPerGuestAmount ?? 0).ToString("0.00"))</text>
+                                    }
+                                    else
+                                    {
+                                        <text>₹@(Convert.ToDecimal(ViewBag.DepositFixedAmount ?? 0).ToString("0.00"))</text>
+                                    }
+                                </strong>
+                                <span id="depositType">
+                                    @if (ViewBag.DepositMode != null && ViewBag.DepositMode.ToString().Equals("PerGuest", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <text>(per guest)</text>
+                                    }
+                                    else
+                                    {
+                                        <text>(fixed amount)</text>
+                                    }
+                                </span>
+                                is required to confirm your booking.
+                            </p>
+                            <small class="text-muted" style="color: #616161;">You will be redirected to the payment gateway after clicking "Confirm Booking".</small>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-group" id="depositInfoGroup" style="display: none;">
+                        <div class="alert alert-info" style="background-color: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 8px; padding: 15px;">
+                            <h6 style="color: #1976d2; margin-bottom: 10px; font-weight: 600;">
+                                <i class="fas fa-info-circle" style="color: #1976d2;"></i> Deposit Required
+                            </h6>
+                            <p class="mb-2" style="color: #424242;">
+                                A deposit of <strong id="depositAmount" style="color: #1976d2;">₹0.00</strong> <span id="depositType">(fixed amount)</span> is required to confirm your booking.
+                            </p>
+                            <small class="text-muted" style="color: #616161;">You will be redirected to the payment gateway after clicking "Confirm Booking".</small>
+                        </div>
+                    </div>
+                }
+                
+                <!-- Booking Date -->
+                <div class="form-group">
+                    <label class="form-label">Booking Date <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="bookingDate" required 
+                           min="@DateTime.Now.ToString("yyyy-MM-dd")" 
+                           max="@DateTime.Now.AddDays((int)ViewBag.AdvanceDays).ToString("yyyy-MM-dd")" />
+                    <div class="error-message" id="errorBookingDate"></div>
+                </div>
+
+                <!-- Number of Guests -->
+                <div class="form-group">
+                    <label class="form-label">Number of Guests <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="noOfGuests" min="1" max="20" value="2" required />
+                    <div class="error-message" id="errorNoOfGuests"></div>
+                </div>
+
+                <!-- Time Slots -->
+                <div class="form-group" id="timeSlotGroup" style="display: none;">
+                    <label class="form-label">Select Time <span class="text-danger">*</span></label>
+                    <div id="timeSlotsContainer"></div>
+                    <input type="hidden" id="bookingTime" />
+                    <div class="error-message" id="errorBookingTime"></div>
+                </div>
+
+                <!-- Select Floor -->
+                <div class="form-group" id="floorGroup" style="display: none;">
+                    <label class="form-label">Select Floor</label>
+                    <select class="form-select" id="publicBookingFloor">
+                        <option value="0">All Floors</option>
+                    </select>
+                </div>
+
+                <!-- Available Tables -->
+                <div class="form-group" id="tableGroup" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0">Select Table(s) <span class="text-danger">*</span> <small class="text-muted">(You can select multiple tables)</small></label>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleViewBtn" onclick="toggleTableView()" title="Toggle View">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Table Layout View -->
+                    <div class="card mb-3" id="tableLayoutCard">
+                        <div class="card-header bg-light">
+                            <div class="row align-items-center">
+                                <div class="col-md-12">
+                                    <div class="d-flex align-items-center flex-wrap mt-2 mt-md-0" style="gap: 12px;">
+                                        <small class="font-weight-bold mb-0">Table Status:</small>
+                                        <div class="d-flex align-items-center">
+                                            <div style="width: 20px; height: 15px; background-color: #28a745; border: 1px solid #1e7e34; border-radius: 3px; margin-right: 5px;"></div>
+                                            <small>Available</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div style="width: 20px; height: 15px; background-color: #dc3545; border: 1px solid #c82333; border-radius: 3px; margin-right: 5px;"></div>
+                                            <small>Occupied</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div style="width: 20px; height: 15px; background-color: #ffc107; border: 1px solid #e0a800; border-radius: 3px; margin-right: 5px;"></div>
+                                            <small>Reserved</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div style="width: 20px; height: 15px; background-color: #6f42c1; border: 1px solid #5a32a3; border-radius: 3px; margin-right: 5px;"></div>
+                                            <small>Booked</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div style="width: 20px; height: 15px; background-color: #6c757d; border: 1px solid #5a6268; border-radius: 3px; margin-right: 5px;"></div>
+                                            <small>Maintenance</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-2">
+                            <div id="publicTableLayoutCanvas" style="position: relative; min-height: 350px; border: 2px dashed #ccc; background: #f9f9f9; overflow: auto;">
+                                <!-- Tables will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- List View -->
+                    <div id="tablesContainer" style="display: none;"></div>
+                    <input type="hidden" id="tableId" />
+                    <div class="error-message" id="errorTableId"></div>
+                </div>
+
+                <!-- Customer Details -->
+                <hr class="my-4">
+                <h5 class="mb-3">Your Details</h5>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Mobile <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="customerMobile" maxlength="10" required />
+                            <div class="error-message" id="errorCustomerMobile"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="customerName" required />
+                            <div class="error-message" id="errorCustomerName"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                    <input type="email" class="form-control" id="customerEmail" required />
+                    <div class="error-message" id="errorCustomerEmail"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Special Requests (Optional)</label>
+                    <textarea class="form-control" id="specialRequest" rows="3" placeholder="Any special requests or dietary requirements..."></textarea>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div class="loading-spinner" id="loadingSpinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                        <i class="fas fa-check"></i> Confirm Booking
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
+    @if (ViewBag.TableId != null && ViewBag.TableId > 0)
+    {
+        <!-- Direct table booking JS -->
+        <script src="~/Content/JQuery/Website/PublicBookingTable.js"></script>
+    }
+    else
+    {
+        <!-- Generic public booking JS -->
+        <script src="~/Content/JQuery/Website/PublicBooking.js"></script>
+    }
+    <script>
+        $(document).ready(function () {
+            var config = {
+                slug: '@ViewBag.Slug',
+                advanceDays: @ViewBag.AdvanceDays,
+                defaultDuration: @ViewBag.DefaultDuration,
+                timeSlots: @Html.Raw(Json.Encode(ViewBag.TimeSlots)),
+                initialTableId: @(ViewBag.TableId != null ? ViewBag.TableId : 0),
+                initialFloorId: @(ViewBag.FloorId != null ? ViewBag.FloorId : 0),
+                requireDeposit: @(ViewBag.RequireDeposit != null && Convert.ToBoolean(ViewBag.RequireDeposit) ? "true" : "false"),
+                depositMode: '@(ViewBag.DepositMode ?? "Fixed")',
+                depositFixedAmount: @(Convert.ToDecimal(ViewBag.DepositFixedAmount ?? 0)),
+                depositPerGuestAmount: @(Convert.ToDecimal(ViewBag.DepositPerGuestAmount ?? 0))
+            };
+
+            var isDirectTable = @Html.Raw((ViewBag.TableId != null && ViewBag.TableId > 0 ? "true" : "false"));
+            if (isDirectTable) {
+                // Separate jQuery flow for direct table booking
+                initializePublicBookingForTable(config);
+            } else {
+                // Generic public booking flow
+                initializePublicBookingForBranch(config);
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,484 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Import Journal";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Import Journal</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/accounts/Journal">Journal List</a></li>
+                        <li class="breadcrumb-item active">Import Journal</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/accounts/Journal" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-sm-12">
+                <div class="card card-primary card-outline card-outline-tabs">
+                    <div class="card-header p-0 border-bottom-0">
+                        <ul class="nav nav-tabs" id="custom-tabs-four-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="import-excel-tab" data-toggle="pill" href="#import-excel" role="tab" aria-controls="import-excel" aria-selected="true">Import From Excel</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="import-other-software-tab" data-toggle="pill" href="#import-other-software" role="tab" aria-controls="import-other-software" aria-selected="false">Import From Any Other Software</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="custom-tabs-four-tabContent">
+                            <div class="tab-pane fade show active" id="import-excel" role="tabpanel" aria-labelledby="import-excel-tab">
+                                <div class="alert alert-warning alert-dismissible" id="divErrorMsg" style="display:none">
+                                    <button type="button" class="close" onclick="closeErrorMsg()">×</button>
+                                    <h5><i class="icon fas fa-exclamation-triangle"></i> Data not imported!</h5>
+                                    One or more errors found. Please fix the errors stated below in the excel file and then upload it again
+                                    <hr />
+                                    <div class="form-group">
+                                        <label style="width:100%">Errors which needs to be fixed</label>
+                                        <p id="txtErrorMsg" class="mb-0">  </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 noPrint">
+                                        <div class="card  card-primary card-outline ">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-sm-3">
+                                                        <div class="form-group">
+                                                            <label>Choose File To Import </label>
+                                                            <div class="input-group">
+                                                                <input type="file" id="excelfile" accept=".xlsx, .xls, .csv" style="padding:0px" onchange="uploadExcel()">
+                                                            </div>
+                                                            <small class="text-red font-weight-bold errorText" id="divExcel"></small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-footer">
+                                                <button type="submit" class="btn btn-primary float-right mt-2" onclick="BulkInsert(1)">Submit</button>
+                                                <button type="submit" class="btn btn-success float-right mt-2 mr-2" onclick="BulkInsert(2)">Submit & Add Another</button>
+                                                @*<a class="btn btn-warning float-right mt-2 mr-2" href="@Url.Action("DownloadJournalSampleXlsx", "Accounts")" download><i class="fas fa-file-excel"></i> Download Excel</a>
+                                                <a class="btn btn-info float-right mt-2" href="@Url.Action("DownloadJournalSample", "Accounts")" download><i class="fas fa-file-csv"></i> Download CSV</a>*@
+                                                <div class="btn-group float-sm-right mt-2 mr-2">
+                                                    <button type="button" class="btn btn-primary">Download Sample</button>
+                                                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <div class="dropdown-menu" role="menu">
+                                                        <a class="dropdown-item" href="@Url.Action("DownloadJournalSampleXlsx", "Accounts")"> XLSX</a>
+                                                        <a class="dropdown-item" href="@Url.Action("DownloadJournalSample", "Accounts")">CSV</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <!-- /.card -->
+                                        <div class="card  card-primary card-outline">
+                                            <div class="card-header">
+                                                <div class="row">
+                                                    <div class="col-sm-6">
+                                                        <h5>
+                                                            <span id="divTotalCount">
+                                                                Instructions
+                                                            </span>
+                                                        </h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- /.card-header -->
+                                            <div class="card-body">
+                                                <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                                                    <div class="dataTables_length noPrint" id="tblUserRole_length">
+                                                        <label>
+                                                            <b>Follow the instructions carefully before importing the file.</b><br />
+                                                            The columns of the file should be in the following order.
+
+                                                        </label>
+                                                    </div>
+
+                                                    <div class="row mt-1">
+                                                        <div class="col-sm-12 table-responsive">
+                                                            <table id="" class="table table-bordered table-striped">
+                                                                <thead id="thead">
+                                                                    <tr>
+                                                                        <th>Column No</th>
+                                                                        <th>Column Name</th>
+                                                                        <th>Instruction</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody class="table-body">
+                                                                    @{
+                                                                        int columnNumber = 1;
+                                                                    }
+
+                                                                    @if (ViewBag.ShowBranchColumn)
+                                                                    {
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>
+                                                                                BranchName (Optional)<br />
+                                                                                If blank first business location will be used
+                                                                            </td>
+                                                                            <td>
+                                                                                Name of the business location <br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                @{
+                                                                                    foreach (var tag in ViewBag.Branchs)
+                                                                                    {
+                                                                                        <a href="javascript:void(0)" onclick="copyTag('@tag.Branch')">@tag.Branch | </a>
+                                                                                    }
+                                                                                }
+                                                                            </td>
+                                                                        </tr>
+                                                                        columnNumber++;
+                                                                    }
+
+                                                                    <tr>
+                                                                        <td>@columnNumber</td>
+                                                                        <td>
+                                                                            Date <br />
+                                                                            If blank today's date will be used
+                                                                        </td>
+                                                                        <td>
+                                                                            Date in format yyyy-mm-dd . Example: 2020-04-21
+                                                                        </td>
+                                                                    </tr>
+                                                                    @{
+                                                                        columnNumber++;
+                                                                    }
+
+                                                                    <tr>
+                                                                        <td>@columnNumber</td>
+                                                                        <td>
+                                                                            ReferenceNo (Optional) <br />
+                                                                            If blank Reference No will be generated automatically
+                                                                        </td>
+                                                                        <td>
+                                                                        </td>
+                                                                    </tr>
+                                                                    @{
+                                                                        columnNumber++;
+                                                                    }
+
+                                                                    <tr>
+                                                                        <td>@columnNumber</td>
+                                                                        <td>Notes (Optional)</td>
+                                                                        <td>
+                                                                        </td>
+                                                                    </tr>
+                                                                    @{
+                                                                        columnNumber++;
+                                                                    }
+                                                                    <tr>
+                                                                        <td>5</td>
+                                                                        <td>Account (Required) </td>
+                                                                        <td>
+                                                                            Journal Account<br />
+                                                                            Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                            <div class="row">
+                                                                                <div class="col-sm-6">
+                                                                                    <!-- text input -->
+                                                                                    <div class="form-group">
+                                                                                        <div class="input-group">
+                                                                                            <select class="form-control select2" id="ddlFromAccount" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                <option value="0">Select</option>
+                                                                                                @{
+                                                                                                    if (ViewBag.AccountSubTypes != null)
+                                                                                                    {
+                                                                                                        foreach (var item in ViewBag.AccountSubTypes)
+                                                                                                        {
+                                                                                                            if (item.Accounts.Count > 0)
+                                                                                                            {
+                                                                                                                if (item.Type != "Accounts Receivable" && item.Type != "Accounts Payable")
+                                                                                                                {
+                                                                                                                    <optgroup label="@item.DisplayAs">
+                                                                                                                        @foreach (var inner in item.Accounts)
+                                                                                                                        {
+                                                                                                                            <option value="@inner.AccountName">@inner.AccountName</option>
+                                                                                                                        }
+                                                                                                                    </optgroup>
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                            </select>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                    @{
+                                                                        columnNumber++;
+                                                                    }
+                                                                    <tr>
+                                                                        <td>@columnNumber</td>
+                                                                        <td>
+                                                                            Description (Optional)
+                                                                        </td>
+                                                                        <td>
+                                                                            Journal Description
+                                                                        </td>
+                                                                    </tr>
+                                                                    @{
+                                                                        columnNumber++;
+                                                                    }
+
+                                                                    <tr>
+                                                                        <td>@columnNumber</td>
+                                                                        <td>
+                                                                            Contact (Optional)
+                                                                        </td>
+                                                                        <td>
+                                                                            Journal Contact <br />
+                                                                            (Ex: 9000000000 | Supplier or 9000000000 | Customer) <br />
+                                                                            Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                            <div class="row">
+                                                                                <div class="col-sm-6">
+                                                                                    <!-- text input -->
+                                                                                    <div class="form-group">
+                                                                                        <div class="input-group">
+                                                                                            <select class="form-control select2" id="ddlExpenseFor1" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                <option value="0" selected>Select </option>
+                                                                                                @foreach (var item in ViewBag.ExpenseFor)
+                                                                                                {
+                                                                                                    <option value="@item.MobileNo | @item.UserType">
+                                                                                                        @item.MobileNo | @item.UserType
+                                                                                                        @*@if (item.MobileNo != null && item.MobileNo != "")
+                                            {
+                                                <span>-@item.MobileNo</span>
+                                            }*@
+                                                                                                    </option>
+                                                                                                }
+                                                                                            </select>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                    @{
+                                                                        columnNumber++;
+                                                                    }
+
+                                                                    <tr>
+                                                                        <td>@columnNumber</td>
+                                                                        <td>
+                                                                            Debit <br />
+                                                                            Required if Credit is blank
+                                                                        </td>
+                                                                        <td>
+                                                                            Debit Amount (Only in numbers)
+                                                                        </td>
+                                                                    </tr>
+                                                                    @{
+                                                                        columnNumber++;
+                                                                    }
+
+                                                                    <tr>
+                                                                        <td>@columnNumber</td>
+                                                                        <td>
+                                                                            Credit <br />
+                                                                            Required if Debit is blank
+                                                                        </td>
+                                                                        <td>
+                                                                            Credit Amount (Only in numbers)
+                                                                        </td>
+                                                                    </tr>
+                                                                    @{
+                                                                        columnNumber++;
+                                                                    }
+
+                                                                    <tr>
+                                                                        <td>@columnNumber</td>
+                                                                        <td>GroupName (Required)</td>
+                                                                        <td>
+                                                                            This is used to group the journals
+                                                                        </td>
+                                                                    </tr>
+
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- /.card-body -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="import-other-software" role="tabpanel" aria-labelledby="import-other-software-tab">
+                                <div class="row">
+                                    <div class="col-12 noPrint">
+                                        <div class="card  card-primary card-outline">
+                                            <div class="card-body">
+                                                <div class="row">
+
+                                                    <div class="col-sm-3">
+                                                        <div class="form-group">
+                                                            <label>Choose File To Import </label>
+                                                            <div class="input-group">
+                                                                <input type="file" id="otherSoftwareExcelfile" accept=".xlsx, .xls, .csv" style="padding:0px" onchange="getExcelBase64()">
+                                                            </div>
+                                                            <small class="text-red font-weight-bold errorText" id="divOtherSoftwareExcel"></small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-footer">
+                                                <button type="submit" class="btn btn-primary float-right mt-2" onclick="InsertOtherSoftwareImport(1)">Submit</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 noPrint">
+                                        <div class="card  card-primary card-outline ">
+                                            <div class="card-body">
+                                                <table id="tblOtherSoftwareImport" class="table table-bordered table-striped">
+                                                    @Html.Partial("PartialOtherSoftwareImport_Journal")
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xls/0.7.4-a/xls.core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+<script src="~/Content/JQuery/Customer/Accounting/Journal.js"></script>

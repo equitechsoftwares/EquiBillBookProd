@@ -1,0 +1,714 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | My Current Plan";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>My Current Plan</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item active">My Current Plan</li>
+                    </ol>
+                </div>
+            </div>
+            @*<div class="col-sm-6">
+                <a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>
+            </div>*@
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            @*<div class="col-12 noPrint">
+                    <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                        <h5><i class="fas fa-info"></i> Note:</h5>
+                        This page has been enhanced for printing. Click the print button at the bottom of the invoice to test.
+                    </div>
+                </div>*@
+            <div class="col-md-9">
+                @if (ViewBag.MyPlan.UnusedPlans.Count > 0)
+                {
+                    <div class="card card-widget widget-user-2 card-primary card-outline ">
+                        <div class="widget-user-header">
+                            <h3 class="">Unused Plans </h3>
+                            @*<h6 class="">Lead Developer</h6>*@
+                        </div>
+                        <div class="col-sm-12 table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead id="thead">
+                                    <tr>
+                                        <th>Sln</th>
+                                        <th>Payment Date </th>
+                                        <th>Invoice# </th>
+                                        <th>Amount</th>
+                                        <th class="hide noPrint">Action</th>
+                                    </tr>
+                                </thead>
+                                @{
+                                    var count = 1;
+                                    <tbody class="table-body">
+                                        @foreach (var item in ViewBag.MyPlan.UnusedPlans)
+                                        {
+                                            <tr>
+                                                <td>@(count)</td>
+                                                <td>@item.PaidOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                                                <td>@item.TransactionNo</td>
+                                                <td>@item.PayableCost</td>
+                                                <td class="hide noPrint">
+                                                    @if (ViewBag.ActivatePlanPermission.IsAdd)
+                                                    {
+                                                        <a href="javascript:void(0)" onclick="ActivatePlan('@item.TransactionNo')" class="btn btn-primary btn-sm" id="view" data-toggle="tooltip" data-placement="bottom" title="View">Activate </a>
+                                                    }
+                                                    <a href="javascript:void(0)" onclick="FetchInvoice('@item.TransactionNo')" class="btn btn-success btn-sm" id="view" data-toggle="tooltip" data-placement="bottom" title="View"><i class="far fa-eye"></i></a>
+                                                </td>
+                                            </tr>
+                                            count++;
+                                        }
+                                    </tbody>
+                                }
+
+                            </table>
+                        </div>
+                    </div>
+                }
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                            <h5>
+                                @*<i class="fas fa-info"></i>*@ <b>Plan Details</b>
+                                <span class="float-right ">
+                                    Status:
+                                    @if (ViewBag.MyPlan.Transaction.IsActive == true)
+                                    {
+                                        <span class="text-success p-1">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger p-1">Expired</span>
+                                    }
+                                </span>
+                            </h5>
+                            @if (ViewBag.MyPlan.Transaction.IsTrial == false)
+                            {
+                                <span class="text-primary font-weight-bold"> Start Date: @ViewBag.MyPlan.Transaction.PaidOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]@*+ " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1]*@)</span><br />
+                            }
+                            else
+                            {
+                                <span class="text-primary font-weight-bold"> Start Date: @ViewBag.MyPlan.Transaction.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]@*+ " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1]*@)</span><br />
+                            }
+
+                            <span class="text-danger font-weight-bold">Next Renewal Date: @ViewBag.MyPlan.Transaction.ExpiryDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]@*+ " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1]*@)</span><br />
+                            <br />
+                            <div class="card-footer clearfix">
+                                @if (ViewBag.UpgradePlanPermission.IsAdd)
+                                {
+                                    <a href="/subscription/upgradeplan" class="btn btn-primary text-white text-decoration-none float-right ml-2">Renew Plan Now </a>
+                                    if (ViewBag.MyPlan.Transaction.IsTrial == false && ViewBag.MyPlan.Transaction.IsActive == true)
+                                    {
+                                        <a href="/subscription/upgradeaddons" class="btn btn-warning text-white text-decoration-none float-right mt-2 mt-sm-0"> Upgrade Addons </a>
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                @if (ViewBag.MyPlan.Transaction.IsActive == true)
+                {
+                    <div class="row">
+                        <div class="col-md-4 col-sm-4 col-12">
+                            <div class="info-box bg-info">
+                                <span class="info-box-icon"><i class="fas fa-shopping-cart"></i></span>
+
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Orders</span>
+                                    <span class="info-box-number">@(String.Format("{0:0.##}", ViewBag.MyPlan.OrderPercentageRemaining))% remaining</span>
+
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: @(ViewBag.MyPlan.OrderPercentageRemaining)%"></div>
+                                    </div>
+                                    <span class="progress-description">
+                                        @ViewBag.MyPlan.TotalOrderUsed used of @ViewBag.MyPlan.TotalOrder
+                                    </span>
+                                </div>
+                                @*<a href="#" class="small-box-footer">
+                    Upgrade Addons <i class="fas fa-arrow-circle-right"></i>
+                </a>*@
+                                <!-- /.info-box-content -->
+                            </div>
+                            <!-- /.info-box -->
+                        </div>
+                        <!-- /.col -->
+                        @*<div class="col-md-6 col-sm-6 col-12">
+            <div class="info-box bg-success">
+                <span class="info-box-icon"><i class="fas fa-archive"></i></span>
+
+                <div class="info-box-content">
+                    <span class="info-box-text">Items</span>
+                    <span class="info-box-number">@(String.Format("{0:0.##}", ViewBag.MyPlan.ItemPercentageRemaining))% remaining</span>
+
+                    <div class="progress">
+                        <div class="progress-bar" style="width: @(ViewBag.MyPlan.ItemPercentageRemaining)%"></div>
+                    </div>
+                    <span class="progress-description">
+                        @ViewBag.MyPlan.TotalItemUsed used of @ViewBag.MyPlan.TotalItem
+                    </span>
+                </div>
+            </div>
+        </div>*@
+                        <!-- /.col -->
+                        <div class="col-md-4 col-sm-4 col-12">
+                            <div class="info-box bg-warning">
+                                <span class="info-box-icon"><i class="fas fa-users"></i></span>
+
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Users</span>
+                                    <span class="info-box-number">@(String.Format("{0:0.##}", ViewBag.MyPlan.UserPercentageRemaining))% remaining</span>
+
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: @(ViewBag.MyPlan.UserPercentageRemaining)%"></div>
+                                    </div>
+                                    <span class="progress-description">
+                                        @ViewBag.MyPlan.TotalUserUsed used of @ViewBag.MyPlan.TotalUser
+                                    </span>
+                                </div>
+                                <!-- /.info-box-content -->
+                            </div>
+                            <!-- /.info-box -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-md-4 col-sm-4 col-12">
+                            <div class="info-box bg-danger">
+                                <span class="info-box-icon"><i class="fas fa-map-marker-alt"></i></span>
+
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Business Location</span>
+                                    <span class="info-box-number">@(String.Format("{0:0.##}", ViewBag.MyPlan.BranchPercentageRemaining))% remaining</span>
+
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: @(ViewBag.MyPlan.BranchPercentageRemaining)%"></div>
+                                    </div>
+                                    <span class="progress-description">
+                                        @ViewBag.MyPlan.TotalBranchUsed used of @ViewBag.MyPlan.TotalBranch
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                        @if (ViewBag.IsDomainTaken == true)
+                        {
+                            <div class="col-md-4 col-sm-4 col-12">
+                                <div class="info-box bg-lightblue">
+                                    <span class="info-box-icon"><i class="fas fa-globe"></i></span>
+
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Domains</span>
+                                        <span class="info-box-number">@(String.Format("{0:0.##}", ViewBag.MyPlan.DomainPercentageRemaining))% remaining</span>
+
+                                        <div class="progress">
+                                            <div class="progress-bar" style="width: @(ViewBag.MyPlan.DomainPercentageRemaining)%"></div>
+                                        </div>
+                                        <span class="progress-description">
+                                            @ViewBag.MyPlan.TotalDomainUsed used of @ViewBag.MyPlan.TotalDomain
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        @if (ViewBag.IsCatalogueTaken == true)
+                        {
+                            <div class="col-md-4 col-sm-4 col-12">
+                                <div class="info-box bg-lightblue">
+                                    <span class="info-box-icon"><i class="fas fa-globe"></i></span>
+
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Catalogues</span>
+                                        <span class="info-box-number">@(String.Format("{0:0.##}", ViewBag.MyPlan.CataloguePercentageRemaining))% remaining</span>
+
+                                        <div class="progress">
+                                            <div class="progress-bar" style="width: @(ViewBag.MyPlan.CataloguePercentageRemaining)%"></div>
+                                        </div>
+                                        <span class="progress-description">
+                                            @ViewBag.MyPlan.TotalCatalogueUsed used of @ViewBag.MyPlan.TotalCatalogue
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        @if (ViewBag.IsPurchaseTaken == true)
+                        {
+                            <div class="col-md-4 col-sm-4 col-12">
+                                <div class="info-box bg-success">
+                                    <span class="info-box-icon"><i class="fas fa-archive"></i></span>
+
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Purchase Bill/ Expense</span>
+                                        <span class="info-box-number">@(String.Format("{0:0.##}", ViewBag.MyPlan.BillPercentageRemaining))% remaining</span>
+
+                                        <div class="progress">
+                                            <div class="progress-bar" style="width: @(ViewBag.MyPlan.BillPercentageRemaining)%"></div>
+                                        </div>
+                                        <span class="progress-description">
+                                            @ViewBag.MyPlan.TotalBillUsed used of @ViewBag.MyPlan.TotalBill
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        <div class="col-md-4 col-sm-4 col-12">
+                            <div class="info-box bg-blue">
+                                <span class="info-box-icon"><i class="fas fa-archive"></i></span>
+
+                                <div class="info-box-content">
+                                    <span class="info-box-text">GSTIN</span>
+                                    <span class="info-box-number">@(String.Format("{0:0.##}", ViewBag.MyPlan.TaxSettingPercentageRemaining))% remaining</span>
+
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: @(ViewBag.MyPlan.TaxSettingPercentageRemaining)%"></div>
+                                    </div>
+                                    <span class="progress-description">
+                                        @ViewBag.MyPlan.TotalTaxSettingUsed used of @ViewBag.MyPlan.TotalTaxSetting
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                        @*<div class="col-md-6 col-sm-6 col-12">
+            <div class="info-box bg-purple">
+                <span class="info-box-icon"><i class="fas fa-comment"></i></span>
+
+                <div class="info-box-content">
+                    <span class="info-box-text">Sms</span>
+                    <span class="info-box-number">@(String.Format("{0:0.##}", ViewBag.MyPlan.SmsPercentageRemaining))% remaining</span>
+
+                    <div class="progress">
+                        <div class="progress-bar" style="width: @(ViewBag.MyPlan.SmsPercentageRemaining)%"></div>
+                    </div>
+                    <span class="progress-description">
+                        @ViewBag.MyPlan.TotalSmsUsed used of @ViewBag.MyPlan.TotalSms
+                    </span>
+                </div>
+            </div>
+        </div>*@
+                        <!-- /.col -->
+                        @*<div class="col-md-6 col-sm-6 col-12">
+            <div class="info-box bg-gradient-orange">
+                <span class="info-box-icon"><i class="fas fa-envelope"></i></span>
+
+                <div class="info-box-content">
+                    <span class="info-box-text">Emails</span>
+                    <span class="info-box-number">@(String.Format("{0:0.##}", ViewBag.MyPlan.EmailPercentageRemaining))% remaining</span>
+
+                    <div class="progress">
+                        <div class="progress-bar" style="width: @(ViewBag.MyPlan.EmailPercentageRemaining)%"></div>
+                    </div>
+                    <span class="progress-description">
+                        @ViewBag.MyPlan.TotalEmailUsed used of @ViewBag.MyPlan.TotalEmail
+                    </span>
+                </div>
+            </div>
+        </div>*@
+                        <!-- /.col -->
+                    </div>
+                    @*<div class="card card-widget widget-user-2 card-primary card-outline ">
+                            <div class="widget-user-header">
+                                <h3 class="">Add-ons </h3>
+                                <h6 class="">Lead Developer</h6>
+                            </div>
+                            <div class="p-0 div1">
+                                <ul class="nav flex-column">
+                                    @foreach (var item in ViewBag.MyPlan.PlanAddons)
+                                    {
+                                        <li class="nav-item">
+                                            <h6 class="nav-link">
+                                                @item.Title
+                                                <span class="float-right text-bold">
+                                                    @if (item.IsTaken == true)
+                                                    {
+                                                        <i class="fa fa-check text-success" aria-hidden="true"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fa fa-close text-danger" aria-hidden="true"></i>
+                                                    }
+                                                </span>
+                                            </h6>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>*@
+                }
+
+                <!-- /.widget-user -->
+            </div>
+
+            <div class="col-md-3">
+                <div class="card card-widget widget-user-2 ">
+                    <div class="widget-user-header">
+                        <h3 class="">Add-ons </h3>
+                        @*<h6 class="">Lead Developer</h6>*@
+                    </div>
+                    <div class="p-0 div1">
+                        <ul class="nav flex-column">
+                            @foreach (var item in ViewBag.MyPlan.PlanAddons)
+                            {
+                                <li class="nav-item">
+                                    <h6 class="nav-link">
+                                        @item.Title
+                                        <span class="float-right text-bold">
+                                            @if (item.IsTaken == true)
+                                            {
+                                                <i class="fa fa-check text-success" aria-hidden="true"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fa fa-close text-danger" aria-hidden="true"></i>
+                                            }
+                                        </span>
+                                    </h6>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade" id="invoiceModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Invoice Details</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="divInvoice">
+                @if (ViewBag.Transaction != null)
+                {
+                    @Html.Partial("PartialInvoice")
+                }
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] is an online cloud based accounting software. Few advantages are below :
+                                    <ul>
+                                        <li>Pay As You Go</li>
+                                        <li>Watertight security and no time-consuming back-ups</li>
+                                        <li>Accessibility Anywhere, Anytime and on any Device</li>
+                                        <li>Multi-Location Accounting with Real-Time Consolidation and Reporting</li>
+                                        <li>Ease of Communication between locations</li>
+                                        <li>Reduces paperwork and is more sustainable</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How will @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] help me in getting my account ready?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] is all set to provide you with a content-rich platform, designed just the way you want it.
+                                    Visit our website, and then create an account by uploading the necessary credentials.
+                                    Once done, update your business name and logo and then you are all set to start and create your first invoice.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How much time does it take to create my account at @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1]?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Creating your account at @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] will not take more than 2 minutes since it involves entering just a
+                                    few basic details.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Will I be charged for this service?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    No, not at all. We provide 30 days of an extensive free trial of our base plan, where users can use it
+                                    and if the user is satisfied with our service then only they can buy it.<br />
+                                    However, if the user wants to see the full software demo they can click the <a href="/home/demo">demo link</a>
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How safe is my data with you?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Please relax, your data has been securely put into code by our experts and stowed
+                                    carefully in our system. Information that you share online through @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] also has an extra
+                                    fortification of HTTPs layer, giving it a shield against every sort of cyber threat.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How can I share my invoices with my customers?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    There are plenty of ways through which you can share your invoice to your customers,
+                                    like you can WhatsApp, email, or SMS it.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">I am facing trouble in using the software, what should I do?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    No problem, at @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] we are always set to assist you. Hence, if you are stuck,
+                                    please communicate with our support team, they will guide you accordingly.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">I believe my account has been hacked, what should I do now?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Please keep in mind, your password must be kept private to rule out any case of cybercrime,
+                                    hence kindly adhere to this. Instances of cyber theft are not uncommon nowadays.
+                                    Though at @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1], we do our best to create awareness amongst our clients, so that they
+                                    can avoid such issues, but incontrovertibly, such things do happen. Although we rarely
+                                    have such instances in our record, still if you contemplate your account has been hacked,
+                                    kindly convey the matter to our support executive, so that requisite action can be taken on time.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What about Support ?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    If you have any queries, then you can get in touch with our Support Team via email.
+                                    Our Support Team tries their best to reply within the same working day, else they will reply within 24
+                                    working hours. Support Team works between 10 AM to 8 PM IST.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Why choose a @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] over another service?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] is built specifically for all business categories ranging from small to medium size.
+                                    Its a initiative to bring people online at a very low cost. We dont believe in predefined subscription
+                                    plans, rather we prefer giving the control to you so that you can create your own plan. Just select the modules
+                                    which you need. Never pay extra when you have the option to pay for what and how much you need. <br />
+                                    It’s simple, secure, quick and easy to use.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What happens after my free trial?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Once your free trial is expired, you need to buy our paid plan to enjoy continuing our service.<br />
+                                    You can choose from 1 month to 5 years depending on your requirement.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can I customise my plan?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Yes, @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] prefers giving the control to you so that you can create and customise
+                                    your own plan. Just select the term length for the base plan and then select the modules/ addons
+                                    which you need. Never pay extra when you have the option to pay for what and how much you need.
+                                    It’s simple, secure, quick and easy to use.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can I upgrade my existing plan to any other plan?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    We do not have plan system, rather we have modules/ addons. You can always go to addon menu from
+                                    your dashboard and add the extra modules or features which you need. Pricing will depend accordingly.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is the billing cycle of @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1]?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] offers billing in both monthly and annually, ranging from 1 month upto 5 years.<br />
+                                    All our pricings are very affordable compared to other billing software available in the market.
+                                    Choose the one which suits you the best.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can I cancel my subscription?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Yes, you are allowed to cancel your subscription at any time. However, no refund requests are entertained. Kindly refer to our
+                                    <a href="/refundpolicy" target="_blank">Refund Policy</a> for more details
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can I use this product in my country?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] can be used in any country. You can customise the taxes as per your requirements.
+                                    Also we have multiple languages support and multiple timezone.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What will happen if i dont renew after my current plan gets expired?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You will get notifications in email/ whatsapp and reminder message in your dasboard from 1 month before
+                                    your next renewal date. However, if still the renewal is not done then from the date of expiry all
+                                    menus will be hidden and you won't be able to use the software until and unless the renewal is done.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">I got more questions. How can i reach out to you?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    We want our users to clarify all doubts before they start using our service. Kindly get in touch
+                                    with our support team anytime through emails. Our team will get back to you and clear all your doubts.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Billing/UpgradePlan.js"></script>

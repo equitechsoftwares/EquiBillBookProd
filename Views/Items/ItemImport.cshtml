@@ -1,0 +1,1752 @@
+
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Import Item";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<style>
+    table td {
+        white-space: normal !important;
+    }
+</style>
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Import Item</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/Items/Items">Item List</a></li>
+                        <li class="breadcrumb-item active">Import Item</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/Items/Items" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-sm-12">
+                <div class="card card-primary card-outline card-outline-tabs">
+                    <div class="card-header p-0 border-bottom-0">
+                        <ul class="nav nav-tabs" id="custom-tabs-four-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="import-excel-tab" data-toggle="pill" href="#import-excel" role="tab" aria-controls="import-excel" aria-selected="true">Import From Excel</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="import-other-software-tab" data-toggle="pill" href="#import-other-software" role="tab" aria-controls="import-other-software" aria-selected="false">Import From Any Other Software</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="custom-tabs-four-tabContent">
+                            <div class="tab-pane fade show active" id="import-excel" role="tabpanel" aria-labelledby="import-excel-tab">
+                                <div class="alert alert-warning alert-dismissible" id="divErrorMsg" style="display:none">
+                                    <button type="button" class="close" onclick="closeErrorMsg()">×</button>
+                                    <h5><i class="icon fas fa-exclamation-triangle"></i> Data not imported!</h5>
+                                    One or more errors found. Please fix the errors stated below in the excel file and then upload it again
+                                    <hr />
+                                    <div class="form-group">
+                                        <label style="width:100%">Errors which needs to be fixed</label>
+                                        <p id="txtErrorMsg" class="mb-0">  </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 noPrint">
+                                        <div class="card  card-primary card-outline ">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-sm-3">
+                                                        <div class="form-group">
+                                                            <label>Choose File To Import </label>
+                                                            <div class="input-group">
+                                                                <input type="file" id="excelfile" accept=".xlsx, .xls, .csv" style="padding:0px" onchange="uploadExcel()">
+                                                            </div>
+                                                            <small class="text-red font-weight-bold errorText" id="divExcel"></small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-footer">
+                                                <button type="submit" class="btn btn-primary float-right mt-2" onclick="BulkInsert(1)">Submit</button>
+                                                <button type="submit" class="btn btn-success float-right mt-2 mr-2" onclick="BulkInsert(2)">Submit & Add Another</button>
+                                                <div class="btn-group float-sm-right mt-2 mr-2">
+                                                    <button type="button" class="btn btn-primary">Download Sample</button>
+                                                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <div class="dropdown-menu" role="menu">
+                                                        <a class="dropdown-item" href="@Url.Action("DownloadItemSampleXlsx", "Items")"> XLSX</a>
+                                                        <a class="dropdown-item" href="@Url.Action("DownloadItemSample", "Items")">CSV</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <!-- /.card -->
+                                        <div class="card  card-primary card-outline">
+                                            <div class="card-header">
+                                                <div class="row">
+                                                    <div class="col-sm-6">
+                                                        <h5>
+                                                            <span id="divTotalCount">
+                                                                Instructions
+                                                            </span>
+                                                        </h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- /.card-header -->
+                                            <div class="card-body">
+                                                <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                                                    <div class="dataTables_length noPrint" id="tblUserRole_length">
+                                                        <label>
+                                                            <b>Follow the instructions carefully before importing the file.</b><br />
+                                                            The columns of the file should be in the following order.
+
+                                                        </label>
+                                                    </div>
+
+                                                    <div class="row mt-1">
+                                                        <div class="col-sm-12 table-responsive">
+                                                            <table id="" class="table table-bordered table-striped">
+                                                                <thead id="thead">
+                                                                    <tr>
+                                                                        <th>Column No</th>
+                                                                        <th>Column Name</th>
+                                                                        <th>Instruction</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                @if (ViewBag.BusinessSetting.CountryId == 2)
+                                                                {
+                                                                    <tbody class="table-body">
+                                                                        @{
+                                                                            int columnNumber = 1;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ItemType (Required)</td>
+                                                                            <td>
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i>
+                                                                                <br />
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Product')">Product | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Service')">Service</a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>SkuCode (Required)</td>
+                                                                            <td>
+                                                                                SKU/ Barcode
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>HsnSacCode (Optional)</td>
+                                                                            <td>
+                                                                                If Item Type is a Product then specify the HSN Code <br />
+                                                                                If Item Type is a Service then specify the SAC Code
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ItemName (Required)</td>
+                                                                            <td>
+                                                                                Product Name / Service Name
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>UnitName <br />(Required if item type is Product)</td>
+                                                                            <td>
+                                                                                Name of the Unit<br />
+                                                                                (If not found new unit with the given name will be created)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.ItemSetting.EnableSecondaryUnit == true)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>SecondaryUnitName <br />(Required if item type is Product & UToSValue is given)</td>
+                                                                                <td>
+                                                                                    Name of the Secondary Unit<br />
+                                                                                    (If not found new unit with the given name under the parent unit
+                                                                                    will be created)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>UToSValue <br />(Required if item type is Product & SecondaryUnitName is given)</td>
+                                                                                <td>
+                                                                                    1 Unit = ? Secondary Unit<br />(Only in numbers)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.ItemSetting.EnableTertiaryUnit == true)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>TertiaryUnitName <br />(Required if item type is Product & SToTValue is given)</td>
+                                                                                <td>
+                                                                                    Name of the Tertiary Unit<br />
+                                                                                    (If not found new unit with the given name under the parent secondary unit
+                                                                                    will be created)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>SToTValue <br />(Required if item type is Product & TertiaryUnitName is given)</td>
+                                                                                <td>1 Secondary Unit = ? Tertiary Unit<br />(Only in numbers)</td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.ItemSetting.EnableQuaternaryUnit == true)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>QuaternaryUnitName <br />(Required if item type is Product & TToQValue is given)</td>
+                                                                                <td>
+                                                                                    Name of the Quaternary Unit<br />
+                                                                                    (If not found new unit with the given name under the parent tertiary unit
+                                                                                    will be created)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>TToQValue <br />(Required if item type is Product & QuaternaryUnitName is given)</td>
+                                                                                <td>1 Tertiary Unit = ? Quaternary Unit<br />(Only in numbers)</td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @*<tr>
+                                                                                <td>12</td>
+                                                                                <td>BarcodeType (Required)</td>
+                                                                                <td>
+                                                                                    Barcode Type for the product<br />
+                                                                                    Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('EAN 8')">EAN 8 | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('EAN 13')">EAN 13 | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('UPC')">UPC | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('standard 2 of 5 (industrial)')">standard 2 of 5 (industrial) |</a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('interleaved 2 of 5')">interleaved 2 of 5 | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('code 11')">code 11| </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('Code 39')">Code 39 | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('code 93')">code 93 | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('code 128')">code 128 | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('codabar')">codabar | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('MSI')">MSI | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('Data Matrix')">Data Matrix | </a>
+                                                                                </td>
+                                                                            </tr>*@
+                                                                        @if (ViewBag.ItemSetting.EnableBrands == true)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>BrandName (Optional)</td>
+                                                                                <td>
+                                                                                    Name of the Brand<br />
+                                                                                    (If not found new brand with the given name will be created)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>CategoryName (Required)</td>
+                                                                            <td>
+                                                                                Name of the Category<br />
+                                                                                (If not found new category with the given name will be created)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.ItemSetting.EnableSubCategory == true)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>SubCategoryName <br />(Required if SubSubCategoryName is given)</td>
+                                                                                <td>
+                                                                                    Name of the Sub Category<br />
+                                                                                    (If not found new sub category with the given name under the parent category
+                                                                                    will be created)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.ItemSetting.EnableSubSubCategory == true)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>SubSubCategoryName (Optional)</td>
+                                                                                <td>
+                                                                                    Name of the Sub Category<br />
+                                                                                    (If not found new sub sub category with the given name under the parent sub category
+                                                                                    will be created)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @*<tr>
+                                                                                <td>12</td>
+                                                                                <td>ProductImage (Optional)</td>
+                                                                                <td>This can be any short description</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>12</td>
+                                                                                <td>ProductBrochure (Optional)</td>
+                                                                                <td>This can be any short description</td>
+                                                                            </tr>*@
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>IsManageStock (Optional)</td>
+                                                                            <td>
+                                                                                Enable or disable stock managemant <br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <a href="javascript:void(0)" onclick="copyTag('True')">True | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('False')">False </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>AlertQuantity (Optional)</td>
+                                                                            <td>Alert Quantity (Only in numbers)</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ExpiryPeriod (Optional)</td>
+                                                                            <td>Product expiry period (Only in numbers)</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ExpiryPeriodType (Optional)</td>
+                                                                            <td>
+                                                                                Unit for the expiry period <br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Days')">Days | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Months')">Months | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Years')">Years </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.ItemSetting.EnableWarranty)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>WarrantyName (Optional)</td>
+                                                                                <td>
+                                                                                    Name of the Warranty <br />
+                                                                                    (If not found new warranty with the given name will be created)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>
+                                                                                    WarrantyDuration <br />
+                                                                                    (Required if warranty name is given)
+                                                                                </td>
+                                                                                <td>Warranty Duration (Only in numbers)</td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>WarrantyDurationType (Optional)</td>
+                                                                                <td>
+                                                                                    Unit for the warranty duration <br />
+                                                                                    Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('Days')">Days | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('Months')">Months | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('Years')">Years </a>
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>EnableImei (Optional)</td>
+                                                                            <td>
+                                                                                Enable or disable adding IMEI, Serial number or any other informations while selling items
+                                                                                <br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <a href="javascript:void(0)" onclick="copyTag('True')">True | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('False')">False </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.ItemSetting.EnableSalt)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>SaltName (Optional)</td>
+                                                                                <td>
+                                                                                    Name of the Salt <br />
+                                                                                    (If not found new salt with the given name will be created)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.ItemSetting.EnableProductDescription)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>Description (Optional)</td>
+                                                                                <td>This can be any short description</td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.ShowBranchColumn)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>BranchNames (Required)</td>
+                                                                                <td>
+                                                                                    Business Locations separated with '|' <br />
+                                                                                    (Ex: Business Location A|Business Location B) <br />
+                                                                                    Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                    @{
+                                                                                        foreach (var tag in ViewBag.Branchs)
+                                                                                        {
+                                                                                            <a href="javascript:void(0)" onclick="copyTag('@tag.Branch')">@tag.Branch | </a>
+                                                                                        }
+                                                                                    }
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.ItemSetting.EnableRacks)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>Rack (Optional)</td>
+                                                                                <td>
+                                                                                    Rack details seperated by '|' with the same order as Business Locations.<br />
+                                                                                    (Ex: RACK1|RACK2|RACK3)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.ItemSetting.EnableRow)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>Row (Optional)</td>
+                                                                                <td>
+                                                                                    Row details seperated by '|' with the same order as Business Locations.<br />
+                                                                                    (Ex: ROW1|ROW2|ROW3)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.ItemSetting.EnablePosition)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>Position (Optional)</td>
+                                                                                <td>
+                                                                                    Position details seperated by '|' with the same order as Business Locations.<br />
+                                                                                    (Ex: POS1|POS2|POS3)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>TaxPreference (Required)</td>
+                                                                            <td>
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                @{
+                                                                                    foreach (var tag in ViewBag.Taxs)
+                                                                                    {
+                                                                                        if (tag.CanDelete == false)
+                                                                                        {
+                                                                                            <a href="javascript:void(0)" onclick="copyTag('@tag.Tax')">@tag.Tax | </a>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>
+                                                                                TaxExemptionReason
+                                                                                <br />
+                                                                                (Required if Tax Preference is Non-Taxable)
+                                                                            </td>
+                                                                            <td>
+                                                                                Tax Exemption Reason
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>
+                                                                                IntraStateTaxName
+                                                                                <br />
+                                                                                (Required if Tax Preference is Taxable)
+                                                                            </td>
+                                                                            <td>
+                                                                                Name of the Intra State Tax<br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                @*@{
+                                                                                        foreach (var tag in ViewBag.Taxs)
+                                                                                        {
+                                                                                            <a href="javascript:void(0)" onclick="copyTag('@tag.Tax')">@tag.Tax | </a>
+                                                                                        }
+                                                                                    }*@
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-3">
+                                                                                        <div class="form-group">
+                                                                                            @*<label> Purchase Account<span class="danger">*</span></label>*@
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" id="ddlInventoryAccount" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="">Select</option>
+                                                                                                    @{
+                                                                                                        if (ViewBag.Taxs != null)
+                                                                                                        {
+                                                                                                            foreach (var item in ViewBag.Taxs)
+                                                                                                            {
+                                                                                                                if (item.CanDelete == true)
+                                                                                                                {
+                                                                                                                    if (item.TaxTypeId != 3)
+                                                                                                                    {
+                                                                                                                        <option value="@item.Tax">@item.Tax</option>
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>
+                                                                                InterStateTaxName
+                                                                                <br />
+                                                                                (Required if Tax Preference is Taxable)
+                                                                            </td>
+                                                                            <td>
+                                                                                Name of the Inter State Tax<br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                @*@{
+                                                                                        foreach (var tag in ViewBag.Taxs)
+                                                                                        {
+                                                                                            <a href="javascript:void(0)" onclick="copyTag('@tag.Tax')">@tag.Tax | </a>
+                                                                                        }
+                                                                                    }*@
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-3">
+                                                                                        <div class="form-group">
+                                                                                            @*<label> Purchase Account<span class="danger">*</span></label>*@
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" id="ddlInventoryAccount" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="">Select</option>
+                                                                                                    @{
+                                                                                                        if (ViewBag.Taxs != null)
+                                                                                                        {
+                                                                                                            foreach (var item in ViewBag.Taxs)
+                                                                                                            {
+                                                                                                                if (item.CanDelete == true)
+                                                                                                                {
+                                                                                                                    if (item.TaxTypeId == 3 || item.TaxTypeId == 5)
+                                                                                                                    {
+                                                                                                                        <option value="@item.Tax">@item.Tax</option>
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @*<tr>
+                                                                                <td>31</td>
+                                                                                <td>TaxType (Required)</td>
+                                                                                <td>
+                                                                                    Selling Price Tax Type<br />
+                                                                                    Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('Inclusive')">Inclusive | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('Exclusive')">Exclusive </a>
+                                                                                </td>
+                                                                            </tr>*@
+                                                                        @if (ViewBag.ItemSetting.EnableProductVariation)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>ProductType (Required)</td>
+                                                                                <td>
+                                                                                    Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('Single')">Single | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('Variable')">Variable </a>
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>
+                                                                                    VariationGroupName (Required if product type is variable)
+                                                                                </td>
+                                                                                <td>
+                                                                                    This is used to group the variations into a single item
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>VariationName (Required if product type is variable)</td>
+                                                                                <td>Name of the variation (Ex: Size, Color etc )</td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>VariationValues (Required if product type is variable)</td>
+                                                                                <td>
+                                                                                    Values for the variation separated by '|' <br />
+                                                                                    (Ex: Red|Pink|Yellow)
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>VariationSKUs (Required if product type is variable)</td>
+                                                                                <td>
+                                                                                    SKUs of each variations separated by "|" with the same order as Variation Values
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>PurchasePrice (Required)</td>
+                                                                            <td>
+                                                                                Purchase Price (Only in numbers)
+                                                                                @if (ViewBag.ItemSetting.EnableProductVariation)
+                                                                                {
+                                                                                    <br />
+                                                                                    <span>
+                                                                                        For variable products '|' separated values with
+                                                                                        the same order as Variation Values
+                                                                                        (Ex: 950 | 350 | 500)
+                                                                                    </span>
+                                                                                }
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @*<tr>
+                                                                                <td>40</td>
+                                                                                <td>ProfitMargin % (Required)</td>
+                                                                                <td>
+                                                                                    Profit Margin (Only in numbers)<br />
+                                                                                    For variable products '|' separated values with
+                                                                                    the same order as Variation Values
+                                                                                    (Ex: 10|20|25)<br />
+                                                                                    If blank default profit margin for the
+                                                                                    business will be used
+                                                                                </td>
+                                                                            </tr>*@
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>SellingPrice (Required)</td>
+                                                                            <td>
+                                                                                Selling Price (Only in numbers)
+                                                                                @if (ViewBag.ItemSetting.EnableProductVariation)
+                                                                                {
+                                                                                    <span>
+                                                                                        <br />
+                                                                                        For variable products '|' separated values with
+                                                                                        the same order as Variation Values
+                                                                                        (Ex: 900|950|1050)<br />
+                                                                                    </span>
+                                                                                }
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>MRP (Optional)</td>
+                                                                            <td>
+                                                                                MRP (Only in numbers)
+                                                                                @if (ViewBag.ItemSetting.EnableProductVariation)
+                                                                                {
+                                                                                    <span>
+                                                                                        <br />
+                                                                                        For variable products '|' separated values with
+                                                                                        the same order as Variation Values
+                                                                                        (Ex: 900|950|1050)<br />
+                                                                                    </span>
+                                                                                }
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.IsAccountsAddon == true)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>
+                                                                                    InventoryAccount <br />
+                                                                                    Required if you have Accounts module purchased and Manage Stock is true
+                                                                                </td>
+                                                                                <td>
+                                                                                    Inventory Account (Optional) <br />
+                                                                                    For variable products separate InventoryAccount with '|' with the same order as Variation Values
+                                                                                    (Ex: Inventory Asset|Inventory Asset|Inventory Asset) <br />
+                                                                                    Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                    <div class="row">
+                                                                                        <div class="col-sm-3">
+                                                                                            <div class="form-group">
+                                                                                                @*<label> Purchase Account<span class="danger">*</span></label>*@
+                                                                                                <div class="input-group">
+                                                                                                    <select class="form-control select2" id="ddlInventoryAccount" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                        <option value="">Select</option>
+                                                                                                        @{
+                                                                                                            if (ViewBag.AccountSubTypes != null)
+                                                                                                            {
+                                                                                                                foreach (var item in ViewBag.AccountSubTypes)
+                                                                                                                {
+                                                                                                                    if (item.Accounts.Count > 0)
+                                                                                                                    {
+                                                                                                                        if (item.Type == "Stock")
+                                                                                                                        {
+                                                                                                                            <optgroup label="@item.DisplayAs">
+                                                                                                                                @foreach (var inner in item.Accounts)
+                                                                                                                                {
+                                                                                                                                    @*if (inner.Type == "Inventory Asset")
+                                                                                                                                        {
+                                                                                                                                            <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                                                                                        }
+                                                                                                                                        else
+                                                                                                                                        {*@
+                                                                                                                                    <option value="@inner.DisplayAs">@inner.DisplayAs</option>
+                                                                                                                                    @*}*@
+                                                                                                                                }
+                                                                                                                            </optgroup>
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    </select>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>
+                                                                                    PurchaseAccount (Optional) <br />
+                                                                                    Required if you have Accounts module purchased and Manage Stock is true
+                                                                                </td>
+                                                                                <td>
+                                                                                    Purchase Account <br />
+                                                                                    For variable products separate PurchaseAccount with '|' with the same order as Variation Values
+                                                                                    (Ex: Cost of Goods Sold|Cost of Goods Sold|Cost of Goods Sold) <br />
+                                                                                    Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                    <div class="row">
+                                                                                        <div class="col-sm-3">
+                                                                                            <div class="form-group">
+                                                                                                @*<label> Purchase Account<span class="danger">*</span></label>*@
+                                                                                                <div class="input-group">
+                                                                                                    <select class="form-control select2" id="ddlInventoryAccount" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                        <option value="">Select</option>
+                                                                                                        @{
+                                                                                                            if (ViewBag.AccountSubTypes != null)
+                                                                                                            {
+                                                                                                                foreach (var item in ViewBag.AccountSubTypes)
+                                                                                                                {
+                                                                                                                    if (item.Accounts.Count > 0)
+                                                                                                                    {
+                                                                                                                        if (item.AccountType == "Expense")
+                                                                                                                        {
+                                                                                                                            <optgroup label="@item.DisplayAs">
+                                                                                                                                @foreach (var inner in item.Accounts)
+                                                                                                                                {
+                                                                                                                                    @*if (inner.Type == "Cost of Goods Sold")
+                                                                                                                                        {
+                                                                                                                                            <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                                                                                        }
+                                                                                                                                        else
+                                                                                                                                        {*@
+                                                                                                                                    <option value="@inner.DisplayAs">@inner.DisplayAs</option>
+                                                                                                                                    @*}*@
+
+                                                                                                                                }
+                                                                                                                            </optgroup>
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    </select>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>
+                                                                                    SalesAccount (Optional) <br />
+                                                                                    Required if you have Accounts module purchased
+                                                                                </td>
+                                                                                <td>
+                                                                                    Sales Account <br />
+                                                                                    For variable products separate SalesAccount with '|' with the same order as Variation Values
+                                                                                    (Ex: Sales|Sales|Sales) <br />
+                                                                                    Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                    <div class="row">
+                                                                                        <div class="col-sm-3">
+                                                                                            <div class="form-group">
+                                                                                                @*<label> Purchase Account<span class="danger">*</span></label>*@
+                                                                                                <div class="input-group">
+                                                                                                    <select class="form-control select2" id="ddlPurchaseAccount" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                        <option value="">Select</option>
+                                                                                                        @{
+                                                                                                            if (ViewBag.AccountSubTypes != null)
+                                                                                                            {
+                                                                                                                foreach (var item in ViewBag.AccountSubTypes)
+                                                                                                                {
+                                                                                                                    if (item.Accounts.Count > 0)
+                                                                                                                    {
+                                                                                                                        if (item.AccountType == "Income")
+                                                                                                                        {
+                                                                                                                            <optgroup label="@item.DisplayAs">
+                                                                                                                                @foreach (var inner in item.Accounts)
+                                                                                                                                {
+                                                                                                                                    @*if (inner.Type == "Sales")
+                                                                                                                                        {
+                                                                                                                                            <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                                                                                        }
+                                                                                                                                        else
+                                                                                                                                        {*@
+                                                                                                                                    <option value="@inner.DisplayAs">@inner.DisplayAs</option>
+                                                                                                                                    @*}*@
+                                                                                                                                }
+                                                                                                                            </optgroup>
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    </select>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </td>
+                                                                            </tr>
+
+                                                                            columnNumber++;
+                                                                        }
+                                                                    </tbody>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <tbody class="table-body">
+                                                                        @{
+                                                                            int columnNumber = 1;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ItemType (Required)</td>
+                                                                            <td>
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i>
+                                                                                <br />
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Product')">Product | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Service')">Service</a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>SkuCode (Optional)</td>
+                                                                            <td>
+                                                                                Product Code / Sku Code. If blank it will be automatically generated
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ItemName (Required)</td>
+                                                                            <td>
+                                                                                Product Name / Service Name
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>UnitName <br />(Required if item type is Product)</td>
+                                                                            <td>
+                                                                                Name of the Unit<br />
+                                                                                (If not found new unit with the given name will be created)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>SecondaryUnitName <br />(Required if item type is Product & UToSValue is given)</td>
+                                                                            <td>
+                                                                                Name of the Secondary Unit<br />
+                                                                                (If not found new unit with the given name under the parent unit
+                                                                                will be created)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>UToSValue <br />(Required if item type is Product & SecondaryUnitName is given)</td>
+                                                                            <td>
+                                                                                1 Unit = ? Secondary Unit<br />(Only in numbers)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>TertiaryUnitName <br />(Required if item type is Product & SToTValue is given)</td>
+                                                                            <td>
+                                                                                Name of the Tertiary Unit<br />
+                                                                                (If not found new unit with the given name under the parent secondary unit
+                                                                                will be created)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>SToTValue <br />(Required if item type is Product & TertiaryUnitName is given)</td>
+                                                                            <td>1 Secondary Unit = ? Tertiary Unit<br />(Only in numbers)</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>QuaternaryUnitName <br />(Required if item type is Product & TToQValue is given)</td>
+                                                                            <td>
+                                                                                Name of the Quaternary Unit<br />
+                                                                                (If not found new unit with the given name under the parent tertiary unit
+                                                                                will be created)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>TToQValue <br />(Required if item type is Product & QuaternaryUnitName is given)</td>
+                                                                            <td>1 Tertiary Unit = ? Quaternary Unit<br />(Only in numbers)</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @*<tr>
+                                                                                <td>12</td>
+                                                                                <td>BarcodeType (Required)</td>
+                                                                                <td>
+                                                                                    Barcode Type for the product<br />
+                                                                                    Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('EAN 8')">EAN 8 | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('EAN 13')">EAN 13 | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('UPC')">UPC | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('standard 2 of 5 (industrial)')">standard 2 of 5 (industrial) |</a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('interleaved 2 of 5')">interleaved 2 of 5 | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('code 11')">code 11| </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('Code 39')">Code 39 | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('code 93')">code 93 | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('code 128')">code 128 | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('codabar')">codabar | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('MSI')">MSI | </a>
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('Data Matrix')">Data Matrix | </a>
+                                                                                </td>
+                                                                            </tr>*@
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>BrandName (Optional)</td>
+                                                                            <td>
+                                                                                Name of the Brand<br />
+                                                                                (If not found new brand with the given name will be created)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>CategoryName (Required)</td>
+                                                                            <td>
+                                                                                Name of the Category<br />
+                                                                                (If not found new category with the given name will be created)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>SubCategoryName <br />(Required if SubSubCategoryName is given)</td>
+                                                                            <td>
+                                                                                Name of the Sub Category<br />
+                                                                                (If not found new sub category with the given name under the parent category
+                                                                                will be created)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>SubSubCategoryName (Optional)</td>
+                                                                            <td>
+                                                                                Name of the Sub Category<br />
+                                                                                (If not found new sub sub category with the given name under the parent sub category
+                                                                                will be created)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @*<tr>
+                                                                                <td>12</td>
+                                                                                <td>ProductImage (Optional)</td>
+                                                                                <td>This can be any short description</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>12</td>
+                                                                                <td>ProductBrochure (Optional)</td>
+                                                                                <td>This can be any short description</td>
+                                                                            </tr>*@
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>IsManageStock (Optional)</td>
+                                                                            <td>
+                                                                                Enable or disable stock managemant <br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <a href="javascript:void(0)" onclick="copyTag('True')">True | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('False')">False </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>AlertQuantity (Optional)</td>
+                                                                            <td>Alert Quantity (Only in numbers)</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>EnableImei (Optional)</td>
+                                                                            <td>
+                                                                                Enable or disable adding IMEI, Serial number or any other informations while selling items
+                                                                                <br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <a href="javascript:void(0)" onclick="copyTag('True')">True | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('False')">False </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ExpiryPeriod (Optional)</td>
+                                                                            <td>Product expiry period (Only in numbers)</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ExpiryPeriodType (Optional)</td>
+                                                                            <td>
+                                                                                Unit for the expiry period <br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Days')">Days | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Months')">Months | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Years')">Years </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>WarrantyName (Optional)</td>
+                                                                            <td>
+                                                                                Name of the Warranty <br />
+                                                                                (If not found new warranty with the given name will be created)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>Description (Optional)</td>
+                                                                            <td>This can be any short description</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>BranchNames (Required)</td>
+                                                                            <td>
+                                                                                Business Locations separated with '|' <br />
+                                                                                (Ex: Business Location A|Business Location B) <br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                @{
+                                                                                    foreach (var tag in ViewBag.Branchs)
+                                                                                    {
+                                                                                        <a href="javascript:void(0)" onclick="copyTag('@tag.Branch')">@tag.Branch | </a>
+                                                                                    }
+                                                                                }
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>Rack (Optional)</td>
+                                                                            <td>
+                                                                                Rack details seperated by '|' with the same order as Business Locations.<br />
+                                                                                (Ex: RACK1|RACK2|RACK3)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>Row (Optional)</td>
+                                                                            <td>
+                                                                                Row details seperated by '|' with the same order as Business Locations.<br />
+                                                                                (Ex: ROW1|ROW2|ROW3)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>Position (Optional)</td>
+                                                                            <td>
+                                                                                Position details seperated by '|' with the same order as Business Locations.<br />
+                                                                                (Ex: POS1|POS2|POS3)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>TaxName (Optional)</td>
+                                                                            <td>
+                                                                                Name of the Tax Rate<br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                @*@{
+                                                                                        foreach (var tag in ViewBag.Taxs)
+                                                                                        {
+                                                                                            <a href="javascript:void(0)" onclick="copyTag('@tag.Tax')">@tag.Tax | </a>
+                                                                                        }
+                                                                                    }*@
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-6">
+                                                                                        <div class="form-group">
+                                                                                            @*<label> Purchase Account<span class="danger">*</span></label>*@
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" id="ddlInventoryAccount" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="">Select</option>
+                                                                                                    @{
+                                                                                                        if (ViewBag.Taxs != null)
+                                                                                                        {
+                                                                                                            foreach (var item in ViewBag.Taxs)
+                                                                                                            {
+                                                                                                                <option value="@item.Tax">@item.Tax</option>
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>TaxType (Required)</td>
+                                                                            <td>
+                                                                                Selling Price Tax Type<br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Inclusive')">Inclusive | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Exclusive')">Exclusive </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ProductType (Required)</td>
+                                                                            <td>
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Single')">Single | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Variable')">Variable </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @*<tr>
+                                                                                <td>30</td>
+                                                                                <td>PriceAddedFor (Required)</td>
+                                                                                <td>
+                                                                                    Set the price for<br />
+                                                                                    Unit = <a href="javascript:void(0)" onclick="copyTag('1')">1 </a><br />
+                                                                                    Secondary Unit = <a href="javascript:void(0)" onclick="copyTag('2')">2</a><br />
+                                                                                    Tertiary Unit = <a href="javascript:void(0)" onclick="copyTag('3')">3</a><br />
+                                                                                    Quaternary Unit = <a href="javascript:void(0)" onclick="copyTag('4')">4 </a><br />
+                                                                                </td>
+                                                                            </tr>*@
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>
+                                                                                VariationGroupName (Required if product type is variable)
+                                                                            </td>
+                                                                            <td>
+                                                                                This is used to group the variations into a single item
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>VariationName (Required if product type is variable)</td>
+                                                                            <td>Name of the variation (Ex: Size, Color etc )</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>VariationValues (Required if product type is variable)</td>
+                                                                            <td>
+                                                                                Values for the variation separated by '|' <br />
+                                                                                (Ex: Red|Pink|Yellow)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>VariationSKUs (Required if product type is variable)</td>
+                                                                            <td>
+                                                                                SKUs of each variations separated by "|" with the same order as Variation Values
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>PurchasePrice (Optional)</td>
+                                                                            <td>
+                                                                                Purchase Price (Only in numbers)<br />
+                                                                                For variable products '|' separated values with
+                                                                                the same order as Variation Values
+                                                                                (Ex: 950|350|500)
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ProfitMargin % (Optional)</td>
+                                                                            <td>
+                                                                                Profit Margin (Only in numbers)<br />
+                                                                                For variable products '|' separated values with
+                                                                                the same order as Variation Values
+                                                                                (Ex: 10|20|25)<br />
+                                                                                If blank default profit margin for the
+                                                                                business will be used
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>SellingPrice (Optional)</td>
+                                                                            <td>
+                                                                                Selling Price (Only in numbers)<br />
+                                                                                For variable products '|' separated values with
+                                                                                the same order as Variation Values
+                                                                                (Ex: 900|950|1050)<br />
+                                                                                If blank selling price will be calculated
+                                                                                with the given Purchase Price
+                                                                                and Applicable Tax
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>MRP (Optional)</td>
+                                                                            <td>
+                                                                                MRP (Only in numbers)<br />
+                                                                                For variable products '|' separated values with
+                                                                                the same order as Variation Values
+                                                                                (Ex: 900|950|1050)<br />
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>
+                                                                                InventoryAccount <br />
+                                                                                Required if you have Accounts module purchased and Manage Stock is true
+                                                                            </td>
+                                                                            <td>
+                                                                                Inventory Account (Optional) <br />
+                                                                                For variable products separate InventoryAccount with '|' with the same order as Variation Values
+                                                                                (Ex: Inventory Asset|Inventory Asset|Inventory Asset) <br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-6">
+                                                                                        <div class="form-group">
+                                                                                            @*<label> Purchase Account<span class="danger">*</span></label>*@
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" id="ddlInventoryAccount" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="">Select</option>
+                                                                                                    @{
+                                                                                                        if (ViewBag.AccountSubTypes != null)
+                                                                                                        {
+                                                                                                            foreach (var item in ViewBag.AccountSubTypes)
+                                                                                                            {
+                                                                                                                if (item.Accounts.Count > 0)
+                                                                                                                {
+                                                                                                                    if (item.Type == "Stock")
+                                                                                                                    {
+                                                                                                                        <optgroup label="@item.DisplayAs">
+                                                                                                                            @foreach (var inner in item.Accounts)
+                                                                                                                            {
+                                                                                                                                @*if (inner.Type == "Inventory Asset")
+                                                                                                                                    {
+                                                                                                                                        <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                                                                                    }
+                                                                                                                                    else
+                                                                                                                                    {*@
+                                                                                                                                <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                                                                                @*}*@
+                                                                                                                            }
+                                                                                                                        </optgroup>
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>
+                                                                                PurchaseAccount (Optional) <br />
+                                                                                Required if you have Accounts module purchased and Manage Stock is true
+                                                                            </td>
+                                                                            <td>
+                                                                                Purchase Account <br />
+                                                                                For variable products separate PurchaseAccount with '|' with the same order as Variation Values
+                                                                                (Ex: Cost of Goods Sold|Cost of Goods Sold|Cost of Goods Sold) <br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-6">
+                                                                                        <div class="form-group">
+                                                                                            @*<label> Purchase Account<span class="danger">*</span></label>*@
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" id="ddlInventoryAccount" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="">Select</option>
+                                                                                                    @{
+                                                                                                        if (ViewBag.AccountSubTypes != null)
+                                                                                                        {
+                                                                                                            foreach (var item in ViewBag.AccountSubTypes)
+                                                                                                            {
+                                                                                                                if (item.Accounts.Count > 0)
+                                                                                                                {
+                                                                                                                    if (item.AccountType == "Expense")
+                                                                                                                    {
+                                                                                                                        <optgroup label="@item.DisplayAs">
+                                                                                                                            @foreach (var inner in item.Accounts)
+                                                                                                                            {
+                                                                                                                                @*if (inner.Type == "Cost of Goods Sold")
+                                                                                                                                    {
+                                                                                                                                        <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                                                                                    }
+                                                                                                                                    else
+                                                                                                                                    {*@
+                                                                                                                                <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                                                                                @*}*@
+
+                                                                                                                            }
+                                                                                                                        </optgroup>
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>
+                                                                                SalesAccount (Optional) <br />
+                                                                                Required if you have Accounts module purchased
+                                                                            </td>
+                                                                            <td>
+                                                                                Sales Account <br />
+                                                                                For variable products separate SalesAccount with '|' with the same order as Variation Values
+                                                                                (Ex: Sales|Sales|Sales) <br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-6">
+                                                                                        <div class="form-group">
+                                                                                            @*<label> Purchase Account<span class="danger">*</span></label>*@
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" id="ddlPurchaseAccount" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="">Select</option>
+                                                                                                    @{
+                                                                                                        if (ViewBag.AccountSubTypes != null)
+                                                                                                        {
+                                                                                                            foreach (var item in ViewBag.AccountSubTypes)
+                                                                                                            {
+                                                                                                                if (item.Accounts.Count > 0)
+                                                                                                                {
+                                                                                                                    if (item.AccountType == "Income")
+                                                                                                                    {
+                                                                                                                        <optgroup label="@item.DisplayAs">
+                                                                                                                            @foreach (var inner in item.Accounts)
+                                                                                                                            {
+                                                                                                                                @*if (inner.Type == "Sales")
+                                                                                                                                    {
+                                                                                                                                        <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                                                                                    }
+                                                                                                                                    else
+                                                                                                                                    {*@
+                                                                                                                                <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                                                                                @*}*@
+                                                                                                                            }
+                                                                                                                        </optgroup>
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                    </tbody>
+                                                                }
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- /.card-body -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="import-other-software" role="tabpanel" aria-labelledby="import-other-software-tab">
+                                <div class="row">
+                                    <div class="col-12 noPrint">
+                                        @*<div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                                                <h5><i class="fas fa-info"></i> Note:</h5>
+                                                This page has been enhanced for printing. Click the print button at the bottom of the invoice to test.
+                                            </div>*@
+                                        <div class="card  card-primary card-outline ">
+                                            @*<div class="card-header" data-card-widget="collapse" title="Collapse">
+                                                    <h3 class="card-title">Filter</h3>
+                                                    <div class="card-tools">
+                                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                                            <i class="fas fa-plus"></i>
+                                                        </button>
+
+                                                    </div>
+                                                </div>*@
+
+                                            <div class="card-body">
+                                                <div class="row">
+
+                                                    <div class="col-sm-3">
+                                                        <div class="form-group">
+                                                            <label>Choose File To Import </label>
+                                                            <div class="input-group">
+                                                                <input type="file" id="otherSoftwareExcelfile" accept=".xlsx, .xls, .csv" style="padding:0px" onchange="getExcelBase64()">
+                                                            </div>
+                                                            <small class="text-red font-weight-bold errorText" id="divOtherSoftwareExcel"></small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-footer">
+                                                <button type="submit" class="btn btn-primary float-right mt-2" onclick="InsertOtherSoftwareImport(1)">Submit</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 noPrint">
+                                        <div class="card  card-primary card-outline ">
+                                            <div class="card-body">
+                                                <table id="tblOtherSoftwareImport" class="table table-bordered table-striped">
+                                                    @Html.Partial("PartialOtherSoftwareImport")
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.7.7/xlsx.core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xls/0.7.4-a/xls.core.min.js"></script>
+<script src="~/Content/JQuery/Customer/Items/Item.js"></script>

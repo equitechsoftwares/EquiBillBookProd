@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Contract Quotation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Trebuchet MS', Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--body-text-color, #1f2937);
+            background: #ffffff;
+            padding: 30px;
+        }
+
+        .invoice-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border: 1px solid var(--border-color, #cccccc);
+        }
+
+        /* Contract Header */
+        .contract-header {
+            background: var(--primary-color, #000000);
+            color: var(--header-text-color, #ffffff);
+            padding: 20px 40px;
+            position: relative;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .logo-container img {
+            height: 50px;
+            max-width: 180px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        .contract-title {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .contract-subtitle {
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Article Sections */
+        .article-section {
+            padding: 30px 40px;
+            border-bottom: 2px solid var(--border-color, #e5e7eb);
+        }
+
+        .article-section:last-of-type {
+            border-bottom: none;
+        }
+
+        .article-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary-color, #000000);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .article-title::before {
+            content: "ARTICLE ";
+            font-weight: 700;
+        }
+
+        /* Parties Box */
+        .parties-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .party {
+            background: var(--body-background-color, #f9f9f9);
+            padding: 20px;
+            border: 1px solid var(--border-color, #e5e7eb);
+        }
+
+        .party h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-color, #000000);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .party p {
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: var(--body-text-color, #444444);
+        }
+
+        .party strong {
+            color: var(--primary-color, #000000);
+        }
+
+        /* Scope Table */
+        .scope-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid var(--border-color, #cccccc);
+            margin-bottom: 20px;
+        }
+
+        .scope-table th,
+        .scope-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid var(--border-color, #cccccc);
+            font-size: 12px;
+        }
+
+        .scope-table th {
+            background: var(--table-header-color, #f5f5f5);
+            font-weight: 700;
+            color: var(--primary-color, #000000);
+            text-transform: uppercase;
+        }
+
+        .scope-table td {
+            color: var(--body-text-color, #333333);
+        }
+
+        /* Numbered List */
+        .contract-list {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .contract-list li {
+            margin-bottom: 12px;
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--body-text-color, #333333);
+        }
+
+        .contract-list li strong {
+            color: var(--primary-color, #000000);
+        }
+
+        /* Payment Schedule */
+        .payment-schedule {
+            background: var(--body-background-color, #f9f9f9);
+            border: 2px solid var(--border-color, #cccccc);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .payment-schedule h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-color, #000000);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dotted var(--border-color, #cccccc);
+        }
+
+        .payment-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            padding-top: 16px;
+            margin-top: 8px;
+            border-top: 2px solid var(--border-color, #333333);
+        }
+
+        /* Signature Block */
+        .signature-block {
+            margin-top: 40px;
+            padding: 30px 40px;
+            background: var(--body-background-color, #f9f9f9);
+        }
+
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin-top: 60px;
+        }
+
+        .signature-box {
+            border-top: 2px solid var(--primary-color, #000000);
+            padding-top: 12px;
+        }
+
+        .sig-line {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary-color, #000000);
+            margin-bottom: 6px;
+        }
+
+        .sig-info {
+            font-size: 11px;
+            color: var(--body-text-color, #666666);
+        }
+
+        /* Footer */
+        .contract-footer {
+            background: var(--primary-color, #000000);
+            color: var(--header-text-color, #ffffff);
+            padding: 16px 40px;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Contract Header -->
+        <div class="contract-header">
+            <div class="logo-container">
+                <img src="/Content/web-assets/images/logo.png" alt="EquiBillBook Logo">
+            </div>
+            <div class="contract-title">SERVICE QUOTATION AGREEMENT</div>
+            <div class="contract-subtitle">Document No: SQ-2024-9127 | Date: December 2, 2024 7:00 PM</div>
+        </div>
+
+        <!-- Article 1: Parties -->
+        <div class="article-section">
+            <h3 class="article-title">1: PARTIES TO THE AGREEMENT</h3>
+            <div class="parties-box">
+                <div class="party">
+                    <h4>Service Provider</h4>
+                    <p><strong>Contract Services Corp.</strong></p>
+                    <p>202 Agreement Avenue</p>
+                    <p>Boston, MA, 02101</p>
+                    <p>Tax ID: 04-3456789</p>
+                    <p>Contact: +1 (555) 234-8901</p>
+                </div>
+                <div class="party">
+                    <h4>Bill To</h4>
+                    <p><strong>Angela Martinez</strong></p>
+                    <p>Velocity Solutions Inc.</p>
+                    <p>890 Business Way</p>
+                    <p>Phoenix, AZ, 85001</p>
+                    <p>angela@velocitysol.com</p>
+                    <p>Tax ID: 86-9876543</p>
+                </div>
+                <div class="party">
+                    <h4>Ship To</h4>
+                    <p><strong>Angela Martinez</strong></p>
+                    <p>Velocity Solutions Inc.</p>
+                    <p>890 Business Way</p>
+                    <p>Phoenix, AZ, 85001</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Article 2: Scope of Services -->
+        <div class="article-section">
+            <h3 class="article-title">2: SCOPE OF SERVICES</h3>
+            <table class="scope-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th style="width: 45%;">Service Description</th>
+                        <th style="width: 80px;">SKU</th>
+                        <th style="width: 80px;">Quantity</th>
+                        <th style="width: 100px;">Unit Price</th>
+                        <th style="width: 90px;">Discount</th>
+                        <th style="width: 80px;">Tax</th>
+                        <th style="width: 110px;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td><strong>IT Infrastructure Setup</strong><br>Complete network and server configuration</td>
+                        <td>IT-301</td>
+                        <td>1 Unit</td>
+                        <td>$10,000.00</td>
+                        <td>$500.00</td>
+                        <td>$1,710.00</td>
+                        <td>$11,210.00</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td><strong>Security Services</strong><br>Enterprise security implementation</td>
+                        <td>SEC-302</td>
+                        <td>1 Package</td>
+                        <td>$7,000.00</td>
+                        <td>10%</td>
+                        <td>$1,134.00</td>
+                        <td>$7,434.00</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td><strong>Annual Support Contract</strong><br>Ongoing technical support and maintenance</td>
+                        <td>SUP-303</td>
+                        <td>12 Months</td>
+                        <td>$500.00</td>
+                        <td>$0.00</td>
+                        <td>$1,080.00</td>
+                        <td>$7,080.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Article 3: Financial Terms -->
+        <div class="article-section">
+            <h3 class="article-title">3: FINANCIAL TERMS</h3>
+            <div class="payment-schedule">
+                <h4>Payment Schedule</h4>
+                <div class="payment-row">
+                    <span>Total Quantity:</span>
+                    <span>14 Units</span>
+                </div>
+                <div class="payment-row">
+                    <span>Gross Amount:</span>
+                    <span>$22,000.00</span>
+                </div>
+                <div class="payment-row">
+                    <span>Total Discount:</span>
+                    <span>-$1,200.00</span>
+                </div>
+                <div class="payment-row">
+                    <span>Tax (GST 18%):</span>
+                    <span>$3,924.00</span>
+                </div>
+                <div class="payment-row">
+                    <span>Net Amount:</span>
+                    <span>$24,724.00</span>
+                </div>
+                <div class="payment-row">
+                    <span>Round Off:</span>
+                    <span>$0.00</span>
+                </div>
+                <div class="payment-row">
+                    <span>TOTAL CONTRACT VALUE:</span>
+                    <span>$25,724.00</span>
+                </div>
+            </div>
+            <p style="margin-bottom: 12px;"><strong>Payment Terms:</strong></p>
+            <ul class="contract-list">
+                <li><strong>Phase 1:</strong> 40% ($10,289.60) upon contract execution</li>
+                <li><strong>Phase 2:</strong> 30% ($7,717.20) at milestone 2</li>
+                <li><strong>Phase 3:</strong> 30% ($7,717.20) upon final delivery</li>
+            </ul>
+        </div>
+
+        <!-- Article 4: Deliverables -->
+        <div class="article-section">
+            <h3 class="article-title">4: DELIVERABLES</h3>
+            <ol class="contract-list">
+                <li><strong>Commencement:</strong> Within 5 business days of advance payment receipt</li>
+                <li><strong>Milestones:</strong> Progress reviews at agreed checkpoints during the engagement</li>
+                <li><strong>Final Delivery:</strong> Complete project handover with comprehensive documentation</li>
+            </ol>
+        </div>
+
+        <!-- Article 5: Notes -->
+        <div class="article-section">
+            <h3 class="article-title">5: NOTES</h3>
+            <ul class="contract-list">
+                <li><strong>Delivery Schedule:</strong> All deliverables will be completed according to the timeline specified in Article 4.</li>
+                <li><strong>Client Cooperation:</strong> Timely feedback and approvals from the client are essential to maintain project schedules.</li>
+                <li><strong>Additional Requirements:</strong> Any requests outside the agreed scope may require additional time and resources.</li>
+                <li><strong>Quality Assurance:</strong> All work will undergo our standard quality review process before delivery.</li>
+            </ul>
+        </div>
+
+        <!-- Article 6: Terms & Conditions -->
+        <div class="article-section">
+            <h3 class="article-title">6: TERMS & CONDITIONS</h3>
+            <ol class="contract-list">
+                <li><strong>Acceptance:</strong> Client acceptance of this quotation constitutes agreement to all terms.</li>
+                <li><strong>Changes:</strong> Any modifications to the scope must be agreed in writing and may result in price adjustment.</li>
+                <li><strong>Client Obligations:</strong> Client shall provide all necessary resources and approvals within agreed timeframes.</li>
+                <li><strong>Intellectual Property:</strong> All IP rights transfer to Client upon receipt of final payment.</li>
+                <li><strong>Confidentiality:</strong> Both parties agree to maintain confidentiality of proprietary information.</li>
+                <li><strong>Termination:</strong> Either party may terminate with 30 days written notice. Fees for work completed remain payable.</li>
+                <li><strong>Governing Law:</strong> This agreement is governed by the laws of Massachusetts, United States.</li>
+            </ol>
+        </div>
+
+        <!-- Footer -->
+        <div class="contract-footer">
+            <p>Please review this quotation carefully before acceptance.</p>
+            <p>For questions: contracts@contractservices.com | +1 (555) 234-8901</p>
+        </div>
+    </div>
+</body>
+</html>

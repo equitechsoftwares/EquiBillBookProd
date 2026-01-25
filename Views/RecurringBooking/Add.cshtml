@@ -1,0 +1,596 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add Recurring Booking";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Recurring Booking</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/recurringbooking/index">Recurring Bookings</a></li>
+                        <li class="breadcrumb-item active">Add Recurring Booking</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/recurringbooking/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                </div>
+                <div class="card card-primary card-outline">
+                    <input type="hidden" id="RecurringBookingId" name="RecurringBookingId" value="0" />
+                    <input type="hidden" id="hdnCompanyId" value="@Request.Cookies["data"]["CompanyId"]" />
+                    <input type="hidden" id="hdnAddedBy" value="@Request.Cookies["data"]["Id"]" />
+                    <div class="card-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5 class="mb-3"><i class="fas fa-calendar-alt"></i> Recurrence Settings</h5>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection">
+                                    <div class="form-group">
+                                        <label>Branch <span class="text-danger">*</span></label>
+                                        <select class="form-control select2" id="ddlBranchId" name="BranchId" style="width: 100%;" onchange="loadBookingFloors()">
+                                            <option value="">Select Branch</option>
+                                            @if (ViewBag.Branchs != null)
+                                            {
+                                                foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    <option value="@item.BranchId" @(ViewBag.BranchId != null && ViewBag.BranchId == item.BranchId ? "selected" : "")>@item.Branch</option>
+                                                }
+                                            }
+                                        </select>
+                                        <small class="text-red font-weight-bold errorText" id="divBranchId" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <label>Start Date <span class="text-danger">*</span></label>
+                                        <div class="input-group date" id="_StartDate" data-target-input="nearest">
+                                            <input id="txtStartDate" type="text" class="form-control datetimepicker-input divStartDate_ctrl" data-target="#_StartDate" />
+                                            <div class="input-group-append" data-target="#_StartDate" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">First booking will be created on or after this date</small>
+                                        <small class="text-red font-weight-bold errorText" id="divStartDate" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection">
+                                    <div class="form-group">
+                                        <label>Booking Time <span class="text-danger">*</span></label>
+                                        <div id="timeSlotsContainer">
+                                            <select id="ddlBookingTimeSlots" class="form-control">
+                                                <option value="">Select time slot</option>
+                                            </select>
+                                        </div>
+                                        <input type="hidden" id="txtBookingTime" name="BookingTime" value="">
+                                        <small class="text-muted d-block mt-1">Time slots based on Branch and Start Date</small>
+                                        <small class="text-red font-weight-bold errorText" id="divBookingTime" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <label>Repeat Every <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="txtInterval" name="Interval" min="1" value="1" />
+                                            <select class="form-control" id="ddlIntervalUnit" style="min-width:80px">
+                                                <option value="Day">Day</option>
+                                                <option value="Week" selected>Week</option>
+                                                <option value="Month">Month</option>
+                                                <option value="Year">Year</option>
+                                            </select>
+                                        </div>
+                                        <small class="form-text text-muted">Select the frequency unit (Day/Week/Month/Year)</small>
+                                        <small class="text-red font-weight-bold errorText" id="divInterval" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3" id="weeklyOptionsColumn" style="display: none;">
+                                    <div class="form-group" id="weeklyOptions">
+                                        <label>Days of Week <span class="text-danger">*</span></label>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <label class="checkbox-inline"><input type="checkbox" value="0" class="dayOfWeek"> Sunday</label>
+                                                <label class="checkbox-inline"><input type="checkbox" value="1" class="dayOfWeek"> Monday</label>
+                                                <label class="checkbox-inline"><input type="checkbox" value="2" class="dayOfWeek"> Tuesday</label>
+                                                <label class="checkbox-inline"><input type="checkbox" value="3" class="dayOfWeek"> Wednesday</label>
+                                                <label class="checkbox-inline"><input type="checkbox" value="4" class="dayOfWeek"> Thursday</label>
+                                                <label class="checkbox-inline"><input type="checkbox" value="5" class="dayOfWeek"> Friday</label>
+                                                <label class="checkbox-inline"><input type="checkbox" value="6" class="dayOfWeek"> Saturday</label>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">Select which days of the week to create bookings</small>
+                                        <small class="text-red font-weight-bold errorText" id="divDaysOfWeek" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 divEndDate">
+                                    <div class="form-group">
+                                        <label>End Date</label>
+                                        <div class="input-group date" id="_EndDate" data-target-input="nearest">
+                                            <input id="txtEndDate" type="text" class="form-control datetimepicker-input divEndDate_ctrl" data-target="#_EndDate" />
+                                            <div class="input-group-append" data-target="#_EndDate" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="form-text text-muted">Leave empty for no end date</small>
+                                        <small class="text-red font-weight-bold errorText" id="divEndDate" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <br />
+                                        <div class="checkbox icheck-turquoise">
+                                            <input type="checkbox" id="chkIsNeverExpires" onchange="toggleNeverExpires()">
+                                            <label for="chkIsNeverExpires" class="mt-2">
+                                                Never Expires
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <hr class="my-3">
+                                    <h5 class="mb-3"><i class="fas fa-book"></i> Booking Details</h5>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <label>Booking</label>
+                                        <select class="form-control select2" id="ddlBookingId" name="BookingId" style="width: 100%;">
+                                            <option value="">Select Booking (Optional)</option>
+                                            @if (ViewBag.Bookings != null)
+                                            {
+                                                long bookingIdToSelect = ViewBag.BookingId != null ? Convert.ToInt64(ViewBag.BookingId) : 0;
+                                                foreach (var item in ViewBag.Bookings)
+                                                {
+                                                    var isSelected = bookingIdToSelect > 0 && bookingIdToSelect == item.BookingId;
+                                                    <option value="@item.BookingId" @(isSelected ? "selected" : "")>@item.BookingNo - @item.CustomerName (@item.BookingDate.ToString("dd-MMM-yyyy"))</option>
+                                                }
+                                            }
+                                        </select>
+                                        @* Debug info *@
+                                        @if (ViewBag.BookingId != null && Convert.ToInt64(ViewBag.BookingId) > 0)
+                                        {
+                                            <small class="text-info d-block mt-1">
+                                                <i class="fas fa-info-circle"></i> Debug: ViewBag.BookingId = @ViewBag.BookingId (Type: @ViewBag.BookingId.GetType().Name)
+                                                @if (ViewBag.Bookings != null)
+                                                {
+                                                    var bookingExists = ((System.Collections.Generic.List<EquiBillBook.Models.ClsTableBookingVm>)ViewBag.Bookings).Any(b => b.BookingId == Convert.ToInt64(ViewBag.BookingId));
+                                                    <text> | Booking exists in list: @bookingExists</text>
+                                                }
+                                            </small>
+                                        }
+                                        <small class="form-text text-muted">Select an existing booking as template, or fill details below</small>
+                                        <small class="text-red font-weight-bold errorText" id="divBookingId" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection">
+                                    <div class="form-group">
+                                        <label>Select Floor</label>
+                                        <select class="form-control select2" id="ddlBookingFloor" style="width: 100%;" onchange="loadBookingTableLayout()">
+                                            <option value="0">All Floors</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 bookingDetailsSection">
+                                    <div class="form-group">
+                                        <label>Select Table(s) from Layout <span class="text-danger">*</span></label>
+                                        <small class="text-muted d-block mb-2"><i class="fas fa-info-circle"></i> Click to select single table, <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + Click to select multiple tables</small>
+                                        <input type="hidden" id="ddlTableId" name="TableId" value="">
+                                        <small class="text-red font-weight-bold errorText" id="divTableId" style="display: none;"></small>
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <div class="d-flex align-items-center flex-wrap" style="gap: 15px;">
+                                                            <span class="font-weight-bold">Table Status:</span>
+                                                            <div class="d-flex align-items-center">
+                                                                <div style="width: 25px; height: 18px; background-color: #28a745; border: 1px solid #1e7e34; border-radius: 3px; margin-right: 5px;"></div>
+                                                                <small>Available</small>
+                                                            </div>
+                                                            <div class="d-flex align-items-center">
+                                                                <div style="width: 25px; height: 18px; background-color: #dc3545; border: 1px solid #c82333; border-radius: 3px; margin-right: 5px;"></div>
+                                                                <small>Occupied</small>
+                                                            </div>
+                                                            <div class="d-flex align-items-center">
+                                                                <div style="width: 25px; height: 18px; background-color: #ffc107; border: 1px solid #e0a800; border-radius: 3px; margin-right: 5px;"></div>
+                                                                <small>Reserved</small>
+                                                            </div>
+                                                            <div class="d-flex align-items-center">
+                                                                <div style="width: 25px; height: 18px; background-color: #6f42c1; border: 1px solid #5a32a3; border-radius: 3px; margin-right: 5px;"></div>
+                                                                <small>Booked</small>
+                                                            </div>
+                                                            <div class="d-flex align-items-center">
+                                                                <div style="width: 25px; height: 18px; background-color: #6c757d; border: 1px solid #5a6268; border-radius: 3px; margin-right: 5px;"></div>
+                                                                <small>Maintenance</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="bookingTableLayoutCanvas" style="position: relative; min-height: 400px; border: 2px dashed #ccc; background: #f9f9f9;">
+                                                    <div class="text-center p-5">
+                                                        <p class="text-muted">Please select a branch and floor to view table layout</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection">
+                                    <div class="form-group">
+                                        <label>Customer Name <span class="text-danger">*</span></label>
+                                        <div class="input-group divSupplier divCustomer_ctrl">
+                                            <select class="form-control select2" id="ddlCustomer">
+                                                <option value="0">Select</option>
+                                                @if (ViewBag.Users != null)
+                                                {
+                                                    foreach (var item in ViewBag.Users)
+                                                    {
+                                                        <option value="@item.UserId">
+                                                            @item.Name
+                                                            @if (item.MobileNo != null && item.MobileNo != "")
+                                                            {
+                                                                <span>- @item.MobileNo</span>
+                                                            }
+                                                        </option>
+                                                    }
+                                                }
+                                            </select>
+                                            @if (ViewBag.CustomersPermission != null && ViewBag.CustomersPermission.IsAdd == true)
+                                            {
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn btn-info" onclick="openCustomerModal()">+ </a>
+                                                </span>
+                                            }
+                                        </div>
+                                        <input type="hidden" id="hdnCustomerId" name="CustomerId" value="0">
+                                        <small class="text-red font-weight-bold errorText" id="divCustomer" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection">
+                                    <div class="form-group">
+                                        <label>Number of Guests <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="txtNoOfGuests" name="NoOfGuests" min="1" value="2">
+                                        <small class="text-red font-weight-bold errorText" id="divNoOfGuests" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection">
+                                    <div class="form-group">
+                                        <label>Duration (minutes) <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="txtDuration" name="Duration" value="120" min="30" step="30" readonly>
+                                        <small class="text-muted">Fixed from restaurant settings</small>
+                                        <small class="text-red font-weight-bold errorText" id="divDuration" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection">
+                                    <div class="form-group">
+                                        <label>Booking Type</label>
+                                        <select class="form-control select2" id="ddlBookingType" name="BookingType" style="width: 100%;">
+                                            <option value="WalkIn">Walk In</option>
+                                            <option value="Phone">Phone</option>
+                                            <option value="Online">Online</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 bookingDetailsSection">
+                                    <div class="form-group">
+                                        <label>Special Requests (Optional)</label>
+                                        <textarea class="form-control" id="txtSpecialRequest" name="SpecialRequest" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                    <div class="card-footer">
+                        <button id="btnSave" type="button" class="btn btn-primary float-right" onclick="saveRecurringBookingForm(1)"><i class="fas fa-save"></i> Save</button>
+                        <button id="btnSave_AddAnother" type="button" class="btn btn-success float-right mr-2" onclick="saveRecurringBookingForm(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                        @*<a id="btnBack" href="/recurringbooking/index" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .booking-table-item {
+        user-select: none;
+    }
+    .booking-table-item:hover {
+        transform: scale(1.05) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+        z-index: 15 !important;
+    }
+    #bookingTableLayoutCanvas {
+        overflow: auto;
+    }
+    .time-slot-btn {
+        border: 1px solid #e0e0e0;
+        background: #fff;
+        border-radius: 6px;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .time-slot-btn:hover {
+        border-color: #007bff;
+        color: #007bff;
+    }
+    .time-slot-btn.selected {
+        background: #007bff;
+        color: #fff;
+        border-color: #007bff;
+    }
+    .time-slot-btn.unavailable {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+
+<!-- Customer Modal -->
+<div class="modal fade" id="CustomerModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add New Customer</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="card-body">
+                    <div class="card card-outline">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divName_M_ctrl" id="txtName" placeholder="">
+                                        <small class="text-red font-weight-bold errorText" id="divName_M"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Mobile <span class="danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control divMobileNo_M_ctrl" id="txtMobileNo" placeholder="" onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divMobileNo_M"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <input type="text" class="form-control divEmailId_M_ctrl" id="txtEmailId" placeholder="">
+                                        <small class="text-red font-weight-bold errorText" id="divEmailId_M"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Alternative Mobile</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control divAltMobileNo_M_ctrl" id="txtAltMobileNo" placeholder="" onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divAltMobileNo_M"></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertCustomer()">Save Customer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Content/JQuery/Customer/Restaurant/TableBooking.js"></script>
+<script src="~/Content/JQuery/Customer/Restaurant/RecurringBooking.js"></script>
+<script>
+    $(document).ready(function () {
+        console.log('[RecurringBooking Add] Page loaded');
+        var viewBagBookingId = @(ViewBag.BookingId != null ? ViewBag.BookingId : 0);
+        console.log('[RecurringBooking Add] ViewBag.BookingId:', viewBagBookingId);
+        console.log('[RecurringBooking Add] ViewBag.BookingId type:', typeof viewBagBookingId);
+        
+        // Get the booking dropdown element
+        var $bookingSelect = $('#ddlBookingId');
+        console.log('[RecurringBooking Add] Booking dropdown found:', $bookingSelect.length > 0);
+        
+        // Log all available options
+        var allOptions = $bookingSelect.find('option').map(function() {
+            return { value: $(this).val(), text: $(this).text().substring(0, 50) };
+        }).get();
+        console.log('[RecurringBooking Add] Available booking options:', allOptions);
+        
+        // Initialize Select2 for ALL dropdowns first (including booking dropdown)
+        $('.select2').select2({
+            dropdownAutoWidth: true
+        });
+        console.log('[RecurringBooking Add] Select2 initialized for all dropdowns');
+        
+        // Check if ViewBag.BookingId is provided and > 0
+        if (viewBagBookingId > 0) {
+            var bookingIdToSelect = viewBagBookingId.toString();
+            console.log('[RecurringBooking Add] Attempting to select BookingId:', bookingIdToSelect);
+            
+            // Hide booking details section immediately since we have a booking selected
+            $('.bookingDetailsSection').hide();
+            console.log('[RecurringBooking Add] Booking details section hidden immediately');
+            
+            // Check if the option exists
+            var $targetOption = $bookingSelect.find('option[value="' + bookingIdToSelect + '"]');
+            console.log('[RecurringBooking Add] Target option found:', $targetOption.length > 0);
+            if ($targetOption.length > 0) {
+                console.log('[RecurringBooking Add] Target option text:', $targetOption.text());
+                
+                // Set value AFTER Select2 is initialized
+                $bookingSelect.val(bookingIdToSelect);
+                console.log('[RecurringBooking Add] Value set on select:', $bookingSelect.val());
+                
+                // Trigger change to update Select2 display and hide booking details
+                $bookingSelect.trigger('change');
+                console.log('[RecurringBooking Add] Change event triggered');
+                
+                // Verify value after a short delay
+                setTimeout(function() {
+                    var currentVal = $bookingSelect.val();
+                    console.log('[RecurringBooking Add] Value after change:', currentVal, 'Expected:', bookingIdToSelect);
+                    
+                    if (currentVal != bookingIdToSelect) {
+                        console.warn('[RecurringBooking Add] Value mismatch! Attempting to fix...');
+                        $bookingSelect.val(bookingIdToSelect).trigger('change.select2');
+                        console.log('[RecurringBooking Add] Value reset with Select2 trigger');
+                    }
+                    
+                    // Ensure booking details section stays hidden
+                    var bookingDetailsVisible = $('.bookingDetailsSection').is(':visible');
+                    console.log('[RecurringBooking Add] Booking details section visible:', bookingDetailsVisible);
+                    if (bookingDetailsVisible) {
+                        $('.bookingDetailsSection').hide();
+                        console.log('[RecurringBooking Add] Booking details section force-hidden');
+                    }
+                }, 100);
+            } else {
+                console.warn('[RecurringBooking Add] WARNING: BookingId ' + bookingIdToSelect + ' not found in options!');
+            }
+        } else {
+            console.log('[RecurringBooking Add] No BookingId provided (or BookingId is 0)');
+        }
+        
+        // Initialize table layout if branch is already selected
+        if ($('#ddlBranchId').val()) {
+            // Load floors and time slots when branch is selected
+            loadBookingFloors();
+            loadBookingTimeSlots();
+        }
+
+        // Use StartDate instead of BookingDate for time slots and table layout
+        $('#txtStartDate, #txtNoOfGuests, #txtDuration').on('change', function () {
+            loadBookingTimeSlots();
+            // Reload table layout when date changes to show updated availability
+            if ($('#ddlBranchId').val() && $('#ddlBookingFloor').val()) {
+                loadBookingTableLayout();
+            }
+        });
+        $('#ddlBranchId').on('change', function () {
+            loadBookingFloors();
+            loadBookingTimeSlots();
+        });
+        // Reload table layout when floor changes
+        $(document).on('change', '#ddlBookingFloor', function () {
+            if ($('#ddlBranchId').val()) {
+                loadBookingTableLayout();
+            }
+        });
+        // Reload table layout when time slot changes
+        $(document).on('change', '#ddlBookingTimeSlots', function () {
+            if ($('#ddlBranchId').val() && $('#ddlBookingFloor').val()) {
+                loadBookingTableLayout();
+            }
+        });
+        
+        // Update hidden customer ID when dropdown changes
+        $('#ddlCustomer').on('change', function() {
+            var customerId = $(this).val();
+            $('#hdnCustomerId').val(customerId);
+            // Clear error message when customer is selected
+            if (customerId && customerId != '0') {
+                $('#divCustomer').hide();
+                // Clear red border
+                var customerSelect = $(this);
+                if (customerSelect.hasClass('select2-hidden-accessible')) {
+                    customerSelect.next('.select2-container').find('.select2-selection').css('border', '');
+                } else {
+                    customerSelect.css('border', '');
+                }
+            }
+        });
+
+        // Clear error messages and borders when fields are changed
+        $('#ddlBranchId').on('change', function() {
+            $('#divBranchId').hide();
+            var branchSelect = $(this);
+            if (branchSelect.hasClass('select2-hidden-accessible')) {
+                branchSelect.next('.select2-container').find('.select2-selection').css('border', '');
+            } else {
+                branchSelect.css('border', '');
+            }
+        });
+
+        $('#ddlBookingTimeSlots').on('change', function() {
+            $('#divBookingTime').hide();
+            var timeSelect = $(this);
+            if (timeSelect.hasClass('select2-hidden-accessible')) {
+                timeSelect.next('.select2-container').find('.select2-selection').css('border', '');
+            } else {
+                timeSelect.css('border', '');
+            }
+        });
+
+        $('#txtNoOfGuests, #txtDuration, #txtInterval, #txtStartDate').on('input change', function() {
+            var fieldId = $(this).attr('id');
+            var errorDivId = 'div' + fieldId.replace('txt', '').replace('hdn', '');
+            // Map field IDs to error div IDs
+            if (fieldId === 'txtNoOfGuests') errorDivId = 'divNoOfGuests';
+            else if (fieldId === 'txtDuration') errorDivId = 'divDuration';
+            else if (fieldId === 'txtInterval') errorDivId = 'divInterval';
+            else if (fieldId === 'txtStartDate') errorDivId = 'divStartDate';
+            
+            $('#' + errorDivId).hide();
+            $(this).css('border', '');
+        });
+
+        $('.dayOfWeek').on('change', function() {
+            $('#divDaysOfWeek').hide();
+            $('#weeklyOptions').css('border', '');
+            // Check if StartDate matches selected days
+            if (typeof checkStartDateMatchesDays === 'function') {
+                checkStartDateMatchesDays();
+            }
+        });
+
+        // Check StartDate match when StartDate changes (for Weekly recurrence)
+        $('#txtStartDate').on('change', function() {
+            if ($('#ddlIntervalUnit').val() === 'Week') {
+                if (typeof checkStartDateMatchesDays === 'function') {
+                    checkStartDateMatchesDays();
+                }
+            }
+        });
+
+        // Check StartDate match when interval unit changes to Week
+        $('#ddlIntervalUnit').on('change', function() {
+            if ($(this).val() === 'Week') {
+                if (typeof checkStartDateMatchesDays === 'function') {
+                    checkStartDateMatchesDays();
+                }
+            } else {
+                // Clear any warnings if not Weekly
+                $('#divStartDate').hide();
+                $('#divDaysOfWeek').hide();
+                $('#txtStartDate').css('border', '');
+                $('#weeklyOptions').css('border', '');
+            }
+        });
+
+    });
+</script>
+

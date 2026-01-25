@@ -1,0 +1,148 @@
+﻿
+
+
+@{
+    var Count = 1;
+
+    <thead id="thead" class="thead">
+        <tr>
+            <th>Sln</th>
+            <th>Invoice No</th>
+            <th>Invoice Date</th>
+            <th>Customer Name</th>
+            <th>Customer Mobile No</th>
+            <th>Item</th>
+            <th>Warranty</th>
+            <th>Expiry Date</th>
+            <th>Time Left (In Days)</th>
+        </tr>
+    </thead>
+    <tbody id="tbodyid" class="table-body">
+        @foreach (var item in ViewBag.SalesDetails)
+        {
+
+            <tr>
+                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + Count)</td>
+                <td>
+                    @if (ViewBag.SalesPermission.IsView)
+                    {
+                        <a href="javascript:void(0)" onclick="ViewSale(@item.SalesId)">@item.InvoiceNo</a>
+                    }
+                    else
+                    {
+                        @item.InvoiceNo
+                    }
+                </td>
+                <td>@item.SalesDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                <td>
+                    @if (ViewBag.CustomersPermission.IsView)
+                    {
+                        <a href="javascript:void(0)" onclick="ViewCustomer(@item.CustomerId)">@item.Name</a>
+                    }
+                    else
+                    {
+                        @item.Name
+                    }
+                </td>
+                <td>
+                    @if (ViewBag.CustomersPermission.IsView)
+                    {
+                        <a href="javascript:void(0)" onclick="ViewCustomer(@item.CustomerId)">@item.MobileNo</a>
+                    }
+                    else
+                    {
+                        @item.MobileNo
+                    }
+                </td>
+                <td>
+                    @if (ViewBag.ItemsPermission.IsView)
+                    {
+                        <a href="javascript:void(0)" onclick="ViewItem(@item.ItemId)">
+                            @item.ItemName
+                            @if (item.VariationName != null)
+                            {
+                                <br /><span> Variation: @item.VariationName</span>
+                            }
+                        </a>
+                    }
+                    else
+                    {
+                        @item.ItemName
+                        if (item.VariationName != null)
+                        {
+                            <br /><span> Variation: @item.VariationName</span>
+                        }
+                    }
+                </td>
+                <td>
+                    @item.DurationNo @item.Duration
+                </td>
+                <td>@item.WarrantyExpiryDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                <td>
+                    @if (item.WarrantyExpiryDate.Subtract(DateTime.Now).Days > 0)
+                    {
+                        <span>@item.WarrantyExpiryDate.Subtract(DateTime.Now).Days.ToString()</span>
+                    }
+                    else
+                    {
+                        <span>Expired</span>
+                    }
+                    @*@item.WarrantyExpiryTimeLeft*@
+                </td>
+            </tr>
+            Count++;
+        }
+    </tbody>
+
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="13">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divAsof').text('Showing Results: (' + @Html.Raw(Json.Encode(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    @*$('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));*@
+</script>
+
+
+

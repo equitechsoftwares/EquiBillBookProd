@@ -1,0 +1,56 @@
+﻿
+
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th>Sln</th>
+            <th>Download</th>
+            <th>Import No</th>
+            <th>Status</th>
+            @*<th>Remarks</th>*@
+            <th>Added By</th>
+            <th>Added On</th>
+            @*<th>Modified By</th>
+                <th>Modified On</th>*@
+            <th class="hide noPrint">Action</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @if (ViewBag.OtherSoftwareImports != null)
+        {
+            foreach (var item in ViewBag.OtherSoftwareImports)
+            {
+                <tr>
+                    <td>@(count)</td>
+                    <td><a href="@item.UploadPath" target="_blank">Download</a></td>
+                    <td>@item.ImportNo</td>
+                    <td>
+                        @if (item.Status == 1)
+                        {
+                            <span class="bg-warning p-1">Pending</span>
+                        }
+                        else if (item.Status == 2)
+                        {
+                            <span class="bg-success p-1">Uploaded</span>
+                        }
+                        else
+                        {
+                            <span class="bg-danger p-1">Rejected</span>
+                        }
+                    </td>
+                    @*<td>@item.Remarks</td>*@
+                    <td>@item.AddedByCode</td>
+                    <td>@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                    <td class="hide noPrint">
+                        @if (item.Status == 1)
+                        {
+                            <a href="javascript:void(0)" onclick="DeleteOtherSoftwareImport(@item.OtherSoftwareImportId,'')" class="btn btn-danger btn-sm" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                        }
+                    </td>
+                </tr>
+                count++;
+            }
+        }
+    </tbody>
+}

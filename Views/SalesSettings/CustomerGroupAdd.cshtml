@@ -1,0 +1,300 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add Customer Group";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Customer Group</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/salessettings/customergroup">Customer Group List</a></li>
+                        <li class="breadcrumb-item active">Add Customer Group</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/salessettings/customergroup" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Customer Group Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divUserGroup_ctrl" id="txtUserGroup" placeholder="">
+                                        <small class="text-red font-weight-bold errorText" id="divUserGroup"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Price Calculation Type</label>
+                                        <div class="input-group">
+                                            <select class="form-control" onchange="togglePriceCalculationType()"
+                                                    id="ddlPriceCalculationType">
+                                                <option value="1">Percentage</option>
+                                                <option value="2">Selling Price Group</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divPercentage">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Calculation Percentage <span class="danger">*</span> <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="<b>Selling price = Selling price Set For the product + Calculation percentage </b> <br/><br/> You can specify percentage as positive to increase and negtive to decrease selling price."></i></label>
+                                        <input type="number" class="form-control divCalculationPercentage_ctrl" id="txtCalculationPercentage" placeholder="" onkeypress="return onlyDecimalKey(event)">
+                                        <small class="text-red font-weight-bold errorText" id="divCalculationPercentage"></small>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divSellingPriceGroup hidden">
+                                    <div class="form-group">
+                                        <label>Selling Price Group <span class="danger">*</span></label>
+                                        <div class="input-group divSellingPriceGroup_ctrl">
+                                            <select class="form-control select2" id="ddlSellingPriceGroup">
+                                                <option value="0">Select</option>
+                                                @foreach (var item in ViewBag.SellingPriceGroups)
+                                                {
+                                                    <option value="@item.SellingPriceGroupId">@item.SellingPriceGroup</option>
+                                                }
+                                            </select>
+                                            @if (ViewBag.SellingPriceGroupPermission.IsAdd == true)
+                                            {
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#sellingPriceGroupModal">+ </a>
+                                                </span>
+                                            }
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divSellingPriceGroup"></small>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Description </label>
+                                        @*<input type="text" class="form-control" id="txtDescription" />*@
+                                        <textarea class="form-control" id="txtDescription" placeholder=""></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="insert(1)"><i class="fas fa-save"></i> Save</button>
+                            <button id="btnSave_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="insert(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                            @*<a id="btnBack" href="/customers/customergroup" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="sellingPriceGroupModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Selling Price Group</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Selling Price Group Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divSellingPriceGroup_M_ctrl" id="txtSellingPriceGroup" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divSellingPriceGroup_M"></small>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" class="form-control" id="txtDescription" />
+                            @*<textarea class="form-control" id="txtDescription" placeholder=""></textarea>*@
+                        </div>
+                    </div>
+                    @if (ViewBag.Branchs.Count > 1)
+                    {
+                        <div class="col-sm-12">
+                            <div class="form-group divBranch_ctrl">
+                                <label>Business Location <span class="danger">*</span></label>
+                                <select class="select2" multiple="multiple" data-placeholder="" style="width: 100%;" id="ddlBranch">
+                                    @*<option value="0">Select</option>*@
+                                    @foreach (var item in ViewBag.Branchs)
+                                    {
+                                        <option value="@item.BranchId">@item.Branch</option>
+                                    }
+                                </select>
+                                <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-sm-12 hidden">
+                            <div class="form-group divBranch_ctrl">
+                                <label>Business Location <span class="danger">*</span></label>
+                                <select class="select2" multiple="multiple" data-placeholder="" style="width: 100%;" id="ddlBranch">
+                                    @foreach (var item in ViewBag.Branchs)
+                                    {
+                                        <option value="@item.BranchId" selected>@item.Branch</option>
+                                    }
+                                </select>
+                                <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertSellingPriceGroup()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What are customer groups?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    The ims enables you to group similar customers. These are called customer groups. Within a customer group you can assign specific discounts and prices for products. You can also restrict access to products based on which group a customer belongs to.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Where can I use customer groups?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can use your customer groups to assign discounts, to override prices and to restrict access to products.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Examples of customer groups:</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Retail and Wholesale – Create different price lists for retail and wholesale customers
+                                    Platinum, Gold and Silver – Apply discounts to repeat customers based on customer loyalty
+                                    Location Name – Have customers from different areas view different prices (especially useful if you are using Onsight in your retail stores).
+                                    Special members – Restrict content to customers in certain groups or add special discounts.
+
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How to create a customer group?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    1.Click on the “Add New Customer Group” button at the top of the screen
+                                    2.Type in a name for the customer group and then click the ‘Save’ button
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I add and update customer groups?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    To manage your customer groups:
+                                    To add a new customer group, click on the “Add New Customer Group” button at the top of the screen
+                                    To update an existing customer group, click on the name of the customer group, make your changes and then click the ‘Save’ button
+                                    To delete an existing customer group, tick the box that is to the left of the customer group you would like to delete and then click the ‘Delete’ button at the top of the list
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script src="~/Content/JQuery/Customer/Settings/SalesSettings/CustomerGroup.js"></script>

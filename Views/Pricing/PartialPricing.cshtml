@@ -1,0 +1,161 @@
+﻿<div class="col-md-7 wow fadeInLeft">
+    <div class="subcripBox rounded">
+        <div class="accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="plan">
+                    <button class="accordion-button" type="button">
+                        Plan Details
+                        <span onclick="next(1, false)" class="div1"><i class="fas fa-minus text-white" aria-hidden="true"></i></span>
+                        <span onclick="next(1, true)" class="div11" style="display: none"><i class="fas fa-plus text-white" aria-hidden="true"></i></span>
+                    </button>
+                </h2>
+                <div id="" class="accordion-collapse collapse show div1" aria-labelledby="plan"
+                     data-bs-parent="#accordionSubCrip">
+                    <div class="accordion-body">
+                        @foreach (var item in ViewBag.Plans)
+                        {
+                            <ul>
+                                <li>
+                                    @item.Title
+                                    @*@if (item.Description != "")
+                                    {
+                                        <i data-bs-html="true" data-bs-toggle="tooltip" data-bs-placement="top" title="@item.Description" class="bx bxs-info-circle text-primary ms-2"></i>
+                                    }*@
+                                </li>
+                                <li>
+                                    @*@if (item.Quantity == 0)
+                                    {
+                                        <i class="fa fa-check text-success"></i>
+                                    }
+                                    else
+                                    {*@
+                                        <span>
+                                            @*@item.Quantity*@
+                                            @if (item.ShortDescription != "")
+                                            {
+                                                @item.ShortDescription
+                                            }
+                                        </span>
+                                    @*}*@
+                                </li>
+                            </ul>
+                        }
+
+                    <p class="text-danger mt-3 f-sm mb-0">
+                        [*]Limited period offer.<br>
+                        @*[*]Features may vary as per edition, country of use and version.<br>*@
+                        [*]SMS packs/ Emails/ Business Whatsapp need to purchased separately from third-party vendors.<br>
+                    </p>
+                        <div class="text-right mt-4">
+                            <a href="javascript:void(0)" class="btn btn-dark" onclick="next(2, true, true)">Choose Term Length</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="term">
+                    <button class="accordion-button" type="button">
+                        Select Term Length
+                        <span onclick="next(2, false)" class="div2" style="display: none"><i class="fas fa-minus text-white" aria-hidden="true"></i></span>
+                        <span onclick="next(2, true, true)" class="div22"><i class="fas fa-plus text-white" aria-hidden="true"></i></span>
+                    </button>
+                </h2>
+                <div id="" class="accordion-collapse collapse div2 hidden" aria-labelledby="term"
+                     data-bs-parent="#accordionSubCrip">
+                    <div class="accordion-body">
+                        @foreach (var item in ViewBag.TermLengths)
+                        {
+                            <ul>
+                                <li>
+                                    <div class="form-check">
+                                        @if (item.TermLengthId == 4)
+                                        {
+                                            <input checked class="form-check-input" type="radio" name="chkTermLength" id="chkTermLength@(item.TermLengthId)" onchange="fetchAdons(2)" value="@item.TermLengthId">
+                                        }
+                                        else
+                                        {
+                                            <input class="form-check-input" type="radio" name="chkTermLength" id="chkTermLength@(item.TermLengthId)" onchange="fetchAdons(2)" value="@item.TermLengthId">
+                                        }
+
+                                        <label class="form-check-label" for="chkTermLength@(item.TermLengthId)">
+                                            @item.Title
+                                            @if (item.DiscountPercentage != 0)
+                                            {
+                                                <span class="badge bg-warning" style="position: relative;bottom:10px;">@(String.Format("{0:0.##}", item.DiscountPercentage))% OFF</span>
+                                            }
+                                        </label>
+                                    </div>
+                                </li>
+                                <li>
+                                    <span>@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(String.Format("{0:0.##}", item.SellingPrice))/month</span>
+                                    @if (item.DiscountPercentage != 0)
+                                    {
+                                        <small class="d-block mt-1 text-danger" style="text-decoration:line-through">@(String.Format("{0:0.##}", item.MRP))/month</small>
+                                    }
+                                    <input type="hidden" value="@item.Months" id="hdnTermLength@(item.TermLengthId)" />
+                                    <input type="hidden" value="@item.MRP" id="hdnPlanMRP@(item.TermLengthId)" />
+                                    <input type="hidden" value="@item.SellingPrice" id="hdnPlanSellingPrice@(item.TermLengthId)" />
+                                </li>
+                            </ul>
+                        }
+                        <div class="text-right mt-4">
+                            @*<a href="javascript:void(0)" class="btn btn-danger" onclick="next(1,true)">Previous</a>*@
+                            <a href="javascript:void(0)" class="btn btn-dark" onclick="next(3, true, true)">Choose Addons</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="addon">
+                    <button class="accordion-button" type="button">
+                        Addons Features
+                        <span onclick="next(3, false)" class="div3" style="display: none"><i class="fas fa-minus text-white" aria-hidden="true"></i></span>
+                        <span onclick="next(3, true, true)" class="div33"><i class="fas fa-plus text-white" aria-hidden="true"></i></span>
+                    </button>
+                </h2>
+                <div id="divAddons" class="accordion-collapse collapse div3 hidden" aria-labelledby="addon"
+                     data-bs-parent="#accordionSubCrip">
+                    @Html.Partial("PartialAddons")
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-md-5 ps-md-5 wow fadeInRight mt-5 mt-md-0">
+    @*<div class="title text-center pb-4">
+            <h5>FAQs</h5>
+            <h1 class="fs-3">Frequently Asked Questions</h1>
+        </div>*@
+    <div class="subcripBox p-4 bg-white shadow rounded">
+        <div class="accordion" id="accordionFaq">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="order">
+                    <button class="accordion-button" type="button">
+                        Order Summary <span onclick="next(4,true)" class="div44" style="display:none"><i class="fas fa-pen text-white" aria-hidden="true"></i></span>
+                    </button>
+                </h2>
+                <div id="orderDetails" class="accordion-collapse" aria-labelledby="order"
+                     data-bs-parent="#accordionSubCrip">
+                    <div class="accordion-body">
+                        <div class="divSummary">
+                        </div>
+
+                        <p class="text-danger mt-3 f-sm mb-0">
+                            This is a one time payment. You will be sent a renewal notification before your next renewal date. You need to provide your payment details to be charged again.
+                        </p>
+                        <div class="text-center mt-4">
+                            @*<a href="javascript:void(0)" class="btn btn-danger" onclick="next(3,true)">Previous</a>*@
+                            <a href="/register" class="btn btn-dark">Sign Up Now</a>
+                        </div>
+                        <input type="hidden" value="@ViewBag.Country.CountryId" id="hdnCountryId" />
+                        <input type="hidden" value="@ViewBag.MainCountry.CountryId" id="hdnMainCountryId" />
+                        <input type="hidden" value="@ViewBag.MainCountry.CurrencySymbol" id="hdnCurrencySymbol" />
+                        @*<div class="text-right">
+                                <button type="submit" class="btn btn-warning">Save Invoice</button>
+                            </div>*@
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

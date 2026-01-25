@@ -1,0 +1,261 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Invoice Templates";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+    var invoiceTypesByCategory = ViewBag.InvoiceTypesByCategory as Dictionary<string, List<EquiBillBook.Models.InvoiceTypeConfig>> ?? new Dictionary<string, List<EquiBillBook.Models.InvoiceTypeConfig>>();
+    var customerTypes = invoiceTypesByCategory.ContainsKey("Customer") ? invoiceTypesByCategory["Customer"] : new List<EquiBillBook.Models.InvoiceTypeConfig>();
+    var supplierTypes = invoiceTypesByCategory.ContainsKey("Supplier") ? invoiceTypesByCategory["Supplier"] : new List<EquiBillBook.Models.InvoiceTypeConfig>();
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Invoice Templates</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item active">Invoice Templates</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/settings/index" class="btn btn-warning float-sm-right">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (customerTypes.Count == 0 && supplierTypes.Count == 0)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No invoice types are currently enabled. Please enable invoice types in Sales Settings or Purchase Settings.
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card card-primary card-outline">
+                <div class="p-2" style="border: 1px solid #dee2e6;">
+                    <!-- Top Level Tabs: Customer / Supplier -->
+                    <ul class="nav nav-tabs" id="category-tabs" role="tablist">
+                        <li class="nav-item text-center">
+                            <a class="nav-link active" id="customer-tab" data-toggle="pill" href="#customer-content" role="tab">
+                                Customer
+                            </a>
+                        </li>
+                        @if (supplierTypes.Count > 0)
+                        {
+                            <li class="nav-item text-center">
+                                <a class="nav-link" id="supplier-tab" data-toggle="pill" href="#supplier-content" role="tab">
+                                    Supplier
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="category-tabContent">
+                        <!-- Customer Tab -->
+                        <div class="tab-pane fade show active" id="customer-content" role="tabpanel">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <div class="nav flex-column nav-tabs h-100" id="customer-invoice-tabs" role="tablist" aria-orientation="vertical">
+                                            @{
+                                                int customerIndex = 1;
+                                                foreach (var invoiceType in customerTypes)
+                                                {
+                                                    <a class="nav-link @(customerIndex == 1 ? "active" : "")" 
+                                                       id="invoice-type-tab-@invoiceType.InvoiceTypeKey.ToLower()" 
+                                                       data-toggle="pill" 
+                                                       href="#invoice-type-@invoiceType.InvoiceTypeKey.ToLower()" 
+                                                       role="tab" 
+                                                       aria-controls="invoice-type-@invoiceType.InvoiceTypeKey.ToLower()" 
+                                                       aria-selected="@(customerIndex == 1 ? "true" : "false")"
+                                                       data-invoice-type="@invoiceType.InvoiceTypeKey">
+                                                        @invoiceType.DisplayName
+                                                    </a>
+                                                    customerIndex++;
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <div class="tab-content" id="customer-invoice-tabContent">
+                                            @{
+                                                int customerIndex2 = 1;
+                                                foreach (var invoiceType in customerTypes)
+                                                {
+                                                    <div class="tab-pane fade @(customerIndex2 == 1 ? "show active" : "")" 
+                                                         id="invoice-type-@invoiceType.InvoiceTypeKey.ToLower()" 
+                                                         role="tabpanel" 
+                                                         aria-labelledby="invoice-type-tab-@invoiceType.InvoiceTypeKey.ToLower()">
+                                                        <div class="card" style="border: 1px solid #dee2e6; box-shadow: none;">
+                                                            <div class="card-header template-header">
+                                                                <h3 class="card-title mb-0">
+                                                                    <i class="@invoiceType.Icon"></i> @invoiceType.DisplayName Templates
+                                                                </h3>
+                                                                <button type="button" class="btn btn-primary btn-sm" onclick="addNewTemplate('@invoiceType.InvoiceTypeKey')">
+                                                                    <i class="fas fa-plus"></i> Add
+                                                                </button>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <div id="templates-@invoiceType.InvoiceTypeKey.ToLower()" class="templates-grid">
+                                                                    <div class="text-center py-5 loading-templates">
+                                                                        <div class="spinner-border text-primary" role="status">
+                                                                            <span class="sr-only">Loading...</span>
+                                                                        </div>
+                                                                        <p class="mt-2 text-muted">Loading templates...</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    customerIndex2++;
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Supplier Tab -->
+                        @if (supplierTypes.Count > 0)
+                        {
+                            <div class="tab-pane fade" id="supplier-content" role="tabpanel">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <div class="nav flex-column nav-tabs h-100" id="supplier-invoice-tabs" role="tablist" aria-orientation="vertical">
+                                                @{
+                                                    int supplierIndex = 1;
+                                                    foreach (var invoiceType in supplierTypes)
+                                                    {
+                                                        <a class="nav-link @(supplierIndex == 1 ? "active" : "")" 
+                                                           id="invoice-type-tab-@invoiceType.InvoiceTypeKey.ToLower()" 
+                                                           data-toggle="pill" 
+                                                           href="#invoice-type-@invoiceType.InvoiceTypeKey.ToLower()" 
+                                                           role="tab" 
+                                                           aria-controls="invoice-type-@invoiceType.InvoiceTypeKey.ToLower()" 
+                                                           aria-selected="@(supplierIndex == 1 ? "true" : "false")"
+                                                           data-invoice-type="@invoiceType.InvoiceTypeKey">
+                                                            @invoiceType.DisplayName
+                                                        </a>
+                                                        supplierIndex++;
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <div class="tab-content" id="supplier-invoice-tabContent">
+                                                @{
+                                                    int supplierIndex2 = 1;
+                                                    foreach (var invoiceType in supplierTypes)
+                                                    {
+                                                        <div class="tab-pane fade @(supplierIndex2 == 1 ? "show active" : "")" 
+                                                             id="invoice-type-@invoiceType.InvoiceTypeKey.ToLower()" 
+                                                             role="tabpanel" 
+                                                             aria-labelledby="invoice-type-tab-@invoiceType.InvoiceTypeKey.ToLower()">
+                                                            <div class="card" style="border: 1px solid #dee2e6; box-shadow: none;">
+                                                                <div class="card-header template-header">
+                                                                    <h3 class="card-title mb-0">
+                                                                        <i class="@invoiceType.Icon"></i> @invoiceType.DisplayName Templates
+                                                                    </h3>
+                                                                    <button type="button" class="btn btn-primary btn-sm" onclick="addNewTemplate('@invoiceType.InvoiceTypeKey')">
+                                                                        <i class="fas fa-plus"></i> Add
+                                                                    </button>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div id="templates-@invoiceType.InvoiceTypeKey.ToLower()" class="templates-grid">
+                                                                        <div class="text-center py-5 loading-templates">
+                                                                            <div class="spinner-border text-primary" role="status">
+                                                                                <span class="sr-only">Loading...</span>
+                                                                            </div>
+                                                                            <p class="mt-2 text-muted">Loading templates...</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        supplierIndex2++;
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Modal for Pre-Invoice Templates -->
+<div class="modal fade" id="preInvoiceTemplatesModal" tabindex="-1" role="dialog" aria-labelledby="preInvoiceTemplatesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="preInvoiceTemplatesModalLabel">
+                    Select Pre-Invoice Template
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Choose a pre-designed template to customize for your <span id="modalInvoiceTypeName"></span> invoices.</p>
+                <div id="preInvoiceTemplatesGrid" class="pre-invoice-templates-grid">
+                    <!-- Templates will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox Modal for Template Preview -->
+<div class="modal fade" id="templatePreviewLightbox" tabindex="-1" role="dialog" aria-labelledby="templatePreviewLightboxLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="templatePreviewLightboxLabel">
+                    Template Preview: <span id="lightboxTemplateName"></span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="lightboxPreviewContent" class="lightbox-preview-content">
+                    <!-- Preview will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="useThisTemplateBtn">
+                    <i class="fas fa-check"></i> Use This Template
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link href="~/Content/assets/css/InvoiceTemplateSettings.css" rel="stylesheet" />
+<script src="~/Content/JQuery/Customer/Settings/InvoiceTemplateSettings/InvoiceTemplateSettings.js"></script>
+<script>
+    var customerInvoiceTypes = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(customerTypes));
+    var supplierInvoiceTypes = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(supplierTypes));
+    var availableInvoiceTypes = customerInvoiceTypes.concat(supplierInvoiceTypes);
+</script>
+

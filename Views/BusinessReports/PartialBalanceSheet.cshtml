@@ -1,0 +1,140 @@
+﻿
+
+
+@{
+    int assetsCount = 0, liabilityCount = 0, equityCount = 0, assetsLiabilityCount = 0;
+    decimal TotalAssetsBalance = 0, TotalLiabilityBalance = 0, TotalEquityBalance = 0;
+    <thead id="thead">
+        <tr>
+            @*<th>Sln</th>*@
+            <th>Account Type</th>
+            <th>Account Code</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var accountType in ViewBag.AccountTypes)
+        {
+            <tr class="bg-secondary">
+                <td class="text-bold" colspan="4">@accountType.AccountType</td>
+            </tr>
+            foreach (var accountSubHeader in accountType.AccountSubHeaders)
+            {
+                <tr class="text-bold">
+                    @*<td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>*@
+                    <td class="text-bold" colspan="4"><span class="ml-2">@accountSubHeader.AccountSubHeader</span> </td>
+                </tr>
+
+                foreach (var accountSubType in accountSubHeader.AccountSubTypes)
+                {
+                    decimal Balance = 0;
+                    bool showTotal = false;
+                    if (accountSubHeader.AccountSubHeader != "Other Assets" && accountSubHeader.AccountSubHeader != "Fixed Assets" &&
+                    accountSubType.Type != "Accounts Receivable" && accountSubHeader.AccountSubHeader != "Equities")
+                    {
+                        <tr class="text-bold">
+                            @*<td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>*@
+                            <td class="text-bold" colspan="4"><span class="ml-4">@accountSubType.AccountSubType</span> </td>
+                        </tr>
+                    }
+
+                    foreach (var item in accountSubType.Accounts)
+                    {
+                        if (accountSubHeader.AccountSubHeader == "Equities")
+                        {
+                            if (showTotal == false)
+                            {
+                                <tr>
+                                    @*<td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>*@
+                                    <td><span class="ml-5">Current Year Earnings</span></td>
+                                    <td></td>
+                                    <td>
+                                        @{
+                                            <a href="/businessreports/ProfitandLoss?BranchId=@ViewBag.BranchId&FromDate=@ViewBag.FromDate.ToString("MM-dd-yyyy")&ToDate=@ViewBag.ToDate.ToString("MM-dd-yyyy")&Page=balance sheet">
+                                                @(String.Format("{0:0.##}", (ViewBag.NetProfitLoss)))
+                                            </a>
+                                            Balance = Balance + ViewBag.NetProfitLoss;
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        <tr>
+                            @*<td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>*@
+                            <td><span class="ml-5">@item.AccountName</span></td>
+                            <td>@item.AccountNumber</td>
+                            <td>
+                                @{
+                                    <a href="/accountsreports/AccountTransactions?AccountId=@item.AccountId&AccountName=@item.AccountName&BranchId=@ViewBag.BranchId&FromDate=@ViewBag.FromDate.ToString("MM-dd-yyyy")&ToDate=@ViewBag.ToDate.ToString("MM-dd-yyyy")&Page=balance sheet">
+                                        @(String.Format("{0:0.##}", (item.Debit - item.Credit)))
+                                    </a>
+                                    Balance = Balance + (item.Debit - item.Credit);
+                                }
+                            </td>
+                        </tr>
+
+                        showTotal = true;
+                    }
+                    if (showTotal == true)
+                    {
+                        if (accountType.AccountType == "Assets")
+                        {
+                            TotalAssetsBalance = TotalAssetsBalance + Balance;
+                        }
+                        else if (accountSubHeader.AccountSubHeader == "Liabilities")
+                        {
+                            TotalLiabilityBalance = TotalLiabilityBalance + Balance;
+                        }
+                        else if (accountSubHeader.AccountSubHeader == "Equities")
+                        {
+                            TotalEquityBalance = TotalEquityBalance + Balance;
+                        }
+
+                        if (accountSubType.Type != "Accounts Receivable")
+                        {
+                            <tr class="">
+                                <td class="text-bold" colspan="2"><span class=" ml-4">Total For @accountSubType.AccountSubType</span></td>
+                                <td class="text-bold">
+                                    @(String.Format("{0:0.##}", Balance))
+                                </td>
+                            </tr>
+                            if (accountSubType.Type == "Equity")
+                            {
+                                <tr class="">
+                                    <td class="text-bold text-center" colspan="2">Total for Liabilities & Equities</td>
+                                    <td class="text-bold">
+                                        @(String.Format("{0:0.##}", (TotalLiabilityBalance+TotalEquityBalance)))
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    }
+                }
+                if (accountSubHeader.AccountSubHeader == "Liabilities")
+                {
+                    <tr class="">
+                        <td class="text-bold text-center" colspan="2">Total for Liabilities</td>
+                        <td class="text-bold">
+                            @(String.Format("{0:0.##}", (TotalLiabilityBalance)))
+                        </td>
+                    </tr>
+                }
+            }
+            if (accountType.AccountType == "Assets")
+            {
+                <tr class="">
+                    <td class="text-bold text-center" colspan="2">Total for Assets</td>
+                    <td class="text-bold">
+                        @(String.Format("{0:0.##}", (TotalAssetsBalance)))
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divAsof').text('Showing Results: (As of: ' + @Html.Raw(Json.Encode(ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+    //$('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    @*$('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));*@
+</script>

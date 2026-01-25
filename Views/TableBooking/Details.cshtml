@@ -1,0 +1,819 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Booking Details";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Booking Details</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/tablebooking/index">Table Booking</a></li>
+                        <li class="breadcrumb-item"><a href="/tablebooking/list">Booking List</a></li>
+                        <li class="breadcrumb-item active">Booking Details</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/tablebooking/list" class="btn btn-warning mr-2"><i class="fas fa-arrow-left"></i> Back</a>
+                @if (ViewBag.Booking != null)
+                {
+                    var bookingHeader = ViewBag.Booking;
+                    <button type="button" class="btn btn-danger" onclick="deleteBooking(@bookingHeader.BookingId)"><i class="fas fa-trash"></i> Delete</button>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Booking Information</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (ViewBag.Booking != null)
+                        {
+                            var booking = ViewBag.Booking;
+                            bool depositPaid = ViewBag.DepositPaid != null ? (bool)ViewBag.DepositPaid : false;
+                            var paymentCount = 0;
+                            if (ViewBag.BookingPayments != null)
+                            {
+                                try
+                                {
+                                    paymentCount = ((System.Collections.ICollection)ViewBag.BookingPayments).Count;
+                                }
+                                catch { }
+                            }
+                            var creditsCount = 0;
+                            if (ViewBag.CreditsApplied != null)
+                            {
+                                try
+                                {
+                                    creditsCount = ((System.Collections.ICollection)ViewBag.CreditsApplied).Count;
+                                }
+                                catch { }
+                            }
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th width="40%">Booking No</th>
+                                            <td>@booking.BookingNo</td>
+                                        </tr>
+                                        <tr>
+                                            @{
+                                                var tableList = booking.TableNos;
+                                                int tableCount = 0;
+                                                if (tableList != null)
+                                                {
+                                                    try 
+                                                    { 
+                                                        tableCount = ((System.Collections.ICollection)tableList).Count; 
+                                                    } 
+                                                    catch { }
+                                                }
+                                            }
+                                            <th>Table@(tableCount > 1 ? "s" : "")</th>
+                                            <td>
+                                                @{
+                                                    var tables = booking.TableNos;
+                                                    if (tables != null && tableCount > 0)
+                                                    {
+                                                        var tableStrings = new System.Collections.Generic.List<string>();
+                                                        try
+                                                        {
+                                                            foreach (var table in (System.Collections.IEnumerable)tables)
+                                                            {
+                                                                if (table != null)
+                                                                {
+                                                                    tableStrings.Add(table.ToString());
+                                                                }
+                                                            }
+                                                            if (tableStrings.Count > 0)
+                                                            {
+                                                                <text>@string.Join(", ", tableStrings)</text>
+                                                            }
+                                                        }
+                                                        catch
+                                                        {
+                                                            if (booking.TableNo != null)
+                                                            {
+                                                                <text>@booking.TableNo</text>
+                                                            }
+                                                            else
+                                                            {
+                                                                <text>Not Assigned</text>
+                                                            }
+                                                        }
+                                                    }
+                                                    else if (booking.TableNo != null)
+                                                    {
+                                                        <text>@booking.TableNo</text>
+                                                    }
+                                                    else
+                                                    {
+                                                        <text>Not Assigned</text>
+                                                    }
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Customer Name</th>
+                                            <td>@booking.CustomerName</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Customer Mobile</th>
+                                            <td>@(booking.CustomerMobile ?? "-")</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Customer Email</th>
+                                            <td>@(booking.CustomerEmail ?? "-")</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Booking Date</th>
+                                            <td>@booking.BookingDate.ToString("dd-MMM-yyyy")</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Booking Time</th>
+                                            <td>
+                                                @{
+                                                    TimeSpan bookingTime = booking.BookingTime;
+                                                    string bookingTimeDisplay = "";
+                                                    
+                                                    // If BookingTime is zero, try to use BookingTimeString
+                                                    if (bookingTime == TimeSpan.Zero)
+                                                    {
+                                                        try
+                                                        {
+                                                            dynamic dynBooking = booking;
+                                                            string timeString = dynBooking.BookingTimeString?.ToString();
+                                                            if (!string.IsNullOrEmpty(timeString))
+                                                            {
+                                                                bookingTimeDisplay = timeString;
+                                                            }
+                                                            else
+                                                            {
+                                                                bookingTimeDisplay = "00:00";
+                                                            }
+                                                        }
+                                                        catch
+                                                        {
+                                                            bookingTimeDisplay = "00:00";
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        bookingTimeDisplay = bookingTime.ToString(@"hh\:mm");
+                                                    }
+                                                }
+                                                @bookingTimeDisplay
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Duration</th>
+                                            <td>@booking.Duration minutes</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th width="40%">Number of Guests</th>
+                                            <td>@booking.NoOfGuests</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Waiter</th>
+                                            <td>@(booking.WaiterName ?? "-")</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Status</th>
+                                            <td>
+                                                <span class="badge badge-@(booking.Status == "Confirmed" ? "success" : booking.Status == "Pending" ? "warning" : booking.Status == "Cancelled" ? "danger" : booking.Status == "Completed" ? "info" : booking.Status == "No Show" ? "warning" : "secondary")">
+                                                    @booking.Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        @if (booking.Status == "Cancelled" && booking.CancellationCharge > 0)
+                                        {
+                                            <tr>
+                                                <th>Cancellation Charge</th>
+                                                <td>
+                                                    @booking.CancellationCharge.ToString("C")
+                                                </td>
+                                            </tr>
+                                        }
+                                        @if (booking.Status == "Cancelled" && !string.IsNullOrEmpty(booking.CancellationReason))
+                                        {
+                                            <tr>
+                                                <th>Cancellation Reason</th>
+                                                <td>@booking.CancellationReason</td>
+                                            </tr>
+                                        }
+                                        <tr>
+                                            <th>Booking Type</th>
+                                            <td>@booking.BookingType</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Special Requests (Optional)</th>
+                                            <td>@(booking.SpecialRequest ?? "-")</td>
+                                        </tr>
+                                        @if (booking.DepositAmount > 0)
+                                        {
+                                            <tr>
+                                                <th>Deposit Amount</th>
+                                                <td>
+                                                    <strong>@booking.DepositAmount.ToString("C")</strong>
+                                                    @if (depositPaid)
+                                                    {
+                                                        <span class="badge badge-success ml-2">Paid</span>
+                                                        if (!string.IsNullOrEmpty(booking.PaymentGatewayType))
+                                                        {
+                                                            <small class="text-muted d-block mt-1">
+                                                                <i class="fas fa-credit-card"></i> Paid via @booking.PaymentGatewayType
+                                                                @if (!string.IsNullOrEmpty(booking.PaymentTransactionId))
+                                                                {
+                                                                    <text><br />Transaction ID: @booking.PaymentTransactionId</text>
+                                                                }
+                                                                @if (booking.PaymentDate != null)
+                                                                {
+                                                                    <text><br />Payment Date: @Convert.ToDateTime(booking.PaymentDate).ToString("dd-MMM-yyyy HH:mm")</text>
+                                                                }
+                                                            </small>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-warning ml-2">Pending</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                        <tr>
+                                            <th>KOT No</th>
+                                            <td>
+                                                @if (ViewBag.Kots != null)
+                                                {
+                                                    <ul class="list-unstyled mb-0">
+                                                        @foreach (var kot in ViewBag.Kots)
+                                                        {
+                                                            <li class="mb-1">
+                                                                <a href="/kot/details/@kot.KotId">@kot.KotNo</a>
+                                                                <span class="badge badge-@(kot.OrderStatus == "Served" ? "success" : kot.OrderStatus == "Ready" ? "info" : kot.OrderStatus == "Preparing" ? "warning" : kot.OrderStatus == "Cancelled" ? "danger" : "secondary") ml-2">
+                                                                    @kot.OrderStatus
+                                                                </span>
+                                                                @if (kot.SalesId > 0)
+                                                                {
+                                                                    <span class="badge badge-primary ml-1">Linked to Sales</span>
+                                                                    <a href="/sales/details/@kot.SalesId" class="btn btn-sm btn-primary ml-1" data-toggle="tooltip" data-placement="top" title="View Sales">
+                                                                        <i class="fas fa-eye"></i>
+                                                                    </a>
+                                                                }
+                                                                else if (kot.OrderStatus == "Served")
+                                                                {
+                                                                    @* Show link to sales option for served, unlinked KOTs *@
+                                                                    <a href="/kot/linktosales/@kot.KotId" class="btn btn-sm btn-warning ml-1" data-toggle="tooltip" data-placement="top" title="Link to Sales">
+                                                                        <i class="fas fa-link"></i> Link to Sales
+                                                                    </a>
+                                                                }
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Sales No</th>
+                                            <td>
+                                                @if (booking.SalesId != 0)
+                                                {
+                                                    <a href="/sales/details/@booking.SalesId">@(booking.SalesNo ?? "-")</a>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Payments Section -->
+                            if (paymentCount > 0)
+                            {
+                                <div class="row mt-4">
+                                        <div class="col-12">
+                                            <div class="card card-outline">
+                                                <div class="card-header">
+                                                    <h3 class="card-title"><i class="fas fa-credit-card"></i> Payment Information</h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>#</th>
+                                                                    <th>Paid On</th>
+                                                                    <th>Reference No</th>
+                                                                    <th>Amount</th>
+                                                                    <th>Payment Method</th>
+                                                                    @if (ViewBag.CustomerPaymentPermission != null && ViewBag.CustomerPaymentPermission.IsDelete)
+                                                                    {
+                                                                        <th>Action</th>
+                                                                    }
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @{
+                                                                    var paymentIndex = 1;
+                                                                    foreach (var item in ViewBag.BookingPayments)
+                                                                    {
+                                                                        <tr>
+                                                                            <td>@paymentIndex</td>
+                                                                            <td>
+                                                                                @item.PaymentDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                                                                            </td>
+                                                                            <td>@item.ReferenceNo</td>
+                                                                            <td class="text-success font-weight-bold">
+                                                                                @{
+                                                                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                                    {
+                                                                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@item.Amount
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        @item.Amount@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                                    }
+                                                                                }
+                                                                            </td>
+                                                                            <td>@item.PaymentType</td>
+                                                                            @if (ViewBag.CustomerPaymentPermission != null && ViewBag.CustomerPaymentPermission.IsDelete)
+                                                                            {
+                                                                                <td>
+                                                                                    @{
+                                                                                        // Check if payment is not refunded and is paid
+                                                                                        bool canPerformActions = item.IsRefund == false && item.PaymentStatus == "Paid";
+                                                                                        var refNo = item.ReferenceNo ?? "";
+                                                                                        var referenceId = item.ReferenceId ?? "";
+                                                                                        // Use CustomerPaymentId (BookingPaymentId maps to CustomerPaymentId)
+                                                                                        var customerPaymentId = item.CustomerPaymentId > 0 ? item.CustomerPaymentId : (item.BookingPaymentId > 0 ? item.BookingPaymentId : 0);
+                                                                                        bool showReceiptUrl = ViewBag.InvoiceUrl != null && !string.IsNullOrEmpty(referenceId);
+                                                                                    }
+                                                                                    @if (canPerformActions && customerPaymentId > 0)
+                                                                                    {
+                                                                                        <a href="javascript:void(0)" onclick="deleteBookingPayment(@customerPaymentId)" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                                                                                        <a href="javascript:void(0)" onclick="ViewPayment(@customerPaymentId)" class="btn btn-primary btn-sm" data-toggle="tooltip" data-placement="bottom" title="View"><i class="far fa-eye"></i></a>
+                                                                                        <a href="javascript:void(0)" onclick="openNotificationModal('Booking Payment',@customerPaymentId)" class="btn btn-warning btn-sm" data-toggle="tooltip" data-placement="bottom" title="Send Notification"><i class="far fa-envelope"></i></a>
+                                                                                        if (showReceiptUrl)
+                                                                                        {
+                                                                                            @:<a href="javascript:void(0)" onclick="openInvoiceCopyModal('@ViewBag.InvoiceUrl/sales/PaymentReceipt?ReferenceId=@referenceId','@refNo')" class="btn btn-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Receipt Url"><i class="fas fa-copy"></i></a>
+                                                                                        }
+                                                                                    }
+                                                                                </td>
+                                                                            }
+                                                                        </tr>
+                                                                        paymentIndex++;
+                                                                    }
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                            }
+                            
+                            <!-- Credits Applied Section -->
+                            if (creditsCount > 0)
+                            {
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="card card-outline">
+                                            <div class="card-header">
+                                                <h3 class="card-title">Credits Applied</h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Date</th>
+                                                                <th>Credit Note#</th>
+                                                                <th>Credits Applied</th>
+                                                                @if (ViewBag.CustomerPaymentPermission != null && ViewBag.CustomerPaymentPermission.IsDelete)
+                                                                {
+                                                                    <th class="divReport">Action</th>
+                                                                }
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @{
+                                                                var creditIndex = 1;
+                                                                foreach (var item in ViewBag.CreditsApplied)
+                                                                {
+                                                                    <tr id="tr_@(item.CustomerPaymentId)">
+                                                                        <td>
+                                                                            @if (item.PaymentDate != null && item.PaymentDate != DateTime.MinValue)
+                                                                            {
+                                                                                @item.PaymentDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <text>-</text>
+                                                                            }
+                                                                        </td>
+                                                                        <td>
+                                                                            @(item.SalesReturnInvoiceNo ?? "")
+                                                                        </td>
+                                                                        <td class="text-success font-weight-bold">
+                                                                            @{
+                                                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                                {
+                                                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@item.Amount
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    @item.Amount@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                                }
+                                                                            }
+                                                                        </td>
+                                                                        @if (ViewBag.CustomerPaymentPermission != null && ViewBag.CustomerPaymentPermission.IsDelete)
+                                                                        {
+                                                                            <td class="divReport">
+                                                                                @if (item.IsCancelled == false)
+                                                                                {
+                                                                                    var customerPaymentId = item.CustomerPaymentId > 0 ? item.CustomerPaymentId : (item.BookingPaymentId > 0 ? item.BookingPaymentId : 0);
+                                                                                    if (customerPaymentId > 0)
+                                                                                    {
+                                                                                        <a href="javascript:void(0)" onclick="deleteBookingPayment(@customerPaymentId)" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                                                                                        <a href="javascript:void(0)" onclick="ViewPayment(@item.ParentId)" class="btn btn-primary btn-sm" data-toggle="tooltip" data-placement="bottom" title="View"><i class="far fa-eye"></i></a>
+                                                                                    }
+                                                                                }
+                                                                            </td>
+                                                                        }
+                                                                    </tr>
+                                                                    creditIndex++;
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            
+                            <!-- Recurring Booking Section -->
+                            <div class="row mt-4" id="recurringBookingSection" style="display: none;">
+                                <div class="col-12">
+                                    <div class="card card-info">
+                                        <div class="card-header">
+                                            <h3 class="card-title"><i class="fas fa-redo-alt"></i> Recurring Booking</h3>
+                                        </div>
+                                        <div class="card-body" id="recurringBookingContent">
+                                            <!-- Content will be loaded dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons Section -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    @if (booking.Status == "Pending")
+                                    {
+                                        <button type="button" class="btn btn-success" onclick="confirmBooking(@booking.BookingId)" data-toggle="tooltip" data-placement="top" title="Confirm Booking"><i class="fas fa-check"></i></button>
+                                    }
+                                    @if (booking.Status == "Confirmed")
+                                    {
+                                        <button type="button" class="btn btn-success" onclick="completeBooking(@booking.BookingId)" data-toggle="tooltip" data-placement="top" title="Complete Booking"><i class="fas fa-check-circle"></i></button>
+                                        <button type="button" class="btn btn-warning" onclick="markAsNoShow(@booking.BookingId)" data-toggle="tooltip" data-placement="top" title="Mark as No-Show"><i class="fas fa-user-slash"></i></button>
+                                    }
+                                    @if (booking.Status != "Cancelled" && (ViewBag.Kots == null || ((IEnumerable<EquiBillBook.Models.ClsKotMasterVm>)ViewBag.Kots).Count() == 0) && (booking.SalesId == 0))
+                                    {
+                                        <button type="button" class="btn btn-danger" onclick="cancelBooking(@booking.BookingId)" data-toggle="tooltip" data-placement="top" title="Cancel Booking"><i class="fas fa-times"></i></button>
+                                    }
+                                    @if (booking.Status == "Confirmed")
+                                    {
+                                        <a href="/kot/add?bookingId=@booking.BookingId" class="btn btn-warning" data-toggle="tooltip" data-placement="top" title="Create KOT"><i class="fas fa-utensils"></i></a>
+                                        if (ViewBag.Kots == null || ((IEnumerable<EquiBillBook.Models.ClsKotMasterVm>)ViewBag.Kots).Count() == 0)
+                                        {
+                                            <a href="/tablebooking/linktokot/@booking.BookingId" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Link to KOT"><i class="fas fa-clipboard-list"></i></a>
+                                        }
+                                    }
+                                    @if (booking.Status != "Cancelled" && (booking.SalesId == 0))
+                                    {
+                                        @* Check if there are served, unlinked KOTs to convert *@
+                                        var servedUnlinkedKots = ViewBag.Kots != null ? 
+                                            ((IEnumerable<EquiBillBook.Models.ClsKotMasterVm>)ViewBag.Kots).Where(k => k.OrderStatus == "Served" && k.SalesId == 0).ToList() : 
+                                            new List<EquiBillBook.Models.ClsKotMasterVm>();
+                                        if (servedUnlinkedKots.Any())
+                                        {
+                                            <button type="button" class="btn btn-success" onclick="convertBookingKotsToSales(@booking.BookingId)" data-toggle="tooltip" data-placement="top" title="Convert All Served KOTs to Sales">
+                                                <i class="fas fa-receipt"></i>
+                                            </button>
+                                        }
+                                        <a href="/tablebooking/linktosales/@booking.BookingId" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Link to Sales"><i class="fas fa-file-invoice-dollar"></i></a>
+                                    }
+                                    @if (booking.Status != "Cancelled")
+                                    {
+                                        <a href="/tablebooking/edit/@booking.BookingId" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Edit Booking"><i class="fas fa-edit"></i></a>
+                                        <a href="/recurringbooking/add?BookingId=@booking.BookingId" class="btn btn-secondary" data-toggle="tooltip" data-placement="top" title="Make Recurring"><i class="fas fa-redo-alt"></i></a>
+                                    }
+                                    @* Show Record Deposit Payment button only when booking is not cancelled *@
+                                    @if (booking.Status != "Cancelled" && booking.DepositAmount > 0 && !depositPaid)
+                                    {
+                                        <button type="button" class="btn btn-success" onclick="openBookingPaymentModal(true, @booking.BookingId, 'Record Deposit Payment')" data-toggle="tooltip" data-placement="top" title="Record Payment"><i class="fas fa-money-bill-wave"></i></button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Customer/Restaurant/TableBooking.js"></script>
+<script src="~/Content/JQuery/Customer/Restaurant/RecurringBooking.js"></script>
+<script src="~/Content/JQuery/Customer/Restaurant/Kot.js"></script>
+<script src="~/Content/JQuery/Customer/Sales/CustomerPayment.js"></script>
+<script src="~/Content/JQuery/Customer/Sales/Sales.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Store referrer source if coming from calendar (check URL param or document.referrer)
+        var urlParams = new URLSearchParams(window.location.search);
+        var fromParam = urlParams.get('from');
+        var referrer = document.referrer;
+        
+        // If 'from=calendar' is in URL or referrer contains 'tablebooking/index' (calendar view), store it
+        if (fromParam === 'calendar' || (referrer && referrer.indexOf('/tablebooking/index') !== -1)) {
+            sessionStorage.setItem('tableBookingReferrer', 'calendar');
+        } else if (referrer && referrer.indexOf('/tablebooking/list') !== -1) {
+            // If coming from list view, ensure we don't have calendar flag set
+            sessionStorage.removeItem('tableBookingReferrer');
+        }
+        
+        // Check for success message stored in sessionStorage
+        var successMessage = sessionStorage.getItem('bookingSuccessMessage');
+        var successType = sessionStorage.getItem('bookingSuccessType');
+        
+        if (successMessage) {
+            // Clear the stored message
+            sessionStorage.removeItem('bookingSuccessMessage');
+            sessionStorage.removeItem('bookingSuccessType');
+            
+            // Play sound if enabled
+            if (typeof EnableSound !== 'undefined' && EnableSound == 'True') {
+                var soundElement = document.getElementById('success');
+                if (soundElement) {
+                    soundElement.play();
+                }
+            }
+            
+            // Show the message
+            if (successType === 'success') {
+                toastr.success(successMessage);
+            } else {
+                toastr.info(successMessage);
+            }
+        }
+        
+        // Load recurring booking info if exists
+        @if (ViewBag.Booking != null)
+        {
+            <text>
+            var bookingId = @ViewBag.Booking.BookingId;
+            if (typeof loadRecurringBookingInfo === 'function') {
+                loadRecurringBookingInfo(bookingId);
+            }
+            </text>
+        }
+        
+        // Initialize Bootstrap tooltips
+        $('[data-toggle="tooltip"]').tooltip();
+        
+        // Update Back button href based on referrer
+        var storedReferrer = sessionStorage.getItem('tableBookingReferrer');
+        if (storedReferrer === 'calendar') {
+            $('#btnBack').attr('href', '/tablebooking/index');
+        } else {
+            $('#btnBack').attr('href', '/tablebooking/list');
+        }
+    });
+</script>
+
+<!-- Booking Payment Modal -->
+<div class="modal fade bd-example-modal-lg" id="bookingPaymentModal" tabindex="-1" role="dialog" aria-labelledby="bookingPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingPaymentModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card card-primary card-outline">
+                                    <div class="card-body" id="divBookingPayments">
+                                        <!-- Content will be loaded dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary hidden paymentAdd" onclick="insertBookingPayment()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Refund Modal -->
+<div class="modal fade bd-example-modal-lg" id="bookingRefundModal" tabindex="-1" role="dialog" aria-labelledby="bookingRefundModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingRefundModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card card-primary card-outline">
+                                    <div class="card-body" id="divBookingRefunds">
+                                        <!-- Content will be loaded dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary hidden refundAdd" onclick="insertBookingRefund()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment View Modal -->
+<div class="modal fade" id="PaymentViewModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" id="divPaymentView">
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<!-- Invoice Copy Modal -->
+<div class="modal fade" id="InvoiceCopyModal">
+    <div class="modal-dialog modal-l">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="lblInvoiceNo"> </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="input-group" id="divInvoiceInputs">
+                                <input disabled type="text" class="form-control" id="lblInvoiceUrl" placeholder="" style="width:80%">
+                                <button type="button" class="btn btn-secondary" onclick="copyCode()" style="width:20%">COPY</button>
+                            </div>
+                            <small class="text-red font-weight-bold">Link to view the invoice without login.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between" id="divInvoiceButtons">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="PrintInvoice()" id="btnInvoiceView">View</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<!-- Invoice Modal -->
+<div class="modal fade" id="invoiceModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Print Invoice</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="height:75vh">
+                <iframe id="lblInvoice" style="border:0;width:100%;height:100%"></iframe>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<!-- Notification Modal -->
+<div class="modal fade" id="NotificationModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Send Notification </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12" id="divNotification">
+                        <!-- Content will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="SendNotifications()">Send</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<!-- Available Credits Modal -->
+<div class="modal fade bd-example-modal-lg" id="AvailableCreditsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Apply Credits</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- left column -->
+                            <div class="col-md-12">
+                                <!-- jquery validation -->
+                                <div class="card card-primary card-outline">
+                                    <div class="card-body" id="divAvailableCredits">
+                                        <!-- Content will be loaded dynamically -->
+                                    </div>
+
+                                </div>
+                                <!-- /.card -->
+                            </div>
+                            <!--/.col (left) -->
+
+                        </div>
+                        <!-- /.row -->
+                    </div><!-- /.container-fluid -->
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="ApplyCreditsToBooking()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+

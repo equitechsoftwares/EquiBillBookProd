@@ -1,0 +1,454 @@
+@{
+    var invoiceType = ViewBag.InvoiceType as string ?? "Sales";
+}
+
+<style>
+    .invoice-preview-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .preview-invoice-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #1f2937;
+    }
+
+    .preview-header-section {
+        background: var(--preview-primary-color, #3b82f6);
+        color: var(--preview-header-text-color, #ffffff);
+        padding: 24px 32px;
+        position: relative;
+        border-bottom: 1px solid var(--preview-border-color, #e5e7eb);
+    }
+
+    .preview-header-content {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        position: relative;
+    }
+
+    .preview-logo-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .preview-logo-container img {
+        height: 48px;
+        border-radius: 6px;
+    }
+
+    .preview-logo-placeholder {
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+    }
+
+    .preview-header-text {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .preview-header-text h1 {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+        color: var(--preview-header-text-color, #ffffff);
+    }
+
+    .preview-header-text p {
+        font-size: 14px;
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .preview-invoice-content {
+        padding: 24px 32px;
+        background: var(--preview-body-bg, #ffffff);
+        color: var(--preview-body-text, #1f2937);
+    }
+
+    .preview-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .preview-table-container {
+        background: white;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid var(--preview-border-color, #e5e7eb);
+        margin-bottom: 24px;
+    }
+
+    .preview-table-header {
+        background: var(--preview-table-header-color, #f9fafb);
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--preview-border-color, #e5e7eb);
+    }
+
+    .preview-table-header h4 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .preview-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        padding: 20px;
+    }
+
+    .preview-detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .preview-detail-label {
+        font-size: 11px;
+        color: #6b7280;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .preview-detail-value {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--preview-body-text, #111827);
+    }
+
+    .preview-records-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .preview-records-table thead th {
+        background: var(--preview-table-header-color, #f9fafb);
+        color: #4b5563;
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid var(--preview-border-color, #e5e7eb);
+    }
+
+    .preview-records-table tbody td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+    }
+
+    .preview-content-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .preview-summary-section {
+        background: white;
+        border-radius: 6px;
+        border: 1px solid var(--preview-border-color, #e5e7eb);
+        overflow: hidden;
+    }
+
+    .preview-summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .preview-summary-table th,
+    .preview-summary-table td {
+        padding: 10px 16px;
+        text-align: left;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .preview-summary-table th {
+        font-weight: 600;
+        color: #4b5563;
+        background: var(--preview-table-header-color, #f9fafb);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .preview-summary-table .total-row {
+        background: var(--preview-total-row-color, #eff6ff);
+        font-weight: 700;
+        color: var(--preview-primary-color, #1e40af);
+    }
+
+    .preview-footer-note {
+        background: #f8fafc;
+        padding: 16px 20px;
+        border-radius: 6px;
+        text-align: center;
+        border: 1px solid var(--preview-border-color, #e5e7eb);
+        margin-bottom: 24px;
+    }
+
+    .preview-footer-note p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 13px;
+        font-style: italic;
+    }
+
+    .preview-action-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        padding: 20px 0;
+    }
+
+    .preview-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 13px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        background: var(--preview-primary-color, #3b82f6);
+        color: white;
+    }
+
+    @@media (max-width: 768px) {
+        .preview-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .preview-content-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="preview-invoice-container">
+    <div class="preview-header-section">
+        <div class="preview-header-content">
+            <div class="preview-logo-container" id="previewLogoContainer">
+                <div class="preview-logo-placeholder">
+                    <i class="fas fa-building"></i>
+                </div>
+            </div>
+            <div class="preview-header-text">
+                <h1 id="previewInvoiceTitle">Sales Invoice</h1>
+                <p id="previewCompanyName">Your Business Name</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="preview-invoice-content">
+        <!-- From, Bill To, Ship To -->
+        <div class="preview-info-grid">
+            <div class="preview-table-container">
+                <div class="preview-table-header">
+                    <h4><i class="fas fa-building"></i> From</h4>
+                </div>
+                <div class="preview-details-grid">
+                    <div class="preview-detail-item">
+                        <span class="preview-detail-value">Your Business Name</span>
+                    </div>
+                    <div class="preview-detail-item">
+                        <span class="preview-detail-value">123 Business Street</span>
+                    </div>
+                    <div class="preview-detail-item">
+                        <span class="preview-detail-value">City, State, Country</span>
+                    </div>
+                    <div class="preview-detail-item">
+                        <span class="preview-detail-value">12345</span>
+                    </div>
+                    <div class="preview-detail-item">
+                        <span class="preview-detail-value">+1 234 567 8900</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-table-container">
+                <div class="preview-table-header">
+                    <h4><i class="fas fa-user"></i> Bill To</h4>
+                </div>
+                <div class="preview-details-grid">
+                    <div class="preview-detail-item">
+                        <span class="preview-detail-value">John Doe</span>
+                    </div>
+                    <div class="preview-detail-item">
+                        <span class="preview-detail-value">456 Customer Avenue</span>
+                    </div>
+                    <div class="preview-detail-item">
+                        <span class="preview-detail-value">Customer City, State</span>
+                    </div>
+                    <div class="preview-detail-item">
+                        <span class="preview-detail-value">+1 234 567 8901</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-table-container" id="previewShipTo">
+                <div class="preview-table-header">
+                    <h4><i class="fas fa-truck"></i> Ship To</h4>
+                </div>
+                <div class="preview-details-grid">
+                    <div class="preview-detail-item">
+                        <span class="preview-detail-value">John Doe</span>
+                    </div>
+                    <div class="preview-detail-item">
+                        <span class="preview-detail-value">456 Customer Avenue</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Information -->
+        <div class="preview-table-container">
+            <div class="preview-table-header">
+                <h4><i class="fas fa-info-circle"></i> Invoice Information</h4>
+            </div>
+            <div class="preview-details-grid" style="display: flex; flex-direction: row; justify-content: space-between;">
+                <div class="preview-detail-item">
+                    <span class="preview-detail-label">Invoice Date</span>
+                    <span class="preview-detail-value" id="previewInvoiceDate">@DateTime.Now.ToString("dd-MMM-yyyy")</span>
+                </div>
+                <div class="preview-detail-item">
+                    <span class="preview-detail-label">Invoice #</span>
+                    <span class="preview-detail-value" id="previewInvoiceNumber">INV-001</span>
+                </div>
+                <div class="preview-detail-item">
+                    <span class="preview-detail-label">Status</span>
+                    <span class="preview-detail-value">Paid</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Items -->
+        <div class="preview-table-container">
+            <div class="preview-table-header">
+                <h4><i class="fas fa-list"></i> Invoice Items</h4>
+            </div>
+            <table class="preview-records-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Item</th>
+                        <th>SKU</th>
+                        <th>Qty</th>
+                        <th>Unit Price</th>
+                        <th>Discount</th>
+                        <th>Tax</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Sample Product Item</td>
+                        <td>SKU-001</td>
+                        <td>2</td>
+                        <td>$100.00</td>
+                        <td>10%</td>
+                        <td>$18.00</td>
+                        <td>$198.00</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Another Product</td>
+                        <td>SKU-002</td>
+                        <td>1</td>
+                        <td>$50.00</td>
+                        <td>0%</td>
+                        <td>$9.00</td>
+                        <td>$59.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="preview-content-row">
+            <div></div>
+            <div class="preview-summary-section">
+                <div class="preview-table-header">
+                    <h4><i class="fas fa-calculator"></i> Invoice Summary</h4>
+                </div>
+                <table class="preview-summary-table">
+                    <tbody>
+                        <tr>
+                            <th>Total Qty:</th>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <th>Gross Amount:</th>
+                            <td>$250.00</td>
+                        </tr>
+                        <tr>
+                            <th>Discount:</th>
+                            <td>$20.00</td>
+                        </tr>
+                        <tr>
+                            <th>Tax:</th>
+                            <td>$27.00</td>
+                        </tr>
+                        <tr class="total-row">
+                            <th>Net Amount:</th>
+                            <td>$257.00</td>
+                        </tr>
+                        <tr class="total-row">
+                            <th>Total:</th>
+                            <td>$257.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer Note -->
+        <div class="preview-footer-note" id="previewFooterNote">
+            <p><i class="fas fa-info-circle"></i> This is a computer generated invoice. No signature is required.</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="preview-action-buttons" id="previewActionButtons">
+            <a href="javascript:void(0)" class="preview-btn">
+                <i class="fa fa-print"></i> Print Invoice
+            </a>
+            <a href="javascript:void(0)" class="preview-btn">
+                <i class="fa fa-file-pdf"></i> Export PDF
+            </a>
+        </div>
+    </div>
+</div>
+

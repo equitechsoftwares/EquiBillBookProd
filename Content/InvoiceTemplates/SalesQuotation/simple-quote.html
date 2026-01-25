@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Quotation</title>
+    <style>
+        /* Styles scoped to .simple-quote-root for live preview compatibility */
+
+        .simple-quote-root,
+        .simple-quote-root * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .simple-quote-root {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #1f2937;
+            background: #ffffff;
+            padding: 20px;
+        }
+
+        .simple-quote-root .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border: 2px solid var(--border-color, #e5e7eb);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* Simple Header */
+        .simple-quote-root .header-section {
+            padding: 32px 40px;
+            border-bottom: 3px solid var(--border-color, #e5e7eb);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .simple-quote-root .company-section {
+            flex: 1;
+        }
+
+        .simple-quote-root .company-logo {
+            height: 50px;
+            max-width: 180px;
+            object-fit: contain;
+            margin-bottom: 12px;
+        }
+
+        .simple-quote-root .company-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .simple-quote-root .quotation-badge {
+            background: var(--primary-color, #000000);
+            color: var(--header-text-color, #ffffff);
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        /* Body Content */
+        .simple-quote-root .invoice-body {
+            padding: 40px;
+        }
+
+        /* Info Grid - Simple 2 Column */
+        .simple-quote-root .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+
+        .simple-quote-root .info-box {
+            display: block !important; /* override AdminLTE .info-box flex styles in live preview */
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .simple-quote-root .info-box h4,
+        .simple-quote-root .info-box p {
+            display: block;
+        }
+
+        .simple-quote-root .info-box h4 {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary-color, #000000);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .simple-quote-root .info-box p {
+            margin-bottom: 6px;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .simple-quote-root .info-box strong {
+            color: #1f2937;
+        }
+
+        /* Simple Items Table */
+        .simple-quote-root .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 32px;
+        }
+
+        .simple-quote-root .items-table thead {
+            background: var(--table-header-color, #f3f4f6);
+        }
+
+        .simple-quote-root .items-table thead th {
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--body-text-color, #6b7280);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color, #e5e7eb);
+        }
+
+        .simple-quote-root .items-table thead th:last-child {
+            text-align: right;
+        }
+
+        .simple-quote-root .items-table tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .simple-quote-root .items-table tbody td {
+            padding: 16px;
+            color: #374151;
+        }
+
+        .simple-quote-root .items-table tbody td:last-child {
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .simple-quote-root .item-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 15px;
+        }
+
+        .simple-quote-root .item-meta {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        /* Summary - Right Aligned Box */
+        .simple-quote-root .summary-box {
+            margin-left: auto;
+            width: 350px;
+            background: #f9fafb;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+
+        .simple-quote-root .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .simple-quote-root .summary-label {
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .simple-quote-root .summary-value {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .simple-quote-root .total-row {
+            background: var(--total-row-color, #000000);
+            color: var(--header-text-color, #ffffff);
+            font-size: 18px;
+            border-bottom: none;
+        }
+
+        .simple-quote-root .total-row .summary-label,
+        .simple-quote-root .total-row .summary-value {
+            color: var(--header-text-color, #ffffff);
+            font-weight: 700;
+        }
+
+        /* Notes Section */
+        .simple-quote-root .notes-section {
+            padding: 20px;
+            background: #f9fafb;
+            border-left: 4px solid #000000;
+            border-radius: 4px;
+            margin-bottom: 32px;
+        }
+
+        .simple-quote-root .notes-section h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #000000;
+        }
+
+        .simple-quote-root .notes-section p {
+            color: #1f2937;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* Terms & Conditions Section */
+        .simple-quote-root .terms-section {
+            padding: 20px;
+            background: #f9fafb;
+            border-left: 4px solid #000000;
+            border-radius: 4px;
+            margin-bottom: 32px;
+        }
+
+        .simple-quote-root .terms-section h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #000000;
+        }
+
+        .simple-quote-root .terms-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .simple-quote-root .terms-section li {
+            color: #1f2937;
+            font-size: 13px;
+            line-height: 1.6;
+            padding: 4px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .simple-quote-root .terms-section li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #000000;
+            font-weight: bold;
+        }
+
+        /* Footer */
+        .simple-quote-root .footer-section {
+            padding: 24px 40px;
+            background: #f9fafb;
+            text-align: center;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .simple-quote-root .footer-section p {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .simple-quote-root .contact-info {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .simple-quote-root {
+                padding: 10px;
+            }
+
+            .simple-quote-root .invoice-container {
+                border-radius: 8px;
+            }
+
+            .simple-quote-root .header-section {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 24px 20px;
+                gap: 16px;
+            }
+
+            .simple-quote-root .company-section {
+                width: 100%;
+            }
+
+            .simple-quote-root .quotation-badge {
+                font-size: 16px;
+                padding: 10px 20px;
+                align-self: flex-end;
+            }
+
+            .simple-quote-root .invoice-body {
+                padding: 24px 20px;
+            }
+
+            .simple-quote-root .info-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                margin-bottom: 24px;
+            }
+
+            .simple-quote-root .info-box {
+                padding: 16px;
+            }
+
+            .simple-quote-root .items-table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .simple-quote-root .items-table thead {
+                display: none;
+            }
+
+            .simple-quote-root .items-table tbody {
+                display: block;
+            }
+
+            .simple-quote-root .items-table tbody tr {
+                display: block;
+                margin-bottom: 20px;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 12px;
+                background: #f9fafb;
+            }
+
+            .simple-quote-root .items-table tbody td {
+                display: block;
+                padding: 8px 0;
+                text-align: left !important;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .simple-quote-root .items-table tbody td:last-child {
+                border-bottom: none;
+                font-size: 18px;
+                font-weight: 700;
+                color: var(--primary-color, #000000);
+                margin-top: 8px;
+            }
+
+            .simple-quote-root .items-table tbody td:before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 11px;
+                text-transform: uppercase;
+                color: #6b7280;
+                display: block;
+                margin-bottom: 4px;
+            }
+
+            .simple-quote-root .summary-box {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .simple-quote-root .summary-row {
+                padding: 12px 16px;
+            }
+
+            .simple-quote-root .notes-section,
+            .simple-quote-root .terms-section {
+                padding: 16px;
+            }
+
+            .simple-quote-root .footer-section {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .simple-quote-root {
+                padding: 5px;
+            }
+
+            .simple-quote-root .header-section {
+                padding: 20px 16px;
+            }
+
+            .simple-quote-root .company-name {
+                font-size: 20px;
+            }
+
+            .simple-quote-root .quotation-badge {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+
+            .simple-quote-root .invoice-body {
+                padding: 20px 16px;
+            }
+
+            .simple-quote-root .info-box {
+                padding: 12px;
+            }
+
+            .simple-quote-root .summary-row {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
+            .simple-quote-root .total-row {
+                font-size: 16px;
+            }
+        }
+
+        @media print {
+            .simple-quote-root {
+                padding: 0;
+            }
+            .simple-quote-root .invoice-container {
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="simple-quote-root">
+        <div class="invoice-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="company-section">
+                <img src="/Content/web-assets/images/logo.png" alt="EquiBillBook Logo" class="company-logo">
+                <div class="company-name">Simple Solutions LLC</div>
+            </div>
+            <div class="quotation-badge">QUOTATION</div>
+        </div>
+
+        <!-- Body Content -->
+        <div class="invoice-body">
+            <!-- Info Grid -->
+            <div class="info-grid">
+                <div class="info-box">
+                    <h4>From:</h4>
+                    <p><strong>Simple Solutions LLC</strong></p>
+                    <p>345 Easy Street</p>
+                    <p>Nashville, TN, 37201</p>
+                    <p>Phone: +1 (555) 345-9012</p>
+                    <p>Email: quotes@simplesol.com</p>
+                    <p><strong>Tax ID:</strong> 47-5678901</p>
+                </div>
+                <div class="info-box">
+                    <h4>To:</h4>
+                    <p><strong>Mark Johnson</strong></p>
+                    <p>Swift Enterprises</p>
+                    <p>678 Quick Avenue</p>
+                    <p>Nashville, TN, 37201</p>
+                    <p>Phone: +1 (555) 456-0123</p>
+                    <p>mark@swiftent.com</p>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <h4>Quotation Details:</h4>
+                    <p><strong>Quotation #:</strong> SQ-2024-0238</p>
+                    <p><strong>Date:</strong> December 2, 2024 8:00 PM</p>
+                    <p><strong>Status:</strong> Pending</p>
+                </div>
+                <div class="info-box">
+                    <h4>Ship To:</h4>
+                    <p><strong>Mark Johnson</strong></p>
+                    <p>Swift Enterprises</p>
+                    <p>678 Quick Avenue</p>
+                    <p>Nashville, TN, 37201</p>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Description</th>
+                        <th style="width: 80px;">SKU</th>
+                        <th style="width: 80px;">Qty</th>
+                        <th style="width: 100px;">Rate</th>
+                        <th style="width: 90px;">Discount</th>
+                        <th style="width: 80px;">Tax</th>
+                        <th style="width: 110px;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td data-label="#">1</td>
+                        <td data-label="Description">
+                            <div class="item-name">Business Website</div>
+                            <div class="item-meta">5-page professional website</div>
+                        </td>
+                        <td data-label="SKU">WEB-401</td>
+                        <td data-label="Qty">1 Unit</td>
+                        <td data-label="Rate">$2,500.00</td>
+                        <td data-label="Discount">$125.00</td>
+                        <td data-label="Tax">$427.50</td>
+                        <td data-label="Amount">$2,802.50</td>
+                    </tr>
+                    <tr>
+                        <td data-label="#">2</td>
+                        <td data-label="Description">
+                            <div class="item-name">Logo Design</div>
+                            <div class="item-meta">3 concepts with revisions</div>
+                        </td>
+                        <td data-label="SKU">LOG-402</td>
+                        <td data-label="Qty">1 Unit</td>
+                        <td data-label="Rate">$800.00</td>
+                        <td data-label="Discount">10%</td>
+                        <td data-label="Tax">$129.60</td>
+                        <td data-label="Amount">$849.60</td>
+                    </tr>
+                    <tr>
+                        <td data-label="#">3</td>
+                        <td data-label="Description">
+                            <div class="item-name">Annual Hosting & Support</div>
+                            <div class="item-meta">Includes domain, hosting, and updates</div>
+                        </td>
+                        <td data-label="SKU">HOS-403</td>
+                        <td data-label="Qty">12 Months</td>
+                        <td data-label="Rate">$100.00</td>
+                        <td data-label="Discount">$0.00</td>
+                        <td data-label="Tax">$216.00</td>
+                        <td data-label="Amount">$1,416.00</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Summary Box -->
+            <div class="summary-box">
+                <div class="summary-row">
+                    <span class="summary-label">Total Qty</span>
+                    <span class="summary-value">14 Units</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Gross Amount</span>
+                    <span class="summary-value">$4,500.00</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Discount</span>
+                    <span class="summary-value">-$285.00</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Tax (GST 18%)</span>
+                    <span class="summary-value">$773.10</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Net Amount</span>
+                    <span class="summary-value">$4,988.10</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Round Off</span>
+                    <span class="summary-value">-$8.10</span>
+                </div>
+                <div class="summary-row total-row">
+                    <span class="summary-label">Grand Total</span>
+                    <span class="summary-value">$5,068.10</span>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="notes-section">
+                <h4>Important Notes:</h4>
+                <p>• Delivery schedule will be agreed after acceptance.</p>
+                <p>• All work will be completed according to the specifications outlined above.</p>
+                <p>• Any additional requirements may result in scope and pricing adjustments.</p>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="terms-section">
+                <h4>Terms & Conditions:</h4>
+                <ul>
+                    <li>Payment terms: 40% advance, 30% at midpoint, 30% on completion.</li>
+                    <li>All prices are in USD and include applicable taxes.</li>
+                    <li>This quotation is valid for 30 days from the date of issue.</li>
+                    <li>Scope changes after acceptance may incur additional charges.</li>
+                    <li>All work remains our property until full payment is received.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-section">
+            <p><strong>Thank you for your business!</strong></p>
+            <div class="contact-info">
+                <p>For questions, contact us at quotes@simplesol.com or call +1 (555) 345-9012</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

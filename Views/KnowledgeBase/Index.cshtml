@@ -1,0 +1,616 @@
+@using EquiBillBook.Controllers.Website
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    string baseUrl = Request.Url != null ? Request.Url.Scheme + "://" + Request.Url.Host : "https://equibillbook.com";
+}
+
+<!-- Breadcrumb Structured Data for Knowledge Base Index -->
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "@baseUrl"
+    },
+    {
+      "@@type": "ListItem",
+      "position": 2,
+      "name": "Knowledge Base",
+      "item": "@baseUrl/knowledgebase"
+    }
+  ]
+}
+</script>
+
+<!-- CollectionPage Structured Data -->
+@{
+    var articles = ViewBag.Articles != null ? ((System.Collections.IEnumerable)ViewBag.Articles).Cast<KnowledgeBaseArticle>().Take(10).ToList() : new List<KnowledgeBaseArticle>();
+    var articleList = new System.Text.StringBuilder();
+    int position = 1;
+    foreach (var article in articles)
+    {
+        if (position > 1) { articleList.Append(",\n      "); }
+        articleList.Append("{\n");
+        articleList.Append("            \"@@type\": \"ListItem\",\n");
+        articleList.AppendFormat("            \"position\": {0},\n", position);
+        articleList.Append("            \"item\": {\n");
+        articleList.Append("              \"@@type\": \"Article\",\n");
+        articleList.AppendFormat("              \"name\": \"{0}\",\n", article.Title.Replace("\"", "\\\""));
+        articleList.AppendFormat("              \"url\": \"{0}/knowledgebase/article/{1}\"\n", baseUrl, article.Slug);
+        articleList.Append("            }\n");
+        articleList.Append("          }");
+        position++;
+    }
+    var scriptContent = new System.Text.StringBuilder();
+    scriptContent.Append("{\n");
+    scriptContent.Append("  \"@@context\": \"https://schema.org\",\n");
+    scriptContent.Append("  \"@@type\": \"CollectionPage\",\n");
+    scriptContent.Append("  \"name\": \"Knowledge Base - Help Center | EquiBillBook\",\n");
+    scriptContent.Append("  \"description\": \"Comprehensive help center and knowledge base for EquiBillBook. Find guides, tutorials, and answers to common questions about billing, inventory, accounting, and more.\",\n");
+    scriptContent.AppendFormat("  \"url\": \"{0}/knowledgebase\",\n", baseUrl);
+    scriptContent.Append("  \"mainEntity\": {\n");
+    scriptContent.Append("    \"@@type\": \"ItemList\",\n");
+    scriptContent.Append("    \"itemListElement\": [\n");
+    scriptContent.Append("      ");
+    scriptContent.Append(articleList.ToString());
+    scriptContent.Append("\n    ]\n");
+    scriptContent.Append("  }\n");
+    scriptContent.Append("}");
+}
+<script type="application/ld+json">
+@Html.Raw(scriptContent.ToString())
+</script>
+
+<style>
+    .kb-search-box {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    .kb-search-input {
+        border-radius: 50px;
+        padding: 1rem 1.5rem;
+        border: 1px solid #dee2e6;
+        font-size: 1.1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .kb-search-input:focus {
+        outline: none;
+        border-color: #6c3fb5;
+        box-shadow: 0 2px 12px rgba(108, 63, 181, 0.2);
+    }
+    
+    .kb-search-btn {
+        border-radius: 50px;
+        padding: 1rem 2rem;
+        background: #6c3fb5;
+        color: white;
+        border: none;
+        font-weight: 600;
+        margin-left: -50px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: background 0.3s;
+    }
+    
+    .kb-search-btn:hover {
+        background: #5a32a0;
+        color: white;
+    }
+    
+    .kb-category-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+    }
+    
+    .kb-category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .kb-category-icon {
+        font-size: 2.5rem;
+        color: #6c3fb5;
+        margin-bottom: 1rem;
+    }
+    
+    .kb-article-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .kb-article-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .kb-article-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .kb-article-card .kb-article-title {
+        flex-shrink: 0;
+    }
+    
+    .kb-article-card .kb-article-description {
+        flex-grow: 1;
+        margin-bottom: 1rem;
+    }
+    
+    .kb-article-card .d-flex.flex-wrap {
+        flex-shrink: 0;
+    }
+    
+    .kb-article-card .mt-2 {
+        flex-shrink: 0;
+        margin-top: auto;
+    }
+    
+    .kb-article-title {
+        color: #6c3fb5;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .kb-article-title:hover {
+        text-decoration: underline;
+    }
+    
+    .kb-article-description {
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .kb-tag {
+        display: inline-block;
+        background: #e9ecef;
+        color: #495057;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .kb-no-results {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+    }
+    
+    .kb-sidebar {
+        position: sticky;
+        top: 20px;
+    }
+    
+    .kb-category-list {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    .kb-category-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .kb-category-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .kb-category-list::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+    }
+    
+    .kb-category-list::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    .kb-category-list-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .kb-category-list-item:last-child {
+        border-bottom: none;
+    }
+    
+    .kb-category-list-item a {
+        color: #495057;
+        text-decoration: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .kb-category-list-item a:hover {
+        color: #6c3fb5;
+    }
+    
+    .kb-category-count {
+        background: #e9ecef;
+        color: #6c757d;
+        padding: 0.25rem 0.5rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+    }
+    
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.3em;
+    }
+    
+    .kb-category-group {
+        margin-bottom: 2rem;
+    }
+</style>
+
+<!-- Inner Banner -->
+<section class="banner pt-3 pb-0" style="background: #6c3fb5;">
+    <div class="container">
+        <div class="row justify-content-between align-items-center">
+            <div class="col-md-6 text-md-start text-center wow zoomInLeft">
+                <h1 class="mb-3 text-white">Knowledge Base</h1>
+                <h5 class="text-white">Find answers and learn how to use EquiBillBook</h5>
+            </div>
+            <div class="col-md-3 wow zoomInRight">
+                <img src="~/Content/web-assets/images/innerbanner.png" class="img-fluid" alt="EquiBillBook Knowledge Base - Help Center">
+            </div>
+        </div>
+    </div>
+</section>
+<!-- // -->
+
+<!-- Main Content -->
+<section class="py-5">
+    <div class="container">
+        <!-- Search Section -->
+        <div class="kb-search-box mb-5">
+            <form id="kbSearchForm" onsubmit="return false;">
+                <div class="input-group">
+                    <input type="text" id="kbSearchInput" class="form-control kb-search-input" placeholder="Search for help articles, guides, and tutorials..." autocomplete="off">
+                    <button type="submit" class="btn kb-search-btn">
+                        <i class="fas fa-search me-2"></i>Search
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="row">
+            <!-- Sidebar - Categories -->
+            <div class="col-lg-3 mb-4">
+                <div class="kb-sidebar">
+                    <div class="kb-category-list">
+                        <h5 class="mb-3 fw-bold">Categories</h5>
+                        <div class="kb-category-list-item">
+                            <a href="/knowledgebase">
+                                <span>All Articles</span>
+                                <span class="kb-category-count">@(ViewBag.Articles != null ? ((System.Collections.IEnumerable)ViewBag.Articles).Cast<object>().Count() : 0)</span>
+                            </a>
+                        </div>
+                        @if (ViewBag.Categories != null)
+                        {
+                            foreach (string category in ViewBag.Categories)
+                            {
+                                var categoryArticles = ViewBag.Articles != null ? 
+                                    ((System.Collections.IEnumerable)ViewBag.Articles).Cast<KnowledgeBaseArticle>().Where(a => a.Category == category).ToList() : 
+                                    new List<KnowledgeBaseArticle>();
+                                <div class="kb-category-list-item">
+                                    <a href="/knowledgebase/category/@category.ToLower().Replace(" ", "-")">
+                                        <span>@category</span>
+                                        <span class="kb-category-count">@categoryArticles.Count</span>
+                                    </a>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Articles List -->
+            <div class="col-lg-9">
+                <div id="kbArticlesContainer">
+                    @if (ViewBag.Articles != null && ((System.Collections.IEnumerable)ViewBag.Articles).Cast<object>().Any())
+                    {
+                        // Load only first 12 articles initially for infinite scroll
+                        var allArticles = ((System.Collections.IEnumerable)ViewBag.Articles).Cast<KnowledgeBaseArticle>().ToList();
+                        var initialArticles = allArticles.Take(12).ToList();
+                        
+                        // Group initial articles by category
+                        var articlesByCategory = initialArticles.GroupBy(a => a.Category);
+                        
+                        foreach (var categoryGroup in articlesByCategory)
+                        {
+                            <div class="mb-5 kb-category-group" data-category="@categoryGroup.Key">
+                                <div class="row">
+                                    @foreach (var article in categoryGroup)
+                                    {
+                                        <div class="col-md-6 mb-3 kb-article-item" data-title="@article.Title.ToLower()" data-tags="@string.Join(" ", article.Tags).ToLower()" data-category="@article.Category">
+                                            <div class="kb-article-card">
+                                                <h4 class="kb-article-title">
+                                                    <a href="/knowledgebase/article/@article.Slug">@article.Title</a>
+                                                </h4>
+                                                <p class="kb-article-description">@article.Description</p>
+                                                <div class="d-flex flex-wrap">
+                                                    @foreach (var tag in article.Tags)
+                                                    {
+                                                        <span class="kb-tag">@tag</span>
+                                                    }
+                                                </div>
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        <i class="far fa-clock me-1"></i>
+                                                        Updated @(((DateTime)article.LastUpdated).ToString("MMM dd, yyyy"))
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <!-- Empty container - JavaScript will load articles via API -->
+                    }
+                </div>
+
+                <!-- Loading indicator -->
+                <div id="kbLoadingIndicator" class="text-center py-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading more articles...</p>
+                </div>
+
+                <!-- No Search Results -->
+                <div id="kbNoResults" class="kb-no-results" style="display: none;">
+                    <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                    <h3>No articles found</h3>
+                    <p>Try different keywords or browse by category.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(document).ready(function() {
+        var currentPage = 1;
+        var pageSize = 12;
+        var isLoading = false;
+        var hasMore = true;
+        var currentSearch = '';
+        var currentCategory = '';
+        var searchTimeout;
+
+        // Infinite scroll functionality
+        $(window).on('scroll', function() {
+            if (isLoading || !hasMore) return;
+
+            var scrollTop = $(window).scrollTop();
+            var windowHeight = $(window).height();
+            var documentHeight = $(document).height();
+            var scrollPercentage = (scrollTop + windowHeight) / documentHeight;
+
+            // Load more when user scrolls to 80% of the page
+            if (scrollPercentage > 0.8) {
+                loadMoreArticles();
+            }
+        });
+
+        // Search functionality with debounce
+        $('#kbSearchForm').on('submit', function(e) {
+            e.preventDefault();
+            performSearch();
+        });
+
+        $('#kbSearchInput').on('keyup', function() {
+            clearTimeout(searchTimeout);
+            var query = $(this).val().trim();
+            
+            if (query.length === 0) {
+                resetToInitialLoad();
+            } else if (query.length >= 2) {
+                searchTimeout = setTimeout(function() {
+                    performSearch();
+                }, 500); // Debounce search by 500ms
+            }
+        });
+
+        function resetToInitialLoad() {
+            currentPage = 1;
+            currentSearch = '';
+            currentCategory = '';
+            hasMore = true;
+            $('#kbArticlesContainer').empty();
+            $('#kbNoResults').hide();
+            $('#kbArticlesContainer').show();
+            loadMoreArticles(true);
+        }
+
+        function performSearch() {
+            var query = $('#kbSearchInput').val().trim();
+            currentSearch = query;
+            currentPage = 1;
+            hasMore = true;
+            $('#kbArticlesContainer').empty();
+            $('#kbNoResults').hide();
+            $('#kbArticlesContainer').show();
+            loadMoreArticles(true);
+        }
+
+        function loadMoreArticles(reset) {
+            if (isLoading) return;
+
+            isLoading = true;
+            $('#kbLoadingIndicator').show();
+
+            var requestData = {
+                PageIndex: reset ? 1 : currentPage,
+                PageSize: pageSize,
+                Search: currentSearch,
+                Category: currentCategory
+            };
+
+            $.ajax({
+                url: '/api/KnowledgeBase/GetArticles',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(requestData),
+                success: function(response) {
+                    if (response.Status === 1 && response.Data) {
+                        var articles = response.Data.Articles;
+                        hasMore = response.Data.HasMore;
+
+                        if (articles && articles.length > 0) {
+                            appendArticles(articles);
+                            currentPage = reset ? 2 : currentPage + 1;
+                        } else if (currentPage === 1) {
+                            // No results on first page
+                            $('#kbNoResults').show();
+                            $('#kbArticlesContainer').hide();
+                        }
+                    } else {
+                        hasMore = false;
+                        if (currentPage === 1) {
+                            $('#kbNoResults').show();
+                            $('#kbArticlesContainer').hide();
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading articles:', error);
+                    hasMore = false;
+                    if (currentPage === 1) {
+                        $('#kbNoResults').show();
+                        $('#kbArticlesContainer').hide();
+                    }
+                },
+                complete: function() {
+                    isLoading = false;
+                    $('#kbLoadingIndicator').hide();
+                }
+            });
+        }
+
+        function appendArticles(articles) {
+            // Group articles by category
+            var articlesByCategory = {};
+            articles.forEach(function(article) {
+                if (!articlesByCategory[article.Category]) {
+                    articlesByCategory[article.Category] = [];
+                }
+                articlesByCategory[article.Category].push(article);
+            });
+
+            // Append articles grouped by category
+            Object.keys(articlesByCategory).forEach(function(category) {
+                var categoryArticles = articlesByCategory[category];
+                var categoryGroup = $('.kb-category-group[data-category="' + category + '"]');
+                
+                if (categoryGroup.length === 0) {
+                    // Create new category group
+                    var categoryHtml = '<div class="mb-5 kb-category-group" data-category="' + category + '"><div class="row">';
+                    categoryArticles.forEach(function(article) {
+                        categoryHtml += createArticleHtml(article);
+                    });
+                    categoryHtml += '</div></div>';
+                    $('#kbArticlesContainer').append(categoryHtml);
+                } else {
+                    // Append to existing category group
+                    categoryArticles.forEach(function(article) {
+                        var articleHtml = createArticleHtml(article);
+                        categoryGroup.find('.row').append(articleHtml);
+                    });
+                }
+            });
+        }
+
+        function createArticleHtml(article) {
+            var tagsHtml = '';
+            if (article.Tags && article.Tags.length > 0) {
+                article.Tags.forEach(function(tag) {
+                    tagsHtml += '<span class="kb-tag">' + escapeHtml(tag) + '</span>';
+                });
+            }
+
+            return '<div class="col-md-6 mb-3 kb-article-item" data-title="' + 
+                   escapeHtml(article.Title).toLowerCase() + '" data-tags="' + 
+                   (article.Tags ? article.Tags.join(' ').toLowerCase() : '') + '" data-category="' + 
+                   escapeHtml(article.Category) + '">' +
+                   '<div class="kb-article-card">' +
+                   '<h4 class="kb-article-title">' +
+                   '<a href="/knowledgebase/article/' + escapeHtml(article.Slug) + '">' + escapeHtml(article.Title) + '</a>' +
+                   '</h4>' +
+                   '<p class="kb-article-description">' + escapeHtml(article.Description) + '</p>' +
+                   '<div class="d-flex flex-wrap">' + tagsHtml + '</div>' +
+                   '<div class="mt-2">' +
+                   '<small class="text-muted">' +
+                   '<i class="far fa-clock me-1"></i>Updated ' + escapeHtml(article.LastUpdated) +
+                   '</small>' +
+                   '</div>' +
+                   '</div>' +
+                   '</div>';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            var map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // Initial load check
+        var initialArticleCount = $('.kb-article-item').length;
+        
+        // If no articles were loaded server-side, load them via API
+        if (initialArticleCount === 0) {
+            // Hide the "No articles found" message if it exists
+            $('#kbNoResults').hide();
+            $('#kbArticlesContainer').show();
+            currentPage = 1;
+            loadMoreArticles(true);
+        } 
+        // If there are some articles but less than pageSize, try to load more
+        else if (initialArticleCount > 0 && initialArticleCount < pageSize) {
+            currentPage = 2;
+            loadMoreArticles(false);
+        } else {
+            // If we have a full page, set currentPage to 2 for next load
+            currentPage = 2;
+        }
+    });
+</script>
+

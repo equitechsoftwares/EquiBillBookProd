@@ -1,0 +1,136 @@
+@{
+    var kots = ViewBag.Kots as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var currentPageIndex = ViewBag.CurrentPageIndex ?? 1;
+    var pageCount = ViewBag.PageCount ?? 0;
+    var fromDate = ViewBag.FromDate ?? DateTime.Now.Date.AddDays(-30);
+    var toDate = ViewBag.ToDate ?? DateTime.Now.Date;
+}
+
+@{
+    // Group KOTs by table and date
+    var tableTurnoverData = kots
+        .Where(k => k.TableId != null && k.TableId > 0 && k.OrderTime != null && k.OrderStatus == "Served")
+        .GroupBy(k => new { 
+            TableId = k.TableId, 
+            TableNo = k.TableNo ?? "Unknown",
+            TableName = k.TableName ?? "",
+            Date = ((DateTime)k.OrderTime).Date
+        })
+        .Select(g => new {
+            TableId = g.Key.TableId,
+            TableNo = g.Key.TableNo,
+            TableName = g.Key.TableName,
+            Date = g.Key.Date,
+            Turnovers = g.Count()
+        })
+        .GroupBy(t => new { t.TableId, t.TableNo, t.TableName })
+        .Select(g => new {
+            TableId = g.Key.TableId,
+            TableNo = g.Key.TableNo,
+            TableName = g.Key.TableName,
+            TotalTurnovers = g.Sum(t => t.Turnovers),
+            DaysActive = g.Count(),
+            AvgTurnoversPerDay = g.Average(t => t.Turnovers),
+            MaxTurnoversInDay = g.Max(t => t.Turnovers)
+        })
+        .OrderByDescending(t => t.TotalTurnovers)
+        .ToList();
+    
+    var totalDays = (toDate - fromDate).TotalDays + 1;
+}
+
+<thead id="thead">
+    <tr>
+        <th>Table No</th>
+        <th>Table Name</th>
+        <th>Total Turnovers</th>
+        <th>Days Active</th>
+        <th>Avg Turnovers/Day</th>
+        <th>Max Turnovers/Day</th>
+        <th>Utilization Rate</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (tableTurnoverData.Count > 0)
+    {
+        foreach (var table in tableTurnoverData)
+        {
+            var utilizationRate = totalDays > 0 ? Math.Round((table.DaysActive / totalDays) * 100, 2) : 0;
+            
+            <tr>
+                <td><strong>@table.TableNo</strong></td>
+                <td>@(string.IsNullOrEmpty(table.TableName) ? "-" : table.TableName)</td>
+                <td><span class="badge badge-primary">@table.TotalTurnovers</span></td>
+                <td>@table.DaysActive</td>
+                <td>@Math.Round(table.AvgTurnoversPerDay, 1)</td>
+                <td><span class="badge badge-warning">@table.MaxTurnoversInDay</span></td>
+                <td>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar @(utilizationRate >= 80 ? "bg-success" : utilizationRate >= 60 ? "bg-info" : utilizationRate >= 40 ? "bg-warning" : "bg-danger")" 
+                             role="progressbar" style="width: @utilizationRate%" aria-valuenow="@utilizationRate" aria-valuemin="0" aria-valuemax="100">
+                            @utilizationRate%
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    }
+</tbody>
+@if (tableTurnoverData.Count > 0)
+{
+    <tfoot>
+        <tr>
+            <th colspan="2">Total</th>
+            <th>@tableTurnoverData.Sum(t => t.TotalTurnovers)</th>
+            <th>@tableTurnoverData.Sum(t => t.DaysActive)</th>
+            <th>@Math.Round(tableTurnoverData.Average(t => t.AvgTurnoversPerDay), 1)</th>
+            <th>@tableTurnoverData.Max(t => t.MaxTurnoversInDay)</th>
+            <th>-</th>
+        </tr>
+    </tfoot>
+}
+<tbody class="hide noPrint">
+    <tr></tr>
+    <tr>
+        <td colspan="7">
+            <div class="dataTables_info" id="tblTableTurnover_info_custom" role="status" aria-live="polite">Showing @((currentPageIndex - 1) * pageSize + 1) to @(Math.Min(currentPageIndex * pageSize, totalCount)) of @totalCount entries</div>
+            @if (pageCount > 1)
+            {
+                int j = 0;
+                <div class="dataTables_paginate paging_simple_numbers" id="tblTableTurnover_paginate_custom" style="float:right">
+                    <ul class="pagination">
+                        @if (currentPageIndex > 1)
+                        {
+                            <li class="paginate_button page-item previous" id="tblTableTurnover_previous">
+                                <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblTableTurnover" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                            </li>
+                            <li class="paginate_button page-item previous" id="tblTableTurnover_previous">
+                                <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblTableTurnover" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                            </li>
+                        }
+                        @for (int i = currentPageIndex; i <= pageCount; i++)
+                        {
+                            <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblTableTurnover" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                            </li>
+                            if (j == 10)
+                            {
+                                i = pageCount + 1;
+                            }
+                            j++;
+                        }
+                        @if (currentPageIndex < pageCount)
+                        {
+                            <li class="paginate_button page-item next" id="tblTableTurnover_next">
+                                <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblTableTurnover" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </td>
+    </tr>
+</tbody>
+

@@ -1,0 +1,48 @@
+
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th>Sln</th>
+            <th>Customer Name</th>
+            <th>Total Points Earned</th>
+            <th>Total Points Redeemed</th>
+            <th>Available Points</th>
+            <th>Expired Points</th>
+            <th>Last Earned Date</th>
+            <th>Last Redeemed Date</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @if (ViewBag.CustomerRewardPoints != null)
+        {
+            foreach (var item in ViewBag.CustomerRewardPoints)
+            {
+                <tr>
+                    <td>@(ViewBag.PageSize * (ViewBag.CurrentPageIndex - 1) + count)</td>
+                    <td>@item.CustomerName</td>
+                    <td>@String.Format("{0:0.##}", item.TotalPointsEarned)</td>
+                    <td>@String.Format("{0:0.##}", item.TotalPointsRedeemed)</td>
+                    <td><strong>@String.Format("{0:0.##}", item.AvailablePoints)</strong></td>
+                    <td>@String.Format("{0:0.##}", item.ExpiredPoints)</td>
+                    <td>@(item.LastEarnedDate != null ? ((DateTime)item.LastEarnedDate).ToString("dd-MM-yyyy") : "-")</td>
+                    <td>@(item.LastRedeemedDate != null ? ((DateTime)item.LastRedeemedDate).ToString("dd-MM-yyyy") : "-")</td>
+                    <td>
+                        <a href="/rewardpointsreports/customerpointsstatementdetailed?customerId=@item.CustomerId" class="btn btn-sm btn-info" title="View Detailed Statement">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                    </td>
+                </tr>
+                count++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="9" class="text-center">No data available</td>
+            </tr>
+        }
+    </tbody>
+}
+

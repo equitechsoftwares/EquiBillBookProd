@@ -1,0 +1,872 @@
+@using System.Linq
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Customize Invoice Template";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+    var invoiceType = ViewBag.InvoiceType as string ?? "Sales";
+    var templateKey = ViewBag.TemplateKey as string ?? "modern";
+    var templateId = ViewBag.TemplateId as long? ?? 0;
+    var sectionLabels = ViewBag.SectionLabels as EquiBillBook.Models.ClsSectionLabelConfig ?? new EquiBillBook.Models.ClsSectionLabelConfig();
+    var template = ViewBag.Template as dynamic;
+    var templateDefaults = ViewBag.TemplateDefaults as EquiBillBook.Models.ClsInvoiceTemplateDefaultsMasterVm ?? new EquiBillBook.Models.ClsInvoiceTemplateDefaultsMasterVm();
+
+    // Helper function to get label visibility from template config
+    Func<string, string, bool> GetLabelVisibility = (section, labelKey) =>
+    {
+        // First try to get from database template config
+        if (template?.TemplateConfig != null)
+        {
+            try
+            {
+                dynamic config = template.TemplateConfig;
+                if (config is string)
+                {
+                    config = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(config);
+                }
+                var sectionConfig = config?[section];
+                if (sectionConfig?.LabelVisibility != null)
+                {
+                    var visibility = sectionConfig.LabelVisibility[labelKey];
+                    if (visibility != null)
+                    {
+                        return (bool)visibility;
+                    }
+                }
+            }
+            catch { }
+        }
+        // Fallback to sectionLabels default (for new templates)
+        System.Collections.Generic.Dictionary<string, bool> sectionLabelsDict = null;
+        switch (section)
+        {
+            case "Header":
+                sectionLabelsDict = sectionLabels.HeaderLabels;
+                break;
+            case "Company":
+                sectionLabelsDict = sectionLabels.CompanyLabels;
+                break;
+            case "Customer":
+                sectionLabelsDict = sectionLabels.CustomerLabels;
+                break;
+            case "Items":
+                sectionLabelsDict = sectionLabels.ItemsLabels;
+                break;
+            case "Summary":
+                sectionLabelsDict = sectionLabels.SummaryLabels;
+                break;
+            case "Footer":
+                sectionLabelsDict = sectionLabels.FooterLabels;
+                break;
+        }
+        if (sectionLabelsDict != null && sectionLabelsDict.ContainsKey(labelKey))
+        {
+            return sectionLabelsDict[labelKey];
+        }
+        return false;
+    };
+
+    // Helper function to get label color from template config
+    Func<string, string, string> GetLabelColor = (section, labelKey) =>
+    {
+        // Get from database template config
+        if (template?.TemplateConfig != null)
+        {
+            try
+            {
+                dynamic config = template.TemplateConfig;
+                if (config is string)
+                {
+                    config = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(config);
+                }
+                var sectionConfig = config?[section];
+                if (sectionConfig?.LabelStyles != null)
+                {
+                    var style = sectionConfig.LabelStyles[labelKey];
+                    if (style?.Color != null)
+                    {
+                        return (string)style.Color;
+                    }
+                }
+            }
+            catch { }
+        }
+        // Try to get from template defaults (master tables)
+        if (templateDefaults != null && templateDefaults.LabelColors != null && templateDefaults.LabelColors.ContainsKey(section))
+        {
+            var sectionLabelColors = templateDefaults.LabelColors[section];
+            if (sectionLabelColors != null && sectionLabelColors.ContainsKey(labelKey))
+            {
+                return sectionLabelColors[labelKey];
+            }
+        }
+        // Return empty string if not found (no hardcoded fallback)
+        return "";
+    };
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Customize Template: <span id="templateNameDisplay">@(template?.TemplateName ?? "Modern")</span></h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/invoicetemplatesettings/index">Invoice Templates</a></li>
+                        <li class="breadcrumb-item active">Customize</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a href="/invoicetemplatesettings/index" class="btn btn-warning float-sm-right">
+                    Back
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div id="divLoading" style="display:none;">
+        </div>
+        <div class="row">
+            <!-- Left Column: Configuration Options -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Template Configuration</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Template Name -->
+                        <div class="form-group">
+                            <label>Template Name <span class="text-danger">*</span></label>
+                            <input type="text" id="txtTemplateName" class="form-control"
+                                   value="@(template?.TemplateName ?? "Custom Template")" placeholder="Enter template name" />
+                            <small class="text-red font-weight-bold errorText" id="divTemplateName" style="display:none;"></small>
+                        </div>
+
+                        <!-- Template Description -->
+                        <div class="form-group">
+                            <label>Template Description</label>
+                            <textarea id="txtTemplateDescription"
+                                      class="form-control"
+                                      rows="2"
+                                      maxlength="250"
+                                      placeholder="Add a short note so your team can recognize this template (optional)">@(
+                                          template?.Description ?? ""
+                                      )</textarea>
+                        </div>
+
+                        <!-- Configuration Tabs -->
+                        <ul class="nav nav-tabs" id="configTabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="tab" href="#colors">
+                                    <i class="fas fa-palette"></i> Colors
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#fonts">
+                                    <i class="fas fa-font"></i> Fonts
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#labels">
+                                    <i class="fas fa-tags"></i> Labels
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#print">
+                                    <i class="fas fa-print"></i> Print & Export
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content mt-3">
+                            <!-- Colors Tab -->
+                            <div class="tab-pane fade show active" id="colors">
+                                @{
+                                    var colorsByCategory = templateDefaults?.ColorsByCategory ?? new System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, EquiBillBook.Models.ColorInfo>>();
+                                    var colorDefaults = templateDefaults?.Colors ?? new System.Collections.Generic.Dictionary<string, string>();
+                                }
+                                @if (colorsByCategory != null && colorsByCategory.Count > 0)
+                                {
+                                    var categorySortOrders = templateDefaults?.CategorySortOrders ?? new System.Collections.Generic.Dictionary<string, int>();
+                                    var categoryList = colorsByCategory
+                                        .OrderBy(c => categorySortOrders.ContainsKey(c.Key) ? categorySortOrders[c.Key] : int.MaxValue)
+                                        .ThenBy(c => c.Key)
+                                        .ToList();
+                                    
+                                    <div class="accordion" id="colorCategoriesAccordion">
+                                        @for (int i = 0; i < categoryList.Count; i++)
+                                        {
+                                            var categoryGroup = categoryList[i];
+                                            var categoryName = categoryGroup.Key;
+                                            var categoryColors = categoryGroup.Value.OrderBy(c => c.Value.SortOrder);
+                                            var categoryId = "colorCategory_" + i;
+                                            var collapseId = categoryId + "Collapse";
+                                            var headingId = categoryId + "Heading";
+                                            var isFirst = i == 0;
+                                            
+                                            <div class="card">
+                                                <div class="card-header" id="@headingId">
+                                                    <h5 class="mb-0">
+                                                        <button class="btn btn-link d-flex justify-content-between align-items-center w-100 text-left pl-0 @(isFirst ? "" : "collapsed")" 
+                                                                type="button" 
+                                                                data-toggle="collapse" 
+                                                                data-target="#@collapseId" 
+                                                                aria-expanded="@(isFirst ? "true" : "false")">
+                                                            <span>@categoryName</span>
+                                                            <i class="fas fa-chevron-@(isFirst ? "up" : "down") collapse-icon"></i>
+                                                        </button>
+                                                    </h5>
+                                                </div>
+                                                <div id="@collapseId" 
+                                                     class="collapse @(isFirst ? "show" : "")" 
+                                                     data-parent="#colorCategoriesAccordion">
+                                                    <div class="card-body">
+                                                        @foreach (var colorKvp in categoryColors)
+                                                        {
+                                                            var colorInfo = colorKvp.Value;
+                                                            var colorKey = colorInfo.ColorKey;
+                                                            var colorName = !string.IsNullOrEmpty(colorInfo.ColorName) ? colorInfo.ColorName : colorKey;
+                                                            var colorValue = colorInfo.DefaultValue;
+                                                            var colorDescription = colorInfo.Description;
+                                                            
+                                                            <div class="form-group">
+                                                                <div class="d-flex align-items-center justify-content-between">
+                                                                    <div class="flex-grow-1">
+                                                                        <label class="mb-0">@colorName</label>
+                                                                        @if (!string.IsNullOrEmpty(colorDescription))
+                                                                        {
+                                                                            <small class="text-muted d-block">@colorDescription</small>
+                                                                        }
+                                                                    </div>
+                                                                    <input type="color"
+                                                                           id="color_@colorKey"
+                                                                           class="form-control form-control-color ml-3"
+                                                                           value="@colorValue"
+                                                                           style="width: 80px; height: 45px; flex-shrink: 0;" />
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else if (colorDefaults != null && colorDefaults.Count > 0)
+                                {
+                                    // Fallback to flat dictionary if ColorsByCategory is not available (backward compatibility)
+                                    <div class="accordion" id="colorCategoriesAccordion">
+                                        <div class="card">
+                                            <div class="card-header" id="defaultColorsHeading">
+                                                <h5 class="mb-0">
+                                                    <button class="btn btn-link d-flex justify-content-between align-items-center w-100 text-left pl-0" 
+                                                            type="button" 
+                                                            data-toggle="collapse" 
+                                                            data-target="#defaultColorsCollapse" 
+                                                            aria-expanded="true">
+                                                        <span>Colors</span>
+                                                        <i class="fas fa-chevron-up collapse-icon"></i>
+                                                    </button>
+                                                </h5>
+                                            </div>
+                                            <div id="defaultColorsCollapse" 
+                                                 class="collapse show" 
+                                                 data-parent="#colorCategoriesAccordion">
+                                                <div class="card-body">
+                                                    @foreach (var kvp in colorDefaults)
+                                                    {
+                                                        var colorKey = kvp.Key;
+                                                        var colorValue = kvp.Value;
+                                                        <div class="form-group">
+                                                            <label>@colorKey</label>
+                                                            <input type="color"
+                                                                   id="color_@colorKey"
+                                                                   class="form-control form-control-color"
+                                                                   value="@colorValue" />
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Fonts Tab -->
+                            <div class="tab-pane fade" id="fonts">
+                                @{
+                                    // Helper function to get font value from template config or use defaults
+                                    Func<string, string> GetFontValue = (key) =>
+                                    {
+                                        // First try to get from database template config
+                                        if (template?.TemplateConfig != null)
+                                        {
+                                            try
+                                            {
+                                                dynamic config = template.TemplateConfig;
+                                                if (config is string)
+                                                {
+                                                    config = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(config);
+                                                }
+                                                var fonts = config?.Fonts;
+                                                if (fonts != null)
+                                                {
+                                                    var value = fonts[key];
+                                                    if (value != null)
+                                                    {
+                                                        return value.ToString();
+                                                    }
+                                                }
+                                            }
+                                            catch { }
+                                        }
+                                        // Return default values
+                                        switch (key)
+                                        {
+                                            case "PrimaryFontFamily":
+                                                return "'Inter', sans-serif";
+                                            case "BaseFontSize":
+                                                return "13";
+                                            case "FontWeightNormal":
+                                                return "400";
+                                            case "FontWeightBold":
+                                                return "700";
+                                            default:
+                                                return "";
+                                        }
+                                    };
+                                    
+                                    var primaryFontFamily = GetFontValue("PrimaryFontFamily");
+                                    var baseFontSize = GetFontValue("BaseFontSize");
+                                    var fontWeightNormal = GetFontValue("FontWeightNormal");
+                                    var fontWeightBold = GetFontValue("FontWeightBold");
+                                }
+                                
+                                <!-- Primary Font Family -->
+                                <div class="form-group">
+                                    <label>Primary Font Family</label>
+                                    <select id="ddlPrimaryFontFamily" class="form-control">
+                                        <option value="'Inter', sans-serif" @(primaryFontFamily == "'Inter', sans-serif" ? "selected" : "")>Inter</option>
+                                        <option value="'Roboto', sans-serif" @(primaryFontFamily == "'Roboto', sans-serif" ? "selected" : "")>Roboto</option>
+                                        <option value="'Open Sans', sans-serif" @(primaryFontFamily == "'Open Sans', sans-serif" ? "selected" : "")>Open Sans</option>
+                                        <option value="'Lato', sans-serif" @(primaryFontFamily == "'Lato', sans-serif" ? "selected" : "")>Lato</option>
+                                        <option value="'Montserrat', sans-serif" @(primaryFontFamily == "'Montserrat', sans-serif" ? "selected" : "")>Montserrat</option>
+                                        <option value="'Poppins', sans-serif" @(primaryFontFamily == "'Poppins', sans-serif" ? "selected" : "")>Poppins</option>
+                                        <option value="'Nunito', sans-serif" @(primaryFontFamily == "'Nunito', sans-serif" ? "selected" : "")>Nunito</option>
+                                        <option value="'Raleway', sans-serif" @(primaryFontFamily == "'Raleway', sans-serif" ? "selected" : "")>Raleway</option>
+                                        <option value="'Ubuntu', sans-serif" @(primaryFontFamily == "'Ubuntu', sans-serif" ? "selected" : "")>Ubuntu</option>
+                                        <option value="'Playfair Display', serif" @(primaryFontFamily == "'Playfair Display', serif" ? "selected" : "")>Playfair Display</option>
+                                        <option value="'Merriweather', serif" @(primaryFontFamily == "'Merriweather', serif" ? "selected" : "")>Merriweather</option>
+                                        <option value="'Georgia', serif" @(primaryFontFamily == "'Georgia', serif" ? "selected" : "")>Georgia</option>
+                                        <option value="'Times New Roman', serif" @(primaryFontFamily == "'Times New Roman', serif" ? "selected" : "")>Times New Roman</option>
+                                        <option value="'Courier New', monospace" @(primaryFontFamily == "'Courier New', monospace" ? "selected" : "")>Courier New</option>
+                                        <option value="'Arial', sans-serif" @(primaryFontFamily == "'Arial', sans-serif" ? "selected" : "")>Arial</option>
+                                        <option value="'Helvetica', sans-serif" @(primaryFontFamily == "'Helvetica', sans-serif" ? "selected" : "")>Helvetica</option>
+                                        <option value="'Verdana', sans-serif" @(primaryFontFamily == "'Verdana', sans-serif" ? "selected" : "")>Verdana</option>
+                                    </select>
+                                </div>
+
+                                <!-- Base Font Size -->
+                                <div class="form-group">
+                                    <label>Base Font Size (px)</label>
+                                    <input type="number" id="txtBaseFontSize" class="form-control"
+                                           value="@baseFontSize"
+                                           min="8" max="48" step="1" />
+                                </div>
+
+                                <!-- Font Weight - Normal -->
+                                <div class="form-group">
+                                    <label>Font Weight - Normal</label>
+                                    <select id="ddlFontWeightNormal" class="form-control">
+                                        <option value="300" @(fontWeightNormal == "300" ? "selected" : "")>Light (300)</option>
+                                        <option value="400" @(fontWeightNormal == "400" ? "selected" : "")>Regular (400)</option>
+                                        <option value="500" @(fontWeightNormal == "500" ? "selected" : "")>Medium (500)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Font Weight - Bold -->
+                                <div class="form-group">
+                                    <label>Font Weight - Bold</label>
+                                    <select id="ddlFontWeightBold" class="form-control">
+                                        <option value="600" @(fontWeightBold == "600" ? "selected" : "")>Semi-Bold (600)</option>
+                                        <option value="700" @(fontWeightBold == "700" ? "selected" : "")>Bold (700)</option>
+                                        <option value="800" @(fontWeightBold == "800" ? "selected" : "")>Extra Bold (800)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Labels Tab -->
+                            <div class="tab-pane fade" id="labels">
+                                @{
+                                    var labelsByCategory = ViewBag.LabelsByCategory as System.Collections.Generic.IEnumerable<EquiBillBook.Models.ClsInvoiceTemplateLabelMasterVm> ?? new System.Collections.Generic.List<EquiBillBook.Models.ClsInvoiceTemplateLabelMasterVm>();
+                                    
+                                    if (labelsByCategory != null && labelsByCategory.Any())
+                                    {
+                                        // Group labels directly by CategoryName (matching table structure)
+                                        var labelsGroupedByCategory = labelsByCategory
+                                            .GroupBy(l => l.CategoryName ?? "Uncategorized")
+                                            .OrderBy(g => 
+                                            {
+                                                // Get the first label's CategoryKey to determine sort order
+                                                var firstLabel = g.FirstOrDefault();
+                                                if (firstLabel != null)
+                                                {
+                                                    var order = new[] { "Header", "Company", "Customer", "Items", "Summary", "Footer" };
+                                                    var index = Array.IndexOf(order, firstLabel.CategoryKey);
+                                                    return index >= 0 ? index * 1000 + (firstLabel.SortOrder) : int.MaxValue;
+                                                }
+                                                return int.MaxValue;
+                                            })
+                                            .ThenBy(g => g.Key);
+                                        
+                                        <div class="accordion" id="labelCategoriesAccordion">
+                                            @{
+                                                int categoryIndex = 0;
+                                                foreach (var categoryGroup in labelsGroupedByCategory)
+                                                {
+                                                    var categoryName = categoryGroup.Key;
+                                                    var categoryLabels = categoryGroup.OrderBy(l => l.SortOrder).ThenBy(l => l.LabelKey ?? "");
+                                                    
+                                                    // Get CategoryKey from first label for GetLabelVisibility/GetLabelColor functions
+                                                    var firstLabel = categoryGroup.FirstOrDefault();
+                                                    var sectionKey = firstLabel?.CategoryKey ?? "Header";
+                                                    
+                                                    var categoryId = "labelCategory_" + categoryIndex;
+                                                    var categoryCollapseId = categoryId + "Collapse";
+                                                    var categoryHeadingId = categoryId + "Heading";
+                                                    var isFirstCategory = categoryIndex == 0;
+                                                    
+                                                    <div class="card">
+                                                        <div class="card-header" id="@categoryHeadingId">
+                                                            <h5 class="mb-0">
+                                                                <button class="btn btn-link d-flex justify-content-between align-items-center w-100 text-left pl-0 @(isFirstCategory ? "" : "collapsed")" 
+                                                                        type="button" 
+                                                                        data-toggle="collapse" 
+                                                                        data-target="#@categoryCollapseId" 
+                                                                        aria-expanded="@(isFirstCategory ? "true" : "false")">
+                                                                    <span>@categoryName</span>
+                                                                    <i class="fas fa-chevron-@(isFirstCategory ? "up" : "down") collapse-icon"></i>
+                                                                </button>
+                                                            </h5>
+                                                        </div>
+                                                        <div id="@categoryCollapseId" 
+                                                             class="collapse @(isFirstCategory ? "show" : "")" 
+                                                             data-parent="#labelCategoriesAccordion">
+                                                            <div class="card-body">
+                                                                @foreach (var label in categoryLabels)
+                                                                {
+                                                                    var labelKey = label.LabelKey ?? "";
+                                                                    var labelText = label.LabelText ?? labelKey.Replace("_", " ");
+                                                                    var isVisible = GetLabelVisibility(sectionKey, labelKey);
+                                                                    var labelColor = GetLabelColor(sectionKey, labelKey);
+                                                                    
+                                                                    <div class="form-group border-bottom pb-3 mb-3">
+                                                                        <div class="d-flex align-items-center justify-content-between">
+                                                                            <div class="custom-control custom-switch">
+                                                                                <input type="checkbox" class="custom-control-input label-visibility-checkbox"
+                                                                                       id="label_@(sectionKey.ToLower())_@labelKey" 
+                                                                                       data-section="@sectionKey" 
+                                                                                       data-label-key="@labelKey" 
+                                                                                       @(isVisible ? "checked" : "") />
+                                                                                <label class="custom-control-label font-weight-bold" for="label_@(sectionKey.ToLower())_@labelKey">
+                                                                                    @labelText
+                                                                                </label>
+                                                                            </div>
+                                                                            <div class="d-flex align-items-center ml-3">
+                                                                                <label class="small mb-0 mr-2">Color</label>
+                                                                                <input type="color" class="form-control form-control-sm label-color-picker"
+                                                                                       id="label_@(sectionKey.ToLower())_@(labelKey)_color" 
+                                                                                       data-section="@sectionKey" 
+                                                                                       data-label-key="@labelKey" 
+                                                                                       value="@(string.IsNullOrEmpty(labelColor) ? "#000000" : labelColor)" 
+                                                                                       style="width: 60px; height: 38px;" />
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    categoryIndex++;
+                                                }
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-info">
+                                            No labels found for this template.
+                                        </div>
+                                    }
+                                }
+                            </div>
+
+                            <!-- Print & Export Tab -->
+                            <div class="tab-pane fade" id="print">
+                                @{
+                                    // Helper function to get print setting value
+                                    Func<string, string> GetPrintSetting = (key) =>
+                                    {
+                                        // First try to get from database template config
+                                        if (template?.TemplateConfig != null)
+                                        {
+                                            try
+                                            {
+                                                dynamic config = template.TemplateConfig;
+                                                if (config is string)
+                                                {
+                                                    config = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(config);
+                                                }
+                                                var printSettings = config?.PrintSettings;
+                                                if (printSettings != null)
+                                                {
+                                                    var value = printSettings[key];
+                                                    if (value != null)
+                                                    {
+                                                        return value.ToString();
+                                                    }
+                                                }
+                                            }
+                                            catch { }
+                                        }
+                                        // Return default values
+                                        switch (key)
+                                        {
+                                            case "ShowPrintButton":
+                                            case "ShowExportPdfButton":
+                                            case "ShowPayNowButton":
+                                            case "PrintLogo":
+                                            case "PrintCompanyDetails":
+                                                return "true";
+                                            case "PrintWatermark":
+                                            case "ShowSignature":
+                                            case "ShowFooter":
+                                                return "false";
+                                            case "PageSize":
+                                                return "A4";
+                                            case "PageOrientation":
+                                                return "Portrait";
+                                            case "MarginTop":
+                                            case "MarginBottom":
+                                            case "MarginLeft":
+                                            case "MarginRight":
+                                                return "0";
+                                            case "WatermarkText":
+                                            case "SignatureImageUrl":
+                                            case "FooterText":
+                                                return "";
+                                            default:
+                                                return "";
+                                        }
+                                    };
+
+                                    var showPrintButton = GetPrintSetting("ShowPrintButton").ToLower() == "true";
+                                    var showExportPdfButton = GetPrintSetting("ShowExportPdfButton").ToLower() == "true";
+                                    var showPayNowButton = GetPrintSetting("ShowPayNowButton").ToLower() == "true";
+                                    var printLogo = GetPrintSetting("PrintLogo").ToLower() == "true";
+                                    var printCompanyDetails = GetPrintSetting("PrintCompanyDetails").ToLower() == "true";
+                                    var printWatermark = GetPrintSetting("PrintWatermark").ToLower() == "true";
+                                    var watermarkText = GetPrintSetting("WatermarkText");
+                                    var showSignature = GetPrintSetting("ShowSignature").ToLower() == "true";
+                                    var signatureImageUrl = GetPrintSetting("SignatureImageUrl");
+                                    var pageSize = GetPrintSetting("PageSize");
+                                    var pageOrientation = GetPrintSetting("PageOrientation");
+                                    var marginTop = GetPrintSetting("MarginTop");
+                                    var marginBottom = GetPrintSetting("MarginBottom");
+                                    var marginLeft = GetPrintSetting("MarginLeft");
+                                    var marginRight = GetPrintSetting("MarginRight");
+                                    var showFooter = GetPrintSetting("ShowFooter").ToLower() == "true";
+                                    var footerText = GetPrintSetting("FooterText");
+                                }
+
+                                <div class="accordion" id="printSettingsAccordion">
+                                    <!-- Button Options -->
+                                    <div class="card">
+                                        <div class="card-header" id="buttonOptionsHeading">
+                                            <h5 class="mb-0">
+                                                <button class="btn btn-link d-flex justify-content-between align-items-center w-100 text-left pl-0" 
+                                                        type="button" 
+                                                        data-toggle="collapse" 
+                                                        data-target="#buttonOptionsCollapse" 
+                                                        aria-expanded="true">
+                                                    <span>Button Options</span>
+                                                    <i class="fas fa-chevron-up collapse-icon"></i>
+                                                </button>
+                                            </h5>
+                                        </div>
+                                        <div id="buttonOptionsCollapse" 
+                                             class="collapse show" 
+                                             data-parent="#printSettingsAccordion">
+                                            <div class="card-body">
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-switch">
+                                                        <input type="checkbox" class="custom-control-input" id="chkShowPrintButton" @(showPrintButton ? "checked" : "") />
+                                                        <label class="custom-control-label" for="chkShowPrintButton">Show Print Button</label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-switch">
+                                                        <input type="checkbox" class="custom-control-input" id="chkShowExportPdfButton" @(showExportPdfButton ? "checked" : "") />
+                                                        <label class="custom-control-label" for="chkShowExportPdfButton">Show Export PDF Button</label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-switch">
+                                                        <input type="checkbox" class="custom-control-input" id="chkShowPayNowButton" @(showPayNowButton ? "checked" : "") />
+                                                        <label class="custom-control-label" for="chkShowPayNowButton">Show Pay Now Button</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Content Options -->
+                                    <div class="card">
+                                        <div class="card-header" id="contentOptionsHeading">
+                                            <h5 class="mb-0">
+                                                <button class="btn btn-link collapsed d-flex justify-content-between align-items-center w-100 text-left pl-0" 
+                                                        type="button" 
+                                                        data-toggle="collapse" 
+                                                        data-target="#contentOptionsCollapse" 
+                                                        aria-expanded="false">
+                                                    <span>Content Options</span>
+                                                    <i class="fas fa-chevron-down collapse-icon"></i>
+                                                </button>
+                                            </h5>
+                                        </div>
+                                        <div id="contentOptionsCollapse" 
+                                             class="collapse" 
+                                             data-parent="#printSettingsAccordion">
+                                            <div class="card-body">
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-switch">
+                                                        <input type="checkbox" class="custom-control-input" id="chkPrintLogo" @(printLogo ? "checked" : "") />
+                                                        <label class="custom-control-label" for="chkPrintLogo">Show Logo</label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-switch">
+                                                        <input type="checkbox" class="custom-control-input" id="chkPrintWatermark" @(printWatermark ? "checked" : "") />
+                                                        <label class="custom-control-label" for="chkPrintWatermark">Show Watermark</label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group" id="watermarkTextGroup" style="@(printWatermark ? "" : "display:none;")">
+                                                    <label>Watermark Text</label>
+                                                    <input type="text" id="txtWatermarkText" class="form-control" 
+                                                           value="@watermarkText" 
+                                                           placeholder="Enter watermark text (e.g., DRAFT, CONFIDENTIAL)" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-switch">
+                                                        <input type="checkbox" class="custom-control-input" id="chkShowSignature" @(showSignature ? "checked" : "") />
+                                                        <label class="custom-control-label" for="chkShowSignature">Show Signature</label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group" id="signatureUploadGroup" style="@(showSignature ? "" : "display:none;")">
+                                                    <label>Signature Image</label>
+                                                    <input type="hidden" id="txtSignatureImageUrl" value="@signatureImageUrl" />
+                                                    
+                                                    @if (!string.IsNullOrEmpty(signatureImageUrl))
+                                                    {
+                                                        <div class="mb-3">
+                                                            <div class="border rounded p-3 text-center" style="background-color: #f8f9fa;">
+                                                                <img id="signaturePreview" src="@signatureImageUrl" alt="Signature Preview" 
+                                                                     style="max-width: 200px; max-height: 100px; border: 1px solid #ddd; padding: 5px; background: #fff; display: block; margin: 0 auto;" />
+                                                                <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removeSignature()">
+                                                                    Remove Signature
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-muted small mb-3">Or upload a new signature image:</div>
+                                                    }
+                                                    
+                                                    <div class="d-flex align-items-stretch" style="gap: 0;">
+                                                        <div class="flex-grow-1 border rounded-left p-2 d-flex align-items-center" 
+                                                             style="background-color: #fff; border-color: #dee2e6; min-height: 38px;">
+                                                            <span id="fileSignatureLabel" class="text-muted">Choose signature image</span>
+                                                        </div>
+                                                        <button type="button" class="btn btn-light border-left-0 rounded-0" 
+                                                                style="border-color: #dee2e6; white-space: nowrap;" 
+                                                                onclick="document.getElementById('fileSignature').click();">
+                                                            Browse
+                                                        </button>
+                                                        <button type="button" class="btn btn-primary rounded-right" 
+                                                                id="btnUploadSignature" 
+                                                                style="white-space: nowrap;">
+                                                            Upload
+                                                        </button>
+                                                        <input type="file" class="d-none" id="fileSignature" accept="image/*" />
+                                                    </div>
+                                                    <small class="form-text text-muted mt-2">
+                                                        Upload a signature image (PNG, JPG, or GIF). Recommended size: 200x100px. Max file size: 2MB
+                                                    </small>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-switch">
+                                                        <input type="checkbox" class="custom-control-input" id="chkShowFooterText" @(showFooter ? "checked" : "") />
+                                                        <label class="custom-control-label" for="chkShowFooterText">Show Footer</label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group" id="footerTextGroup" style="@(showFooter ? "" : "display:none;")">
+                                                    <label>Footer Text</label>
+                                                    <textarea id="txtFooterText" class="form-control" rows="4" 
+                                                              placeholder="Enter footer text (supports HTML, e.g., &lt;p&gt;Thank you for your business!&lt;/p&gt;)">@footerText</textarea>
+                                                    <small class="form-text text-muted">You can use HTML tags for formatting (e.g., &lt;p&gt;, &lt;br&gt;, &lt;strong&gt;, etc.)</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Page Settings -->
+                                    <div class="card">
+                                        <div class="card-header" id="pageSettingsHeading">
+                                            <h5 class="mb-0">
+                                                <button class="btn btn-link collapsed d-flex justify-content-between align-items-center w-100 text-left pl-0" 
+                                                        type="button" 
+                                                        data-toggle="collapse" 
+                                                        data-target="#pageSettingsCollapse" 
+                                                        aria-expanded="false">
+                                                    <span>Page Settings</span>
+                                                    <i class="fas fa-chevron-down collapse-icon"></i>
+                                                </button>
+                                            </h5>
+                                        </div>
+                                        <div id="pageSettingsCollapse" 
+                                             class="collapse" 
+                                             data-parent="#printSettingsAccordion">
+                                            <div class="card-body">
+                                                <div class="form-group">
+                                                    <label>Page Size</label>
+                                                    <select id="ddlPageSize" class="form-control">
+                                                        <option value="A4" @(pageSize == "A4" ? "selected" : "")>A4 (210 × 297 mm)</option>
+                                                        <option value="Letter" @(pageSize == "Letter" ? "selected" : "")>Letter (8.5 × 11 in)</option>
+                                                        <option value="Legal" @(pageSize == "Legal" ? "selected" : "")>Legal (8.5 × 14 in)</option>
+                                                        <option value="A3" @(pageSize == "A3" ? "selected" : "")>A3 (297 × 420 mm)</option>
+                                                        <option value="A5" @(pageSize == "A5" ? "selected" : "")>A5 (148 × 210 mm)</option>
+                                                        <option value="Custom" @(pageSize == "Custom" ? "selected" : "")>Custom</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Page Orientation</label>
+                                                    <select id="ddlPageOrientation" class="form-control">
+                                                        <option value="Portrait" @(pageOrientation == "Portrait" ? "selected" : "")>Portrait</option>
+                                                        <option value="Landscape" @(pageOrientation == "Landscape" ? "selected" : "")>Landscape</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Margin Settings -->
+                                    <div class="card">
+                                        <div class="card-header" id="marginSettingsHeading">
+                                            <h5 class="mb-0">
+                                                <button class="btn btn-link collapsed d-flex justify-content-between align-items-center w-100 text-left pl-0" 
+                                                        type="button" 
+                                                        data-toggle="collapse" 
+                                                        data-target="#marginSettingsCollapse" 
+                                                        aria-expanded="false">
+                                                    <span>Margin Settings (mm)</span>
+                                                    <i class="fas fa-chevron-down collapse-icon"></i>
+                                                </button>
+                                            </h5>
+                                        </div>
+                                        <div id="marginSettingsCollapse" 
+                                             class="collapse" 
+                                             data-parent="#printSettingsAccordion">
+                                            <div class="card-body">
+                                                <div class="form-group">
+                                                    <label>Top Margin</label>
+                                                    <input type="number" id="txtMarginTop" class="form-control"
+                                                           value="@marginTop"
+                                                           min="0" max="50" step="1" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Bottom Margin</label>
+                                                    <input type="number" id="txtMarginBottom" class="form-control"
+                                                           value="@marginBottom"
+                                                           min="0" max="50" step="1" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Left Margin</label>
+                                                    <input type="number" id="txtMarginLeft" class="form-control"
+                                                           value="@marginLeft"
+                                                           min="0" max="50" step="1" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Right Margin</label>
+                                                    <input type="number" id="txtMarginRight" class="form-control"
+                                                           value="@marginRight"
+                                                           min="0" max="50" step="1" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-4">
+                            @if (template != null && templateId > 0)
+                            {
+                                <!-- Edit mode -->
+                                <button onclick="saveTemplate()" class="btn btn-primary btn-block">
+                                    Update Template
+                                </button>
+                                <button onclick="saveAndSetDefault()" class="btn btn-success btn-block">
+                                    Update &amp; Set as Default
+                                </button>
+                            }
+                            else
+                            {
+                                <!-- Create mode -->
+                                <button onclick="saveTemplate()" class="btn btn-primary btn-block">
+                                    Save Template
+                                </button>
+                                <button onclick="saveAndSetDefault()" class="btn btn-success btn-block">
+                                    Save &amp; Set as Default
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Live Preview -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Live Preview</h3>
+                    </div>
+                    <div class="card-body" style="background-color: #f3f4f6; overflow-x: auto; padding: 10px;">
+                        <div id="invoicePreview" class="invoice-preview-wrapper">
+                            @Html.Partial("_InvoicePreviewTemplate")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Customer/Settings/InvoiceTemplateSettings/CustomizeTemplate.js"></script>
+<script>
+    var invoiceType = '@invoiceType';
+    var templateId = @templateId;
+    var templateKey = '@templateKey';
+    var templateHtmlPath = '@(ViewBag.TemplateHtmlPath ?? "")';
+    var sectionLabels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(sectionLabels));
+
+    @if (template != null)
+    {
+        <text>
+        var existingTemplate = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(template));
+        </text>
+    }
+</script>
+

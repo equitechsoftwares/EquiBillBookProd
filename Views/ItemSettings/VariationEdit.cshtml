@@ -1,0 +1,206 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Variation";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Variation</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/itemsettings/variation">Variation List</a></li>
+                        <li class="breadcrumb-item active">Edit Variation</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/itemsettings/variation" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+
+                            <div class="row">
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Variation Code </label>
+                                        <input disabled type="text" class="form-control" id="txtVariationCode" placeholder="" value="@ViewBag.Variation.VariationCode">
+                                        <small class="text-red font-weight-bold errorText" id="divVariationCode"></small>
+                                    </div>
+                                </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Variation Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divVariation_ctrl" id="txtVariation" placeholder="" value="@ViewBag.Variation.Variation">
+                                        <small class="text-red font-weight-bold errorText" id="divVariation"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <label class="w-50">Variation Values <span class="danger">*</span></label>
+
+                                            <span class="input-group-append">
+                                                <a href="#" class="btn btn-info btn-sm add-row divVariationDetails_ctrl"><i class="fas fa-plus"> Add</i></a>
+                                            </span>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divVariationDetails"></small>
+                                        <br />
+                                       
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div id="addrow">
+                                        @{
+                                            foreach (var item in ViewBag.Variation.VariationDetails)
+                                            {
+                                                <div class="input-group mb-1" id="row@(item.VariationDetailsId)">
+                                                    <input type="text" class="form-control" id="txt@(item.VariationDetailsId)" value="@item.VariationDetails">
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-danger btn-sm delete-row" id="btn@(item.VariationDetailsId)"><i class="fas fa-minus pt-2"></i></a>
+                                                    </span>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnUpdate" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                            <button id="btnUpdate_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                            @*<a id="btnBack" href="/items/variation" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is the difference between product and variant?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    A variant is the same product with a different option. For example, a t-shirt can be both red and blue. That would mean there are 2 variants of the product. You can only add a variant if you add an option first.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is a variant in inventory?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Inventory variants is an advanced method of configuring a product with attributes. Let's say you have a mug product that comes in three different colors; red, green and blue. With inventory variants, each possible option for the product is treated as its own individual product record in the store's database.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is a variant in retail?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Product variants allow businesses to determine how many variations of an individual product are available. For example, if a product such as a t-shirt is available in five different sizes and four different colors, then there is a total of 20 variations of the same product.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How many variants can one product have?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can create up to 100 variants for a product. Each product can have up to 3 options. The options can be different from product to product. For example, one product can use size, color, and style, and another product can use weight, finish, and material.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What are the variants of a product? </h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Products with variants are products that have similarities, they are based on the same model, but differ in some aspects from one another. They offer customers various purchase options for a product such as different colors, sizes, dimensions, flavors, etc.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Settings/ItemSettings/Variation.js"></script>

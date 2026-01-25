@@ -1,0 +1,250 @@
+﻿@using EquiBillBook.Models
+<div class="">
+    @{
+        decimal debit = 0, credit = 0, differenceDebit = 0, differenceCredit = 0;
+        foreach (var item in ViewBag.AccountTypes)
+        {
+            <div class="card collapsed-card">
+                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                    <h3 class="card-title">@item.AccountType</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" style="display: none;">
+                    <table class="table table-bordered table-striped">
+                        <thead id="thead">
+                            <tr>
+                                <th>Account</th>
+                                <th>Debit (@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1])</th>
+                                <th>Credit (@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1])</th>
+                            </tr>
+                        </thead>
+                        <tbody class="table-body divAccountsOpeningBalance">
+                            @foreach (var inner in item.Accounts)
+                            {
+                                if (//inner.Type != "Accounts Receivable" && inner.Type != "Accounts Payable" &&
+                                    inner.Type != "Opening Balance Adjustments" && inner.Type != "Tag Adjustments")
+                                {
+                                    if (inner.Type == "Accounts Receivable" || inner.Type == "Accounts Payable" || inner.Type == "Inventory Asset")
+                                    {
+                                        if (inner.Type == "Accounts Receivable")
+                                        {
+                                            <tr id="divCombo@(inner.AccountId)">
+                                                <td>
+                                                    @inner.DisplayAs
+                                                    <input type="hidden" value="@inner.AccountOpeningBalanceId" id="hdnAccountOpeningBalanceId@(inner.AccountId)" />
+                                                </td>
+                                                <td>
+                                                    <div class="form-group">
+                                                        <input disabled type="number" class="form-control" id="txtDebit@(inner.AccountId)" placeholder="" value="@(((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i=>i.Type == "Accounts Receivable").Select(i=>i.Debit).FirstOrDefault())" onkeypress="return onlyDecimalKey(event)" onchange="updateOpeningBalanceTotal(@inner.AccountId,0)">
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="form-group">
+                                                        <input disabled type="number" class="form-control" id="txtCredit@(inner.AccountId)" placeholder="" value="@(((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i=>i.Type == "Accounts Receivable").Select(i=>i.Credit).FirstOrDefault())" onkeypress="return onlyDecimalKey(event)" onchange="updateOpeningBalanceTotal(@inner.AccountId,1)">
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            inner.Debit = (((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i => i.Type == "Accounts Receivable").Select(i => i.Debit).FirstOrDefault());
+                                            inner.Credit = (((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i => i.Type == "Accounts Receivable").Select(i => i.Credit).FirstOrDefault());
+                                        }
+                                        else if (inner.Type == "Accounts Payable")
+                                        {
+                                            <tr id="divCombo@(inner.AccountId)">
+                                                <td>
+                                                    @inner.DisplayAs
+                                                    <input type="hidden" value="@inner.AccountOpeningBalanceId" id="hdnAccountOpeningBalanceId@(inner.AccountId)" />
+                                                </td>
+                                                <td>
+                                                    <div class="form-group">
+                                                        <input disabled type="number" class="form-control" id="txtDebit@(inner.AccountId)" placeholder="" value="@(((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i=>i.Type == "Accounts Payable").Select(i=>i.Debit).FirstOrDefault())" onkeypress="return onlyDecimalKey(event)" onchange="updateOpeningBalanceTotal(@inner.AccountId,0)">
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="form-group">
+                                                        <input disabled type="number" class="form-control" id="txtCredit@(inner.AccountId)" placeholder="" value="@(((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i=>i.Type == "Accounts Payable").Select(i=>i.Credit).FirstOrDefault())" onkeypress="return onlyDecimalKey(event)" onchange="updateOpeningBalanceTotal(@inner.AccountId,1)">
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            inner.Debit = (((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i => i.Type == "Accounts Payable").Select(i => i.Debit).FirstOrDefault());
+                                            inner.Credit = (((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i => i.Type == "Accounts Payable").Select(i => i.Credit).FirstOrDefault());
+                                        }
+                                        else if (inner.Type == "Inventory Asset")
+                                        {
+                                            <tr id="divCombo@(inner.AccountId)">
+                                                <td>
+                                                    @inner.DisplayAs
+                                                    <input type="hidden" value="@inner.AccountOpeningBalanceId" id="hdnAccountOpeningBalanceId@(inner.AccountId)" />
+                                                </td>
+                                                <td>
+                                                    <div class="form-group">
+                                                        <input disabled type="number" class="form-control" id="txtDebit@(inner.AccountId)" placeholder="" value="@(((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i=>i.Type == "Inventory Asset").Select(i=>i.Debit).FirstOrDefault())" onkeypress="return onlyDecimalKey(event)" onchange="updateOpeningBalanceTotal(@inner.AccountId,0)">
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="form-group">
+                                                        <input disabled type="number" class="form-control" id="txtCredit@(inner.AccountId)" placeholder="" value="@(((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i=>i.Type == "Inventory Asset").Select(i=>i.Credit).FirstOrDefault())" onkeypress="return onlyDecimalKey(event)" onchange="updateOpeningBalanceTotal(@inner.AccountId,1)">
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            inner.Debit = (((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i => i.Type == "Inventory Asset").Select(i => i.Debit).FirstOrDefault());
+                                            inner.Credit = (((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i => i.Type == "Inventory Asset").Select(i => i.Credit).FirstOrDefault());
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr id="divCombo@(inner.AccountId)">
+                                            <td>
+                                                @inner.DisplayAs
+                                                <input type="hidden" value="@inner.AccountOpeningBalanceId" id="hdnAccountOpeningBalanceId@(inner.AccountId)" />
+                                            </td>
+                                            <td>
+                                                <div class="form-group">
+                                                    <input type="number" class="form-control" id="txtDebit@(inner.AccountId)" placeholder="" value="@(inner.Debit>0?inner.Debit:"")" onkeypress="return onlyDecimalKey(event)" onchange="updateOpeningBalanceTotal(@inner.AccountId,0)">
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-group">
+                                                    <input type="number" class="form-control" id="txtCredit@(inner.AccountId)" placeholder="" value="@(inner.Credit>0?inner.Credit:"")" onkeypress="return onlyDecimalKey(event)" onchange="updateOpeningBalanceTotal(@inner.AccountId,1)">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+
+                                    debit = debit + inner.Debit;
+                                    credit = credit + inner.Credit;
+                                }
+                                else if (inner.Type == "Opening Balance Adjustments")
+                                {
+                                    <input type="hidden" value="@inner.AccountOpeningBalanceId" id="hdnAccountOpeningBalanceId" />
+                                    <input type="hidden" id="hdnOpeningBalanceAdjustments" value="@inner.AccountId" />
+                                    differenceDebit = (((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i => i.Type == "Opening Balance Adjustments").Select(i => i.Debit).FirstOrDefault());//inner.Debit;
+                                    differenceCredit = (((IList<ClsBankPaymentVm>)ViewBag.BankPayments).Where(i => i.Type == "Opening Balance Adjustments").Select(i => i.Credit).FirstOrDefault());//inner.Credit;
+                                }
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        }
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Debit</th>
+                <th>Credit</th>
+            </tr>
+        </thead>
+        <tbody class="table-body">
+            <tr>
+                <td data-title="Total" class="text-right"><b>Sub Total</b></td>
+                <td>
+                    <span for="inputEmail3" id="lblSubTotalDebit">
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", debit))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", debit))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </span>
+                </td>
+                <td>
+                    <span for="inputEmail3" id="lblSubTotalCredit">
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", credit))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", credit))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="text-right ">
+                    <span class="danger">Opening Balance Adjustments</span>
+                    <br />
+                    <span class="text-black">This account will hold the difference in credit and debit.</span>
+                </td>
+                <td>
+                    <span for="inputEmail3" class="text-left danger" id="lblDebitDifference">
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", differenceDebit))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", differenceDebit))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </span>
+                </td>
+                <td>
+                    <span for="inputEmail3" class="text-left danger" id="lblCreditDifference">
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", differenceCredit))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", differenceCredit))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td data-title="Total" class="text-right">
+                    <b>Total</b>
+                    <br />
+                    <span class="text-black">Includes Opening Balance Adjustment account</span>
+                </td>
+                <td>
+                    <span for="inputEmail3" id="lblTotalDebit">
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", debit + differenceDebit))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", debit + differenceDebit))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </span>
+                </td>
+                <td>
+                    <span for="inputEmail3" id="lblTotalCredit">
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", credit + differenceCredit))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", credit + differenceCredit))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+        
+    }
+</div>

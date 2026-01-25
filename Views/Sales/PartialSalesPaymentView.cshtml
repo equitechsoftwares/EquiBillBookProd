@@ -1,0 +1,147 @@
+﻿
+@if (ViewBag.CustomerPayment != null)
+{
+    <div class="modal-header">
+        <h4 class="modal-title">Payment Details</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div class="card card-outline">
+            <div class="card-body">
+                <div class="paymentAdd">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <label>Amount </label>
+                            <span>@ViewBag.CustomerPayment.Amount</span>
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Paid On </label>
+                            <span>@ViewBag.CustomerPayment.PaymentDate</span>
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Payment Method </label>
+                            @if (ViewBag.PaymentTypes != null)
+                            {
+                                foreach (var item in ViewBag.PaymentTypes)
+                                {
+                                    if (item.PaymentTypeId == ViewBag.CustomerPayment.PaymentTypeId)
+                                    {
+                                        <span>@item.PaymentType</span>
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div class="row">
+                        @if (ViewBag.IsAccountsAddon == true)
+                        {
+                            <div class="col-sm-4 divLAccount">
+                                <label>Deposit To </label>
+                                @{
+                                    if (ViewBag.AccountSubTypes != null)
+                                    {
+                                        foreach (var item in ViewBag.AccountSubTypes)
+                                        {
+                                            if (item.Accounts.Count > 0)
+                                            {
+                                                foreach (var inner in item.Accounts)
+                                                {
+                                                    if (inner.AccountId == ViewBag.CustomerPayment.AccountId)
+                                                    {
+                                                        <span>@inner.DisplayAs</span>
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            </div>
+                        }
+                      
+                            <div class="col-sm-4">
+                                <label>Attach Document</label>
+                                <img id="blahPaymentAttachDocument" src="@ViewBag.CustomerPayment.AttachDocument" alt="" height="60" style="padding-top:10px;">
+                            </div>
+                        <div class="col-sm-4">
+                            <label>Reference No </label>
+                            <span>@ViewBag.CustomerPayment.ReferenceNo</span>
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Notes</label>
+                            <span>@ViewBag.CustomerPayment.Notes</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            @if (ViewBag.Type == "sales payment")
+                            {
+                                <a id="btnBack" href="javascript:void(0)" onclick="PrintInvoice('/sales/PaymentReceipt?ReferenceId=@ViewBag.CustomerPayment.ReferenceId')" class="btn btn-warning float-sm-right mr-2">View Receipt</a>
+                            }
+                            else if (ViewBag.Type == "customer refund")
+                            {
+                                <a id="btnBack" href="javascript:void(0)" onclick="PrintInvoice('/sales/ReturnPaymentReceipt?ReferenceId=@ViewBag.CustomerPayment.ReferenceId')" class="btn btn-warning float-sm-right mr-2">View Receipt</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        @if (ViewBag.IsAccountsAddon == true)
+        {
+            <hr />
+            <div class="card card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">Journal</h3>
+                </div>
+                <div class="card-body">
+                    @{
+                        foreach (var sale in ViewBag.Sales)
+                        {
+                            decimal TotalDebit = 0, TotalCredit = 0;
+                            if (ViewBag.Sales.Count > 1)
+                            {
+                                <h3 class="card-title pb-2">@sale.Type</h3>
+                            }
+                            <div class="row table-responsive">
+
+                                <table class="table table-bordered table-striped">
+
+                                    <thead id="thead">
+                                        <tr>
+                                            <th>Account Name</th>
+                                            <th>Debit</th>
+                                            <th>Credit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="table-body">
+                                        @foreach (var item in sale.Payments)
+                                        {
+                                            <tr>
+                                                <td>@item.AccountName</td>
+                                                <td>@(String.Format("{0:0.##}", item.Debit))</td>
+                                                <td>@(String.Format("{0:0.##}", item.Credit))</td>
+                                            </tr>
+                                            TotalDebit = TotalDebit + item.Debit;
+                                            TotalCredit = TotalCredit + item.Credit;
+                                        }
+                                    </tbody>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="1" data-title="Total" class="text-right"></td>
+                                            <td data-title="Due Amount" class="text-bold">@(String.Format("{0:0.##}", TotalDebit))</td>
+                                            <td data-title="Due Amount" class="text-bold">@(String.Format("{0:0.##}", TotalCredit))</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    }
+                </div>
+
+            </div>
+        }
+    </div>
+}

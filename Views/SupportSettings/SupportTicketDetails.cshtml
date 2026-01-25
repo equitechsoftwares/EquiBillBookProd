@@ -1,0 +1,175 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Support Ticket Details";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Support Ticket Details</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/supportsettings/supportticket">Support Ticket List</a></li>
+                        <li class="breadcrumb-item active">Add Ticket </li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/supportsettings/supportticket" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    <h5>
+                        <b>Ticket No: @ViewBag.SupportTicket.SupportTicketNo</b>
+                        <span class="float-right ">
+                            Status:
+                            @if (ViewBag.SupportTicket.IsActive == true)
+                            {
+                                <span class="text-danger p-1">Open</span>
+                            }
+                            else
+                            {
+                                <span class="text-primary p-1">Closed</span>
+                            }
+                        </span>
+                    </h5>
+                    <span> Added On: @ViewBag.SupportTicket.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</span><br>
+                    <span>
+                        Help Topic:
+                        @if (ViewBag.SupportTicket.HelpTopic == 1)
+                        {
+                            <span>Technical Support</span>
+                        }
+                        else if (ViewBag.SupportTicket.HelpTopic == 2)
+                        {
+                            <span>Sales Support</span>
+                        }
+                        else if (ViewBag.SupportTicket.HelpTopic == 3)
+                        {
+                            <span>Renewal Support</span>
+                        }
+                        else if (ViewBag.SupportTicket.HelpTopic == 4)
+                        {
+                            <span>Addons Upgrade Support</span>
+                        }
+                        else
+                        {
+                            <span>Other</span>
+                        }
+                    </span><br>
+                    <span>Subject: @ViewBag.SupportTicket.Subject</span><br>
+                </div>
+
+            </div>
+
+        </div>
+        <div class="row">
+
+            <div class="col-12">
+
+                <!-- /.card -->
+                <div class="card-outline card card-primary card-outline direct-chat direct-chat-cyan shadow-sm">
+                    @*<div class="card-header">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group col-4">
+                                        <label>Ticket #</label>
+                                        <span>7868687</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>*@
+                    <div class="card-body">
+                        <!-- Conversations are loaded here -->
+                        <div class="direct-chat-messages" style="height:auto">
+                            @foreach (var item in ViewBag.SupportTicket.SupportTicketDetails)
+                            {
+                                if (item.IsFromCompany)
+                                {
+                                    <!-- Message. Default to the left -->
+                                    <div class="direct-chat-msg">
+                                        <div class="direct-chat-infos clearfix">
+                                            <span class="direct-chat-name float-left">@item.From</span>
+                                            <span class="direct-chat-timestamp float-right">@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</span>
+                                        </div>
+                                        <!-- /.direct-chat-infos -->
+                                        @*<img class="direct-chat-img" src="~/Content/assets/img/avatar.png" alt="Message User Image">*@
+                                        <!-- /.direct-chat-img -->
+                                        <div class="direct-chat-text m-0">
+                                            @item.Message
+                                        </div>
+                                        <!-- /.direct-chat-text -->
+                                    </div>
+                                    <!-- /.direct-chat-msg -->
+                                }
+                                else
+                                {
+                                    <!-- Message to the right -->
+                                    <div class="direct-chat-msg right">
+                                        <div class="direct-chat-infos clearfix">
+                                            <span class="direct-chat-name float-right">@item.From</span>
+                                            <span class="direct-chat-timestamp float-left">@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</span>
+                                        </div>
+                                        <!-- /.direct-chat-infos -->
+                                        @*<img class="direct-chat-img" src="~/Content/assets/img/avatar.png" alt="Message User Image">*@
+                                        <!-- /.direct-chat-img -->
+                                        <div class="direct-chat-text m-1">
+                                            @Html.Raw(item.Message.Replace("\n", "</br>"))
+                                        </div>
+                                        <!-- /.direct-chat-text -->
+                                    </div>
+                                    <!-- /.direct-chat-msg -->
+                                }
+                            }
+                        </div>
+                        <!--/.direct-chat-messages-->
+                        <!-- /.direct-chat-pane -->
+                    </div>
+                    <!-- /.card-body -->
+                    @*@if (ViewBag.SupportTicket.IsActive == true)
+                    {*@
+                        <div class="card-footer">
+                            @*<form action="#" method="post">*@
+                            <div class="input-group">
+                                @*<input type="text" name="message" placeholder="Type Message ..." class="form-control">*@
+                                <textarea class="form-control divMessage_ctrl" style="height:150px" id="txtMessage" placeholder="Type Message ..."></textarea>
+
+                                @*<span class="input-group-append">
+                                        <button type="submit" class="btn btn-primary">Send</button>
+                                    </span>*@
+                            </div>
+                            <small class="text-red font-weight-bold errorText" id="divMessage"></small>
+                            <button id="btnSave" type="submit" class="btn btn-primary float-right mt-2" onclick="SupportTicketDetailsInsert()">Submit</button>
+                            @*</form>*@
+                        </div>
+                    @*}
+                    else
+                    {
+                        <div class="card-footer">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> This ticket is closed. You cannot add more messages.
+                            </div>
+                        </div>
+                    }*@
+                    <!-- /.card-footer-->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<script src="~/Content/JQuery/Customer/Settings/SupportSettings/SupportTicket.js"></script>

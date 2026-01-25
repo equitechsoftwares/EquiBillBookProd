@@ -1,0 +1,136 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Linked KOT Report";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Linked KOT Report</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/reports/index">Reports</a></li>
+                        <li class="breadcrumb-item active">Linked KOT Report</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/reports" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+            <div class="col-sm-12">
+                <span id="divAsof" class="text-gray"></span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline collapsed-card">
+                    <div class="card-header" data-card-widget="collapse" title="Collapse">
+                        <h3 class="card-title">Filter</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                <div class="form-group">
+                                    <label>Business Location</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlBranch">
+                                        <option value="0">All</option>
+                                        @foreach (var item in ViewBag.Branchs)
+                                        {
+                                            <option value="@item.BranchId">@item.Branch</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Date Range:</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="far fa-calendar-alt"></i>
+                                            </span>
+                                        </div>
+                                        <input type="text" class="form-control float-right" id="txtDateRange" value="@(ViewBag.FromDate.ToString("dd/MM/yyyy") + " - " + ViewBag.ToDate.ToString("dd/MM/yyyy"))">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Order Status</label>
+                                    <select class="form-control select2" id="ddlOrderStatus" style="width:100%">
+                                        <option value="">All</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Preparing">Preparing</option>
+                                        <option value="Ready">Ready</option>
+                                        <option value="Served">Served</option>
+                                        <option value="Cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary float-right mt-2" onclick="fetchList(1)">Search</button>
+                        <button type="submit" class="btn btn-warning float-right mt-2 mr-2" onclick="window.location.reload()">Refresh</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-body">
+                        <div id="tblLinkedKot_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                            <div class="dataTables_length noPrint" id="tblLinkedKot_length">
+                                <label>
+                                    Show
+                                    <select name="tblLinkedKot_length" aria-controls="tblLinkedKot" class="custom-select custom-select-sm form-control form-control-sm" onchange="fetchList(1)" id="txtPageSize">
+                                        <option value="10" @(ViewBag.PageSize == 10 ? "selected" : "")>10</option>
+                                        <option value="25" @(ViewBag.PageSize == 25 ? "selected" : "")>25</option>
+                                        <option value="50" @(ViewBag.PageSize == 50 ? "selected" : "")>50</option>
+                                        <option value="100" @(ViewBag.PageSize == 100 ? "selected" : "")>100</option>
+                                        <option value="500" @(ViewBag.PageSize == 500 ? "selected" : "")>500</option>
+                                    </select> entries
+                                </label>
+                            </div>
+                            <div class="dt-buttons btn-group flex-wrap noPrint">
+                                <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblLinkedKot" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+                                <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblLinkedKot" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+                                <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblLinkedKot" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+                                <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblLinkedKot" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+                            </div>
+                            <div id="tblLinkedKot_filter" class="dataTables_filter noPrint invisible">
+                                <label>
+                                    Search:<input type="text" class="form-control form-control-sm" placeholder=""
+                                                  aria-controls="tblLinkedKot" id="txtSearch" onkeyup="fetchList(1)">
+                                </label>
+                            </div>
+                            <div class="row mt-1">
+                                <div class="col-sm-12 table-responsive">
+                                    <table id="tblLinkedKot" class="table table-bordered table-striped">
+                                        @Html.Partial("PartialLinkedKotReport")
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Customer/Reports/KotReports/LinkedKotReport.js"></script>
+

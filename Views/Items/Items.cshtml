@@ -1,0 +1,722 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Items List";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Items List</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Items List</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                @if (ViewBag.MenuPermission.IsAdd)
+                {
+                    <a id="btnNew" href="/items/itemsadd" class="btn btn-primary float-sm-right mr-2"><i class="fas fa-plus"></i> Add New</a>
+                    <div class="btn-group float-sm-right mr-2">
+                        <button type="button" class="btn btn-info"><i class="fas fa-upload"></i> Import</button>
+                        <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <div class="dropdown-menu" role="menu">
+                            <a class="dropdown-item" href="/items/itemImport"> Items </a>
+                            <a class="dropdown-item" href="/items/openingStockImport">Opening Stock</a>
+                        </div>
+                    </div>
+                }
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+            <div class="col-sm-12">
+                @*<span id="divAsof" class="text-gray"></span>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                @*<div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                        <h5><i class="fas fa-info"></i> Note:</h5>
+                        This page has been enhanced for printing. Click the print button at the bottom of the invoice to test.
+                    </div>*@
+                <div class="card  card-primary card-outline collapsed-card">
+                    <div class="card-header" data-card-widget="collapse" title="Collapse">
+                        <h3 class="card-title">Filter</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            @*@if (ViewBag.Branchs.Count > 1)
+                                {*@
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                <div class="form-group">
+                                    <label>Business Location</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlBranch">
+                                        <option value="0">All</option>
+                                        @foreach (var item in ViewBag.Branchs)
+                                        {
+                                            if (ViewBag.BranchId == item.BranchId)
+                                            {
+                                                <option value="@item.BranchId" selected>@item.Branch</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@item.BranchId">@item.Branch</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            @*}*@
+                            @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Date Range:</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="far fa-calendar-alt"></i>
+                                            </span>
+                                        </div>
+                                        <input type="text" class="form-control float-right" id="txtDateRange" value="@(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]))">
+                                    </div>
+                                </div>
+                            </div>*@
+                            @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>From Date</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                </span>
+                                            </div>
+                                            <input type="date" class="form-control float-right" id="txtFromDate"
+                                                   value="@(ViewBag.FromDate == null ? ViewBag.FromDate : ViewBag.FromDate.ToString("yyyy-MM-dd"))">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>To Date</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                </span>
+                                            </div>
+                                            <input type="date" class="form-control float-right" id="txtToDate"
+                                                   value="@(ViewBag.FromDate == null ? ViewBag.FromDate : ViewBag.FromDate.ToString("yyyy-MM-dd"))">
+                                        </div>
+                                    </div>
+                                </div>*@
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Item Type</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlItemType">
+                                        <option value="">Select</option>
+                                        <option value="Product">Product</option>
+                                        <option value="Service">Service</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+
+                                <div class="form-group">
+                                    <label>Category</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlCategory" onchange="fetchActiveSubCategories()">
+                                        <option value="">Select</option>
+                                        @foreach (var item in ViewBag.Categories)
+                                        {
+                                            <option value="@item.CategoryId">@item.Category</option>
+                                        }
+                                    </select>
+
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" id="p_SubCategories_Dropdown">
+                                @Html.Partial("PartialSubCategoryDropdown")
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" id="p_SubSubCategories_Dropdown">
+                                @Html.Partial("PartialSubSubCategoryDropdown")
+                            </div>
+                            @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Sub Category</label>
+                                        <select class="form-control select2" style="width: 100%;" id="ddlSubCategory" onchange="fetchActiveSubSubCategories()">
+                                            <option value="">All</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Sub Sub Category</label>
+                                        <select class="form-control select2" style="width: 100%;" id="ddlSubSubCategory">
+                                            <option value="">All</option>
+                                        </select>
+                                    </div>
+                                </div>*@
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Brand</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlBrand">
+                                        <option value="">Select</option>
+                                        @foreach (var item in ViewBag.Brands)
+                                        {
+                                            <option value="@item.BrandId">@item.Brand</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Unit</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlUnit">
+                                        <option value="">Select</option>
+                                        @foreach (var item in ViewBag.Units)
+                                        {
+                                            <option value="@item.UnitId">@item.UnitShortName</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Sku Code</label>
+                                    <input type="text" class="form-control" id="txtSkuCode">
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Hsn Code</label>
+                                    <input type="text" class="form-control" id="txtHsnCode">
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Item Name</label>
+                                    <input type="text" class="form-control" id="txtItemName">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary float-right mt-2" onclick="fetchList(1)">Search</button>
+                        <button type="submit" class="btn btn-warning float-right mt-2 mr-2" onclick="window.location.reload()">Refresh</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+
+                <!-- /.card -->
+                <div class="card  card-primary card-outline">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h5>
+                                    <span class="success" id="divTotalCount">
+                                        Total : 0
+                                    </span>
+                                    |
+                                    <span class="primary" id="divActiveCount">
+                                        Active : 0
+                                    </span>
+                                    |
+                                    <span class="danger" id="divInactiveCount">In-Active : 0</span>
+                                </h5>
+                            </div>
+                            @*@if (ViewBag.Branchs.Count > 1)
+                                {*@
+                            @*<div class="col-sm-6 text-right @(ViewBag.Branchs.Count >1 ? "":"hidden")">
+                                    <label>Business Location :</label>
+                                    <label class="mb-0 font-weight-normal">
+                                        <select class="form-control select2" style="width: 100%;" id="ddlBranch" onchange="fetchList(1)">
+                                            @foreach (var item in ViewBag.Branchs)
+                                            {
+                                                if (ViewBag.BranchId == item.BranchId)
+                                                {
+                                                    <option value="@item.BranchId" selected>@item.Branch</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.BranchId">@item.Branch</option>
+                                                }
+                                            }
+                                        </select>
+                                    </label>
+                                </div>*@
+                            @*}*@
+                        </div>
+
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                            <div class="dataTables_length noPrint" id="tblUserRole_length">
+                                <label>
+                                    Show
+                                    <select name="tblUserRole_length" aria-controls="tblUserRole" class="custom-select custom-select-sm form-control form-control-sm"
+                                            onchange="fetchList(1)" id="txtPageSize">
+                                        @{
+                                            if (ViewBag.PageSize == 10)
+                                            {
+                                                <option value="10" selected>10</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="10">10</option>
+                                            }
+                                            if (ViewBag.PageSize == 25)
+                                            {
+                                                <option value="25" selected>25</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="25">25</option>
+                                            }
+                                            if (ViewBag.PageSize == 50)
+                                            {
+                                                <option value="50" selected>50</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="50">50</option>
+                                            }
+                                            if (ViewBag.PageSize == 100)
+                                            {
+                                                <option value="100" selected>100</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="100">100</option>
+                                            }
+                                            if (ViewBag.PageSize == 500)
+                                            {
+                                                <option value="500" selected>500</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="500">500</option>
+                                            }
+                                        }
+                                    </select> entries
+                                </label>
+                            </div>
+                            @if (ViewBag.MenuPermission.IsExport)
+                            {
+                                <div class="dt-buttons btn-group flex-wrap noPrint">
+                                    <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+                                    <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+                                    <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+                                    <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+                                </div>
+                            }
+                            <div id="tblUserRole_filter" class="dataTables_filter noPrint invisible">
+                                <label>
+                                    Search:<input type="text" class="form-control form-control-sm" placeholder=""
+                                                  aria-controls="tblUserRole" id="txtSearch" onkeyup="fetchList(1)">
+                                </label>
+                            </div>
+                            <div class="row mt-1">
+                                <div class="col-sm-12 table-responsive">
+                                    <table id="tblData" class="table table-bordered table-striped ">
+                                        @Html.Partial("PartialItem")
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade bd-example-modal-lg" id="openingStockModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add/Edit Opening Stock</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- left column -->
+                            <div class="col-md-12">
+                                <!-- jquery validation -->
+                                <div class="card card-primary card-outline">
+
+                                    <div class="card-body">
+                                        <div class="card card-outline paymentAdd hide">
+
+                                            @*<div class="card-header">
+                                                    <h3 class="card-title">Payment Info </h3>
+                                                </div>*@
+                                            <!-- form start -->
+                                            <div class="card-body">
+
+                                                <div class="row">
+                                                    <!--<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">-->
+                                                    <!-- text input -->
+                                                    <!--<div class="form-group">
+                                                            <label>Date</label>
+                                                            <input type="date" class="form-control" id="txtDate" onchange="OpeningStock()" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                                        </div>
+                                                    </div>-->
+                                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                        <!-- text input -->
+                                                        <div class="form-group">
+                                                            <label>Business Location</label>
+                                                            <select class="select2" style="width: 100%;" id="ddlStockBranch" onchange="OpeningStock()">
+                                                                <option value="0">Select</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divVariations hide">
+                                                        <!-- text input -->
+                                                        <div class="form-group">
+                                                            <label>Variations</label>
+                                                            <select class="select2" style="width: 100%;" id="ddlItemDetails" onchange="OpeningStock()">
+                                                                <option value="0">Select</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                        <!-- text input -->
+                                                        <div class="form-group">
+                                                            <label class="invisible">Add</label><br />
+                                                            <button type="button" class="btn btn-primary" onclick="ItemDetailsForOpeningStock()">
+                                                                <i class="fas fa-plus"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <!--<div class="col-sm-6">-->
+                                                    <!-- text input -->
+                                                    <!--<div class="form-group">
+                                                            <label>Notes</label>
+                                                            <textarea class="form-control" id="txtNotes"></textarea>
+                                                        </div>
+                                                    </div>-->
+                                                </div>
+                                            </div>
+                                            <!-- /.card-body -->
+                                        </div>
+
+                                        <div class="card card-outline paymentList hide">
+                                            @*<div class="card-header">
+                                                    <h3 class="card-title">Previous Payment Information</h3>
+                                                </div>*@
+                                            <!-- form start -->
+                                            <div class="card-body">
+                                                <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                                                    @if (ViewBag.OpeningStockPermission.IsExport)
+                                                    {
+                                                        <div class="dt-buttons btn-group flex-wrap noPrint">
+                                                            <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+                                                            <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+                                                            <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+                                                            <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+                                                        </div>
+                                                    }
+                                                    <div id="tblUserRole_filter" class="dataTables_filter noPrint invisible">
+                                                        <label>
+                                                            Search:<input type="text" class="form-control form-control-sm" placeholder="" aria-controls="tblUserRole" id="txtSearch" onkeyup="fetchList(1)">
+                                                        </label>
+                                                    </div>
+                                                    <div class="row mt-2">
+                                                        <div class="col-sm-12 table-responsive">
+                                                            <div id="tblData_wrapper" class="dataTables_wrapper no-footer">
+                                                                <table id="tblOpeningStock" class="table table-bordered table-striped" style="min-height:300px">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Item</th>
+                                                                            @*<th>Purchase Unit</th>*@
+                                                                            <th>Quantity</th>
+                                                                            @*<th>Quantity Sold</th>*@
+                                                                            @*<th>Quantity Left</th>*@
+                                                                            <th>Unit Cost (Before Tax)</th>
+                                                                            <th style="display:none">Sub Total (Before Tax)</th>
+                                                                            <th class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden")">Lot No</th>
+                                                                            <th class="@((ViewBag.ItemSetting.EnableItemExpiry == true && ViewBag.ItemSetting.ExpiryType == 2) ? "" : "hidden")">Manufacturing Date</th>
+                                                                            <th class="@(ViewBag.ItemSetting.EnableItemExpiry == true ? "" : "hidden")">Expiry Date</th>
+                                                                            <th>Date</th>
+                                                                            <th>Notes</th>
+                                                                            <th>Unit Selling Price (Exc. Tax)</th>
+                                                                            <th class="@(ViewBag.ItemSetting.EnableMrp == true ? "" : "hidden")">Mrp</th>
+                                                                            <th style="width:10%">
+                                                                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteOpeningStockFullCombo()">
+                                                                                    <i class="fas fa-times"></i>
+                                                                                </button>
+                                                                                @*<input type="hidden" id="hdnEnableEditingProductPrice" value="@ViewBag.ItemSetting.EnableEditingProductPrice.ToString()" />*@
+                                                                                <input type="hidden" id="hdnEnableLotNo" value="@ViewBag.ItemSetting.EnableLotNo.ToString()" />
+                                                                                <input type="hidden" id="hdnEnableItemExpiry" value="@(ViewBag.ItemSetting.EnableItemExpiry.ToString())" />
+                                                                                <input type="hidden" id="hdnExpiryType" value="@ViewBag.ItemSetting.ExpiryType" />
+                                                                                <input type="hidden" id="hdnEnableMrp" value="@ViewBag.ItemSetting.EnableMrp.ToString()" />
+                                                                            </th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody id="divOpeningStock" class="rows">
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <!-- /.card -->
+                            </div>
+                            <!--/.col (left) -->
+
+                        </div>
+                        <!-- /.row -->
+                    </div><!-- /.container-fluid -->
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-info" onclick="UpdateOpeningStock(1)">Submit</button>
+                <button type="button" class="btn btn-primary" onclick="UpdateOpeningStock(2)">Submit & Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="AvailableSellingPriceGroupsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add/Edit Selling Price Group</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- left column -->
+                            <div class="col-md-12">
+                                <!-- jquery validation -->
+                                <div class="card card-primary card-outline">
+
+                                    <div class="card-body" id="divSellingPriceGroups">
+
+                                        @Html.Partial("PartialSellingPriceGroups")
+                                    </div>
+                                </div>
+                                <!-- /.card -->
+                            </div>
+                            <!--/.col (left) -->
+
+                        </div>
+                        <!-- /.row -->
+                    </div><!-- /.container-fluid -->
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="UpdateAvailableSellingPriceGroups()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="stockAlertModal">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Alert!!</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12" id="divStockAlertMsg">
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="confirmStockAlertInsert()">Continue</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What are Item Categories? How to use them?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    --  Item Categories allow for easier management of items by grouping similar items together. Your item categories will also be displayed in your Online Store to help your customers find what they need easily.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How to add custom item information like Expiry Date, Batch No, Size?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    --  IMS provides default item fields which are applicable for every industry. Incase you require to add custom item fields like Batch, Size, Color etc, you can do that by going to Item Settings and clicking on + Add Custom Field.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How to add MRP or Wholesale Price?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    --  MRP and Wholesale Price(along with minimum wholesale quantity) can be added to your items by enabling these options from Item Settings.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I add and update products?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    -- To add a new product, click on the 'Add' button at the top of the screen and then click on ‘Add New Product’.
+                                    To update an existing product, click on the name of the product, make your changes and then click the ‘Save’ button.
+                                    To delete an existing product, tick the box that is to the left of the product you would like to delete and then click the ‘Delete’ button at the top of the list.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I save a copy of a product?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Click on 'Action' button of an existing product.
+                                    Click on 'Duplicate the product' button of an existing product.
+                                    Edit the product name (this is required), and make any other relevant changes.
+                                    Click on the ‘Save’ button.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I make a product inactive?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Onsight allows you stop a product from displaying in your catalogue by marking it as inactive. This is sometimes better than deleting a product since all the product information is retained but the product is not shown in the catalogue. To mark a product as inactive, follow these steps:
+
+                                    Click on the name of the product you want to make active.
+                                    Uncheck the box next to the ‘Active’ field.
+                                    Click the ‘Save’ button at the bottom of the page.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What are master products and variants?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    --A master product serves as a template for a group of products that are all variants of one another. Onsight uses the Master-Variant model for storing products with many variations.
+
+                                    For each unique version of a product you should create a variant. An example of a variant is a ‘Blue T-shirt’. Another example might be a ‘Small T-shirt’. Variants can have different prices to one another. This allows the ‘Large T-shirt’ to be more expensive than the ‘Small T-shirt’. Or all your variants can be the same price.
+
+                                    To add product variants, you first need to create a new product which will serve as the master product. The master product is never sold. It is just the template that the variants are based on. Add all the info in here that will be common for all the variants. e.g. a common description. Save this master product. Now create a new product to represent the first variation (i.e. a unique colour). When you are creating this second product record, be sure to choose a master product in the first field. All the info will be pre-loaded. You don’t need to type anything unless the variant has some specific information. Add a new image for the variant. Save the variant. Now, load the other variants in the same way.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="ViewModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" id="divView">
+            @{
+                if (ViewBag.Item != null)
+                {
+                    @Html.Partial("PartialItemView")
+                }
+            }
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Items/Item.js"></script>

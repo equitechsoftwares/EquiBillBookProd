@@ -1,0 +1,236 @@
+﻿
+
+
+
+@{
+    decimal TotalTransactionAmount = 0, TotalTaxAmount = 0;
+    <thead id="thead">
+        <tr>
+            <th>Date</th>
+            <th>Invoice No</th>
+            <th>Transaction Type</th>
+            <th>Taxable Amount</th>
+            <th>Tax Amount</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.BankPayments)
+        {
+            <tr>
+                <td>@item.AddedOn</td>
+                <td>
+                    @if (item.Type == "Expense")
+                    {
+                        if (ViewBag.ExpensePermission.IsView)
+                        {
+                            <a href="javascript:void(0)" onclick="ViewExpense(@item.Id)">@item.ReferenceNo</a>
+                        }
+                        else
+                        {
+                            @item.ReferenceNo
+                        }
+                    }
+                    else if (item.Type == "Fund Transfer" || item.Type == "Deposit" || item.Type == "Withdraw")
+                    {
+                        if (ViewBag.ContraPermission.IsView)
+                        {
+                            <a href="javascript:void(0)" onclick="ViewContra(@item.Id)">@item.ReferenceNo</a>
+                        }
+                        else
+                        {
+                            @item.ReferenceNo
+                        }
+                    }
+                    else if (item.Type == "Journal")
+                    {
+                        if (ViewBag.JournalPermission.IsView)
+                        {
+                            <a href="javascript:void(0)" onclick="ViewJournal(@item.Id)">@item.ReferenceNo</a>
+                        }
+                        else
+                        {
+                            @item.ReferenceNo
+                        }
+                    }
+                    else if (item.Type == "Sales")
+                    {
+                        if (ViewBag.SalesPermission.IsView)
+                        {
+                            <a href="javascript:void(0)" onclick="ViewSale(@item.Id)">@item.ReferenceNo</a>
+                        }
+                        else
+                        {
+                            @item.ReferenceNo
+                        }
+                    }
+                    else if (item.Type == "Sales Return")
+                    {
+                        if (ViewBag.SalesReturnPermission.IsView)
+                        {
+                            <a href="javascript:void(0)" onclick="ViewSalesReturn(@item.Id)">@item.ReferenceNo</a>
+                        }
+                        else
+                        {
+                            @item.ReferenceNo
+                        }
+                    }
+                    else if (item.Type == "Purchase")
+                    {
+                        if (ViewBag.PurchasePermission.IsView)
+                        {
+                            <a href="javascript:void(0)" onclick="ViewPurchase(@item.Id)">@item.ReferenceNo</a>
+                        }
+                        else
+                        {
+                            @item.ReferenceNo
+                        }
+                    }
+                    else if (item.Type == "Purchase Return")
+                    {
+                        if (ViewBag.PurchaseReturnPermission.IsView)
+                        {
+                            <a href="javascript:void(0)" onclick="ViewPurchaseReturn(@item.Id)">@item.ReferenceNo</a>
+                        }
+                        else
+                        {
+                            @item.ReferenceNo
+                        }
+                    }
+                    else if (item.Type == "Customer Payment" || item.Type == "Sales Payment" || item.Type == "Customer Opening Balance Payment" || item.Type == "Customer Refund")
+                    {
+                        if (ViewBag.CustomerPaymentPermission.IsView)
+                        {
+                            if (item.Type == "Customer Opening Balance Payment")
+                            {
+                                <a href="javascript:void(0)" onclick="ViewSalesPayment(@item.Id)">@item.Type</a>
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0)" onclick="ViewSalesPayment(@item.Id)">@item.ReferenceNo</a>
+                            }
+                        }
+                        else
+                        {
+                            @item.ReferenceNo
+                        }
+                    }
+                    else if (item.Type == "Customer Refund")
+                    {
+                        if (ViewBag.CustomerRefundPermission.IsView)
+                        {
+                            <a href="javascript:void(0)" onclick="ViewSalesReturnPayment(@item.Id)">@item.ReferenceNo</a>
+                        }
+                        else
+                        {
+                            @item.ReferenceNo
+                        }
+                    }
+                    else if (item.Type == "Purchase Payment")
+                    {
+                        if (ViewBag.SupplierPaymentPermission.IsView)
+                        {
+                            <a href="javascript:void(0)" onclick="ViewPurchasePayment(@item.Id)">@item.ReferenceNo</a>
+                        }
+                        else
+                        {
+                            @item.ReferenceNo
+                        }
+                    }
+                    else if (item.Type == "Supplier Refund")
+                    {
+                        if (ViewBag.SupplierRefundPermission.IsView)
+                        {
+                            <a href="javascript:void(0)" onclick="ViewPurchaseReturnPayment(@item.Id)">@item.ReferenceNo</a>
+                        }
+                        else
+                        {
+                            @item.ReferenceNo
+                        }
+                    }
+                    else if (item.Type == "Stock Adjustment")
+                    {
+                        if (ViewBag.StockAdjustPermission.IsView)
+                        {
+                            <a href="javascript:void(0)" onclick="ViewStockAdjustment(@item.Id)">@item.ReferenceNo</a>
+                        }
+                        else
+                        {
+                            @item.ReferenceNo
+                        }
+                    }
+                </td>
+                <td>
+                    @if (item.Type == "Customer Opening Balance Payment")
+                    {
+                        <span>Customer Payment</span>
+                    }
+                    else
+                    {
+                        @item.Type
+                    }
+                </td>
+                <td>
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.TransactionAmount))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", item.TransactionAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>
+                <td>
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.TaxAmount))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", item.TaxAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>
+            </tr>
+            TotalTransactionAmount = (TotalTransactionAmount + item.TransactionAmount);
+            TotalTaxAmount = (TotalTaxAmount + item.TaxAmount);
+        }
+    </tbody>
+    <tbody class="table-body">
+        <tr>
+            <td colspan="3">Total</td>
+            <td>
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", TotalTransactionAmount))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", TotalTransactionAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+            <td>
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", TotalTaxAmount))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", TotalTaxAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+     $('#divAsof').text('Showing Results: (' + @Html.Raw(Json.Encode(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    @*$('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));*@
+</script>

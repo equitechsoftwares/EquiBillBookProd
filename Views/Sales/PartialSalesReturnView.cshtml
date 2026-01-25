@@ -1,0 +1,1089 @@
+﻿
+@{
+    if (ViewBag.SalesReturn != null)
+    {
+        <div class="modal-header">
+            <h4 class="modal-title">Sales Return Details</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="card card-primary card-outline">
+                @*<div class="card-header">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>*@
+                <div class="card-body">
+                    @*<div class="card card-outline">
+
+                            <div class="card-header">
+                                    <h3 class="card-title">Parent Sale Info</h3>
+                                </div>
+                            <div class="card-body">
+
+                                <div class="row invoice-info">
+                                    <div class="col-sm-6 invoice-col">
+                                        <strong>Invoice </strong>@ViewBag.SalesReturn.SalesInvoiceNo<br>
+                                        <strong>Date </strong>: @ViewBag.SalesReturn.SalesDate<br>
+                                    </div>
+                                    <div class="col-sm-6 invoice-col">
+                                        <strong>Customer </strong>@ViewBag.SalesReturn.CustomerName<br>
+                                        <strong>Business Location </strong>@ViewBag.SalesReturn.Branch<br>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>*@
+                    <div class="card card-outline">
+
+                        @*<div class="card-header">
+                                <h3 class="card-title">Sales Return Info</h3>
+                            </div>*@
+                        <!-- form start -->
+
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 @(ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Business Location </label>
+                                        <div class="input-group divBranch_ctrl">
+                                            @foreach (var item in ViewBag.Branchs)
+                                            {
+                                                if (ViewBag.SalesReturn.BranchId == item.BranchId)
+                                                {
+                                                    <span>@item.Branch</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Customer Name </label>
+                                        <div class="input-group divSupplier divCustomer_ctrl">
+                                            @foreach (var item in ViewBag.Users)
+                                            {
+                                                if (ViewBag.SalesReturn.CustomerId == item.UserId)
+                                                {
+                                                    <span>
+                                                        @item.Name
+                                                        @if (item.MobileNo != null && item.MobileNo != "")
+                                                        {
+                                                            <span>- @item.MobileNo</span>
+                                                        }
+                                                    </span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                @if (ViewBag.BusinessSetting.CountryId == 2)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divPlaceOfSupply">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Place Of Supply </label>
+                                            <div class="input-group divPlaceOfSupply_ctrl">
+                                                @foreach (var item in ViewBag.PlacesOfSupply)
+                                                {
+                                                    if (ViewBag.SalesReturn.PlaceOfSupplyId == item.StateId)
+                                                    {
+                                                        <span>@item.State</span>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                @*@if (ViewBag.SalesReturn.Status != null && ViewBag.SalesReturn.Status != "")
+                                    {*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divStatus">
+                                    <div class="form-group">
+                                        <label>Status </label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.SalesReturn.Status</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*}*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Invoice No</label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.SalesReturn.SalesInvoiceNo</span>
+                                        </div>
+                                        @*<small class="text-red font-weight-bold errorText" id="divInvoiceNo"></small>*@
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Reason </label>
+                                        @foreach (var item in ViewBag.SalesCreditNoteReasons)
+                                        {
+                                            if (ViewBag.SalesReturn.SalesCreditNoteReasonId == item.SalesCreditNoteReasonId)
+                                            {
+                                                <span>@item.SalesCreditNoteReason</span>
+                                            }
+                                        }
+                                        <small class="text-red font-weight-bold errorText" id="divSalesCreditNoteReason"></small>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Return Date </label>
+                                        <div class="input-group date" id="_Date" data-target-input="nearest">
+                                            <span>@(ViewBag.SalesReturn.Date != DateTime.MinValue?ViewBag.SalesReturn.Date.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1]):DateTime.Now)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Return Invoice No <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.SalesReturn.InvoiceNo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Payment Term</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlPaymentTerm" onchange="setDueDate()">
+                                                    @{
+                                                        <option value="0" selected>None </option>
+                                                        foreach (var item in ViewBag.PaymentTerms)
+                                                        {
+                                                            if (ViewBag.SalesReturn.PaymentTermId == item.PaymentTermId)
+                                                            {
+                                                                <option value="@item.PaymentTermId" selected> @item.PaymentTerm</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.PaymentTermId"> @item.PaymentTerm </option>
+                                                            }
+                                                        }
+                                                    }
+                                                </select>
+                                                @if (ViewBag.PaymentTermPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#paymentTermModal">+ </a>
+                                                    </span>
+                                                }
+
+                                            </div>
+                                        </div>
+                                    </div>*@
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Due Date </label>
+                                            <div class="input-group date" id="_DueDate" data-target-input="nearest">
+                                                <input id="txtDueDate" value="@ViewBag.SalesReturn.DueDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])" type="text" class="form-control datetimepicker-input" data-target="#_DueDate" />
+                                                <div class="input-group-append" data-target="#_DueDate" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divDueDate"></small>
+                                        </div>
+                                    </div>*@
+                                <!--<div class="col-sm-4">-->
+                                <!-- text input -->
+
+                                @if (ViewBag.SaleSetting.EnableSms)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Send SMS </label>
+                                            <div class="input-group">
+                                                @foreach (var item in ViewBag.SmsSettings)
+                                                {
+                                                    if (ViewBag.SalesReturn.SmsSettingsId == item.SmsSettingsId)
+                                                    {
+                                                        <span>@item.SaveAs</span>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                @if (ViewBag.SaleSetting.EnableEmail)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Send Email </label>
+                                            <div class="input-group">
+                                                @foreach (var item in ViewBag.EmailSettings)
+                                                {
+                                                    if (ViewBag.SalesReturn.EmailSettingsId == item.EmailSettingsId)
+                                                    {
+                                                        <span>@item.SaveAs</span>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                @if (ViewBag.SaleSetting.EnableWhatsapp)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Send Whatsapp </label>
+                                            <div class="input-group">
+                                                @foreach (var item in ViewBag.WhatsappSettings)
+                                                {
+                                                    if (ViewBag.SalesReturn.WhatsappSettingsId == item.WhatsappSettingsId)
+                                                    {
+                                                        <span>@item.SaveAs</span>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Attach Document</label>
+                                        <div class="input-group">
+                                            <img id="blahAttachDocument" src="@ViewBag.SalesReturn.AttachDocument" alt="" height="60" style="padding-top:10px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+
+                    </div>
+
+                    <div class="card card-outline">
+
+                        @*<div class="card-header bg-info">
+                                <h3 class="card-title">Item List</h3>
+                            </div>*@
+                        <!-- form start -->
+
+
+                        <div class="card-body">
+                            @*<div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="input-group mb-3">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                                            </div>
+                                            <input type="text" class="form-control" placeholder="Barcode/Itemcode/Item name" id="txttags">
+                                        </div>
+                                    </div>
+
+                                </div>*@
+                            <div class="row table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th class="@(ViewBag.ItemSetting.EnableLotNo == true ?"":"hidden")">Lot No</th>
+                                            @*<th>Unit</th>*@
+                                            @*<th>Avl Qty</th>*@
+                                            <th>Qty</th>
+                                            <th class="@(ViewBag.SaleSetting.EnableFreeQuantity == true ?"":"hidden")">Free Qty</th>
+                                            <th>Unit Cost</th>
+                                            <th>Discount</th>
+                                            @*<th>Unit Price (Before Tax)</th>*@
+                                            @*<th>Subtotal (Before Tax)</th>*@
+                                            <th style="width:10%">Tax <span id="lblReverseCharge" style="display:@(ViewBag.SalesReturn.IsReverseCharge == 1 ? "" :"none")">(Reverse Charge)</span></th>
+                                            @*<th>Net Cost</th>*@
+                                            <th>
+                                                Line Total
+                                                <input type="hidden" id="hdnSalePriceIsMinSellingPrice" value="@(ViewBag.SaleSetting.SalePriceIsMinSellingPrice.ToString())" />
+                                                <input type="hidden" id="hdnEnableLotNo" value="@(ViewBag.ItemSetting.EnableLotNo.ToString())" />
+                                                <input type="hidden" id="hdnEnableItemExpiry" value="@(ViewBag.ItemSetting.EnableItemExpiry.ToString())" />
+                                                <input type="hidden" id="hdnOnItemExpiry" value="@(ViewBag.ItemSetting.OnItemExpiry)" />
+                                                <input type="hidden" id="hdnEnableFreeQuantity" value="@ViewBag.SaleSetting.EnableFreeQuantity.ToString()" />
+                                                <input type="hidden" id="hdnEnableWarranty" value="@ViewBag.ItemSetting.EnableWarranty.ToString()" />
+                                                <input type="hidden" id="hdnEnableRoundOff" value="@ViewBag.SaleSetting.EnableRoundOff.ToString()" />
+                                            </th>
+                                            @*<th class="@(ViewBag.ItemSetting.EnableWarranty == true ?"":"hidden")">Warranty</th>*@
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            var count = 100000000;
+                                            foreach (var item in ViewBag.SalesReturn.SalesDetails)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <input type="text" hidden class="form-control" id="txtItemId@(count)" value="@item.ItemId">
+                                                        <input type="text" hidden class="form-control" id="txtItemDetailsId@(count)" value="@item.ItemDetailsId">
+                                                        <input type="text" hidden class="form-control" id="txtSkuCode@(count)" value="@item.SKU">
+                                                        <input type="text" hidden class="form-control" id="txtSalesReturnDetailsId@(count)" value="@item.SalesReturnDetailsId">
+                                                        <input type="text" hidden class="form-control" id="txtSalesDetailsId@(count)" value="@item.SalesDetailsId">
+
+                                                        @if (item.ItemName.Length > 15)
+                                                        {
+                                                            <span><b>Name:</b> @item.ItemName.Substring(0, 15)...</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span><b>Name:</b> @item.ItemName</span>
+                                                        }
+
+                                                        @if (item.VariationName != null)
+                                                        {
+                                                            <br /><span> <b>Variation:</b> @item.VariationName</span>
+                                                        }
+                                                        <br /><span><b>SKU:</b> @item.SKU</span>
+                                                        <span style="display:@(item.EnableImei == true ? "block":"none")">@item.OtherInfo</span>
+                                                    </td>
+                                                    <td class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden")">
+                                                        @if (item.LotId != 0)
+                                                        {
+                                                            <span>@item.LotNo</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="text-align:center;display:block">-</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <div class="input-group">
+                                                            <span>@(String.Format("{0:0.##}",item.Quantity))</span>
+                                                            @{
+                                                                if (item.QuaternaryUnitId != 0)
+                                                                {
+                                                                    if (item.PriceAddedFor == 1)
+                                                                    {
+                                                                        <span>@item.UnitShortName </span>
+                                                                    }
+                                                                    if (item.PriceAddedFor == 2)
+                                                                    {
+                                                                        <span>@item.SecondaryUnitShortName</span>
+                                                                    }
+                                                                    if (item.PriceAddedFor == 3)
+                                                                    {
+                                                                        <span>@item.TertiaryUnitShortName</span>
+                                                                    }
+                                                                    if (item.PriceAddedFor == 4)
+                                                                    {
+                                                                        <span>@item.QuaternaryUnitShortName</span>
+                                                                    }
+                                                                }
+                                                                else if (item.TertiaryUnitId != 0)
+                                                                {
+                                                                    @*<option value="0" hidden>@item.UnitShortName</option>*@
+                                                                    if (item.PriceAddedFor == 2)
+                                                                    {
+                                                                        <span>@item.UnitShortName </span>
+                                                                    }
+                                                                    if (item.PriceAddedFor == 3)
+                                                                    {
+                                                                        <span>@item.SecondaryUnitShortName</span>
+                                                                    }
+                                                                    if (item.PriceAddedFor == 4)
+                                                                    {
+                                                                        <span>@item.TertiaryUnitShortName</span>
+                                                                    }
+                                                                }
+                                                                else if (item.SecondaryUnitId != 0)
+                                                                {
+                                                                    @*<option value="0" hidden>@item.UnitShortName</option>
+                                                                        <option value="0" hidden>@item.UnitShortName</option>*@
+                                                                    if (item.PriceAddedFor == 3)
+                                                                    {
+                                                                        <span>@item.UnitShortName </span>
+                                                                    }
+                                                                    if (item.PriceAddedFor == 4)
+                                                                    {
+                                                                        <span>@item.SecondaryUnitShortName</span>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    @*<option value="0" hidden>@item.UnitShortName</option>
+                                                                        <option value="0" hidden>@item.UnitShortName</option>
+                                                                        <option value="0" hidden>@item.UnitShortName</option>*@
+                                                                    <span>@item.UnitShortName </span>
+                                                                }
+                                                            }
+                                                            <input type="text" hidden class="form-control" id="hdnPriceAddedFor@(count)" value="@item.PriceAddedFor">
+                                                            <input type="text" hidden class="form-control" id="hdnUToSValue@(count)" value="@item.UToSValue">
+                                                            <input type="text" hidden class="form-control" id="hdnSToTValue@(count)" value="@item.SToTValue">
+                                                            <input type="text" hidden class="form-control" id="hdnTToQValue@(count)" value="@item.TToQValue">
+                                                            @*<input type="text" hidden class="form-control" id="hdnUnitCost@(count)" value="@item.UnitCost">*@
+                                                            <input type="hidden" class="form-control" id="hdnAllowDecimal@(count)" value="@(item.AllowDecimal.ToString())" />
+                                                            <input type="hidden" class="form-control" id="hdnSecondaryUnitAllowDecimal@(count)" value="@item.SecondaryUnitAllowDecimal.ToString()" />
+                                                            <input type="hidden" class="form-control" id="hdnTertiaryUnitAllowDecimal@(count)" value="@item.TertiaryUnitAllowDecimal.ToString()">
+                                                            <input type="hidden" class="form-control" id="hdnQuaternaryUnitAllowDecimal@(count)" value="@item.QuaternaryUnitAllowDecimal.ToString()">
+                                                            <input type="text" hidden class="form-control" id="hdnIsManageStock@(count)" value="@item.IsManageStock.ToString()">
+                                                        </div>
+                                                    </td>
+                                                    <td class="@(ViewBag.SaleSetting.EnableFreeQuantity == true ?"":"hidden")">
+                                                        <div class="input-group">
+                                                            <span>@(String.Format("{0:0.##}",item.FreeQuantity))</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span>@(String.Format("{0:0.##}",item.UnitCost))</span>
+                                                        <input type="hidden" id="hdnUnitCost@(count)" value="@(item.UnitCost)">
+                                                    </td>
+                                                    <td>
+                                                        <div class="input-group">
+                                                            <span>@(String.Format("{0:0.##}",item.Discount))</span>
+                                                            @if (item.DiscountType == "Fixed")
+                                                            {
+                                                                <span>Fixed</span>
+                                                            }
+                                                            @if (item.DiscountType == "Percentage")
+                                                            {
+                                                                <span>Percentage</span>
+                                                            }
+                                                        </div>
+                                                        <input type="text" hidden class="form-control" id="hdnExtraDiscounts@(count)" value="@item.ExtraDiscount">
+                                                    </td>
+                                                    <td style="display:none">
+                                                        <span>@(String.Format("{0:0.##}",item.PriceExcTax))</span>
+                                                    </td>
+                                                    <td style="display:none">
+                                                        <span>@(String.Format("{0:0.##}",item.AmountExcTax))</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="input-group">
+                                                            <span>@(item.TotalTaxAmount)&nbsp;</span>
+                                                            @foreach (var tax in ViewBag.Taxs)
+                                                            {
+                                                                if (tax.Tax != "Taxable")
+                                                                {
+                                                                    if (ViewBag.BusinessSetting.CountryId == 2)
+                                                                    {
+                                                                        if (ViewBag.SalesReturn.BranchStateId == ViewBag.SalesReturn.PlaceOfSupplyId)
+                                                                        {
+                                                                            if (tax.TaxTypeId != 3)
+                                                                            {
+                                                                                if (item.TaxId == tax.TaxId)
+                                                                                {
+                                                                                    <span>(@tax.Tax)</span>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            if (tax.CanDelete == false || tax.TaxTypeId == 3 || tax.TaxTypeId == 5)
+                                                                            {
+                                                                                if (item.TaxId == tax.TaxId)
+                                                                                {
+                                                                                    <span>(@tax.Tax)</span>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        if (item.TaxId == tax.TaxId)
+                                                                        {
+                                                                            <span>(@tax.Tax)</span>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            <input type="text" hidden class="form-control" id="txtTaxId@(count)" value="@item.TaxId">
+                                                            <div id="divTaxExemption@(count)" class="form-group" style="display:@(item.TaxExemptionId != 0 ? "" : "none")">
+                                                                <label style="margin-bottom:0;margin-top:0.5rem;">Exemption Reason </label>
+                                                                <div class="input-group">
+                                                                    @foreach (var tax in ViewBag.TaxExemptions)
+                                                                    {
+                                                                        if (item.TaxExemptionId == tax.TaxExemptionId)
+                                                                        {
+                                                                            <span>@tax.Reason</span>
+                                                                        }
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        @*<small class="text-bold"><a href="javascript:void(0)" onclick="openTaxModal(@count)"><i class="fas fa-plus"></i> Add New</a></small>*@
+                                                    </td>
+                                                    <td style="display:none">
+                                                        <span>@item.PriceIncTax</span>
+                                                        <input type="hidden" value="@(String.Format("{0:0.##}",item.PriceIncTax))" id="hdnPurchaseIncTax@(count)" />
+                                                    </td>
+                                                    <td>
+                                                        <span>@(String.Format("{0:0.##}",item.AmountIncTax))</span>
+                                                        <input type="hidden" id="hdnAmountIncTax@(count)" value="@item.AmountIncTax">
+                                                    </td>
+                                                    @*<td>
+                                                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteCombo(@count,@item.SalesDetailsId)">
+                                                                <i class="fas fa-times">
+                                                                </i>
+                                                            </button>
+                                                        </td>*@
+                                                </tr>
+                                                count++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="row">
+                                        <div class="col-sm-6 mt-2">
+                                            <div class="form-group row">
+                                                <label for="inputEmail3" class="col-sm-5 col-form-label">Discount on All</label>
+                                                <div class="input-group col-sm-7">
+                                                    <span class="col-form-label">@(String.Format("{0:0.##}", ViewBag.SalesReturn.Discount)) &nbsp;</span>
+                                                    @{
+                                                        if (ViewBag.SalesReturn.DiscountType == "Fixed")
+                                                        {
+                                                            <span class="col-form-label">Fixed</span>
+                                                        }
+                                                        if (ViewBag.SalesReturn.DiscountType == "Percentage")
+                                                        {
+                                                            <span class="col-form-label">Percentage</span>
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6 mt-2 hidden">
+                                            <div class="form-group row">
+                                                <label for="inputEmail3" class="col-sm-5 col-form-label">Tax</label>
+                                                <div class="input-group col-sm-7">
+                                                    <span class="col-form-label">
+                                                        @{
+                                                            var selectedTax = "";
+                                                            foreach (var item in ViewBag.Taxs)
+                                                            {
+                                                                if (ViewBag.SalesReturn.TaxId == item.TaxId)
+                                                                {
+                                                                    selectedTax = item.Tax;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                        @selectedTax
+                                                    </span>
+                                                    @if (ViewBag.TaxListPermission.IsAdd == true)
+                                                    {
+                                                        <span class="input-group-append">
+                                                            <a href="javascript:void(0)" class="btn btn-info" onclick="openTaxModal(0)">+ </a>
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="divAdditionalCharges" class="@(ViewBag.BusinessSetting.IsBusinessRegistered == 1 && ViewBag.BusinessRegistrationType == "Composition" ? "hidden" : "")">
+                                        @{
+                                            var additionalChargeCount = 0;
+                                            foreach (var item in ViewBag.SalesReturn.SalesReturnAdditionalCharges)
+                                            {
+                                                <div class="row additional-charges-row">
+                                                    <div class="col-sm-6">
+                                                        <div class="form-group row">
+                                                            <label for="inputEmail3" class="col-sm-5 col-form-label">@item.Name</label>
+                                                            <div class="input-group col-sm-7">
+                                                                <span class="col-form-label">@(String.Format("{0:0.##}", item.AmountExcTax)) &nbsp;</span>
+                                                                <input value="@item.AmountIncTax" type="hidden" id="txtAdditionalChargesAmountIncTax@(additionalChargeCount)">
+                                                                <input value="@item.AdditionalChargeId" type="hidden" id="txtAdditionalChargeId@(additionalChargeCount)">
+                                                                <input value="@item.SalesReturnAdditionalChargesId" type="hidden" id="txtSalesReturnAdditionalChargesId@(additionalChargeCount)">
+                                                                @foreach (var tax in ViewBag.Taxs)
+                                                                {
+                                                                    if (tax.Tax != "Taxable")
+                                                                    {
+                                                                        if (ViewBag.BusinessSetting.CountryId == 2)
+                                                                        {
+                                                                            if (ViewBag.SalesReturn.BranchStateId == ViewBag.SalesReturn.PlaceOfSupplyId)
+                                                                            {
+                                                                                if (tax.TaxTypeId != 3)
+                                                                                {
+                                                                                    if (item.TaxId == tax.TaxId)
+                                                                                    {
+                                                                                        <span class="col-form-label">(@tax.Tax)</span>
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                if (tax.CanDelete == false || tax.TaxTypeId == 3 || tax.TaxTypeId == 5)
+                                                                                {
+                                                                                    if (item.TaxId == tax.TaxId)
+                                                                                    {
+                                                                                        <span class="col-form-label">(@tax.Tax)</span>
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            if (item.TaxId == tax.TaxId)
+                                                                            {
+                                                                                <span class="col-form-label">(@tax.Tax)</span>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                                <div id="divTaxExemptionAC@(additionalChargeCount)" style="display:@(item.TaxExemptionId == 0 ? "none":""); margin-top:5px; align-items:center;">
+                                                                    <span class="small text-muted text-bold">Exemption Reason:</span>
+                                                                    <span id="exemptionReasonLabel@(additionalChargeCount)" class="small">@item.TaxExemptionReason</span>
+                                                                    <input type="hidden" id="exemptionReasonId@(additionalChargeCount)" value="@(item.TaxExemptionId)">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                additionalChargeCount++;
+                                            }
+                                        }
+
+                                    </div>
+                                    @if (ViewBag.SaleSetting.EnableSpecialDiscount == true)
+                                    {
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label"> Special Discount </label>
+                                                    <div class="input-group col-sm-7">
+                                                        <span class="col-form-label" id="txtSpecialDiscount">@ViewBag.SalesReturn.SpecialDiscount</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (ViewBag.SaleSetting.EnableNotes == true)
+                                    {
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label">Notes</label>
+                                                    <div class="col-sm-12">
+                                                        <span class="col-form-label" id="txtNotes" placeholder="">@ViewBag.SalesReturn.Notes</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    @if (ViewBag.SaleSetting.EnableTerms == true)
+                                    {
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label">Terms & Conditions</label>
+                                                    <div class="col-sm-12">
+                                                        <span class="col-form-label" id="txtTerms" placeholder="">@ViewBag.SalesReturn.Terms</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="row">
+                                        <div class="col-12" style="display:none;">
+                                            <div class="text-right">
+                                                <label for="inputEmail3" class="col-form-label">Total Quantities :</label>
+                                                <input type="number" class="form-control" id="hdndivTotalAmount" hidden value="@ViewBag.SalesReturn.Subtotal">
+                                                <label for="inputEmail3" class="col-form-label" id="divTotalQty">
+                                                    @(String.Format("{0:0.##}", ViewBag.SalesReturn.TotalQuantity))
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="text-right">
+                                                <label for="inputEmail3" class="col-form-label">Gross Amount :</label>
+                                                <input type="number" class="form-control" id="hdndivTotalAmount" hidden value="@ViewBag.SalesReturn.Subtotal">
+                                                <label for="inputEmail3" class="col-form-label" id="divTotalAmount">
+                                                    @{
+                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                        {
+                                                            @ViewBag.SalesReturn.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesReturn.Subtotal))
+                                                        }
+                                                        else
+                                                        {
+                                                            @(String.Format("{0:0.##}", ViewBag.SalesReturn.Subtotal))@ViewBag.SalesReturn.CurrencySymbol
+                                                        }
+                                                    }
+                                                </label>
+                                            </div>
+                                        </div>
+                                        @*<div class="col-12">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-sm-8 col-form-label text-right">Other Charges(+) :</label>
+                                                    <input type="email" class="form-control" id="hdndivOtherCharges" hidden value="@ViewBag.SalesReturn.OtherCharges">
+                                                    <label for="inputEmail3" class="col-sm-4 col-form-label text-left" id="divOtherCharges">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @ViewBag.SalesReturn.CurrencySymbol@ViewBag.SalesReturn.OtherCharges
+                                                            }
+                                                            else
+                                                            {
+                                                                @ViewBag.SalesReturn.OtherCharges@ViewBag.SalesReturn.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </label>
+
+                                                </div>
+                                            </div>*@
+                                        <div class="col-12">
+                                            <div class="text-right">
+                                                <label for="inputEmail3" class="col-form-label">Discount(-) :</label>
+                                                <input type="number" class="form-control" id="hdndivDiscount" hidden value="@ViewBag.SalesReturn.TotalDiscount">
+
+                                                <label for="inputEmail3" class="col-form-label" id="divDiscount">
+                                                    @{
+                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                        {
+                                                            @ViewBag.SalesReturn.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesReturn.TotalDiscount))
+                                                        }
+                                                        else
+                                                        {
+                                                            @(String.Format("{0:0.##}", ViewBag.SalesReturn.TotalDiscount))@ViewBag.SalesReturn.CurrencySymbol
+                                                        }
+                                                    }
+                                                </label>
+
+                                            </div>
+                                        </div>
+                                        <div class="col-12 no_reversecharge" id="divTaxSummary" style="display:@(ViewBag.SalesReturn.IsReverseCharge==1 ? "none":"")">
+                                            @{
+                                                foreach (var item in ViewBag.TaxBreakups)
+                                                {
+                                                    <div class="text-right">
+                                                        <label for="inputEmail3" class="col-form-label">@item.Tax :</label>
+                                                        <label for="inputEmail3" class="col-form-label" id="divTax">
+                                                            @{
+                                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                {
+                                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.TaxAmount))
+                                                                }
+                                                                else
+                                                                {
+                                                                    @(String.Format("{0:0.##}", item.TaxAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                }
+                                                            }
+                                                        </label>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                        @if (ViewBag.SaleSetting.EnableSpecialDiscount == true)
+                                        {
+                                            <div class="col-12">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Special Discount(-) :</label>
+                                                    <label for="inputEmail3" class="col-form-label" id="divSpecialDiscount">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @ViewBag.SalesReturn.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesReturn.SpecialDiscount))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}", ViewBag.SalesReturn.SpecialDiscount))@ViewBag.SalesReturn.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="col-12 no_reversecharge" style="display:@(ViewBag.SalesReturn.IsReverseCharge==1 ? "none":"") ">
+                                            <div class="text-right">
+                                                <label for="inputEmail3" class="col-form-label">Net Amount :</label>
+                                                <label for="inputEmail3" class="col-form-label" id="divNetAmount">
+                                                    @{
+                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                        {
+                                                            @ViewBag.SalesReturn.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesReturn.NetAmount))
+                                                        }
+                                                        else
+                                                        {
+                                                            @(String.Format("{0:0.##}", ViewBag.SalesReturn.NetAmount))@ViewBag.SalesReturn.CurrencySymbol
+                                                        }
+                                                    }
+                                                </label>
+                                            </div>
+                                        </div>
+                                        @if (ViewBag.SaleSetting.EnableRoundOff == true)
+                                        {
+                                            <div class="col-12 no_reversecharge" style="display:@(ViewBag.SalesReturn.IsReverseCharge==1 ? "none":"") ">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Round Off :</label>
+                                                    <label for="inputEmail3" class="col-form-label" id="divRoundOff">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @ViewBag.SalesReturn.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesReturn.RoundOff))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}", ViewBag.SalesReturn.RoundOff))@ViewBag.SalesReturn.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="col-12 no_reversecharge" style="display:@(ViewBag.SalesReturn.IsReverseCharge==1 ? "none":"") ">
+                                            <div class="text-right">
+                                                <label for="inputEmail3" class="col-form-label"> Total :</label>
+                                                <label for="inputEmail3" class="col-form-label" id="divGrandTotal">
+                                                    @{
+                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                        {
+                                                            @ViewBag.SalesReturn.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesReturn.TaxableAmount))
+                                                        }
+                                                        else
+                                                        {
+                                                            @(String.Format("{0:0.##}", ViewBag.SalesReturn.TaxableAmount))@ViewBag.SalesReturn.CurrencySymbol
+                                                        }
+                                                    }
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 reversecharge" style="display:@(ViewBag.SalesReturn.IsReverseCharge==1 ? "":"none") ">
+                                            <div class="text-right">
+                                                <label for="inputEmail3" class="col-form-label">Net Amount :</label>
+                                                <label for="inputEmail3" class="col-form-label" id="divNetAmount_reversecharge">
+                                                    @{
+                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                        {
+                                                            @ViewBag.SalesReturn.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesReturn.NetAmountReverseCharge))
+                                                        }
+                                                        else
+                                                        {
+                                                            @(String.Format("{0:0.##}", ViewBag.SalesReturn.NetAmountReverseCharge))@ViewBag.SalesReturn.CurrencySymbol
+                                                        }
+                                                    }
+                                                </label>
+                                            </div>
+                                        </div>
+                                        @if (ViewBag.SaleSetting.EnableRoundOff == true)
+                                        {
+                                            <div class="col-12 reversecharge" style="display:@(ViewBag.SalesReturn.IsReverseCharge==1 ? "":"none") ">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Round Off :</label>
+                                                    <label for="inputEmail3" class="col-form-label" id="divRoundOff_reversecharge">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @ViewBag.SalesReturn.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesReturn.RoundOffReverseCharge))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}", ViewBag.SalesReturn.RoundOffReverseCharge))@ViewBag.SalesReturn.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="col-12 reversecharge" style="display:@(ViewBag.SalesReturn.IsReverseCharge==1 ? "":"none") ">
+                                            <div class="text-right">
+                                                <label for="inputEmail3" class="col-form-label"> Total :</label>
+                                                <label for="inputEmail3" class="col-form-label" id="divGrandTotal_reversecharge">
+                                                    @{
+                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                        {
+                                                            @ViewBag.SalesReturn.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesReturn.GrandTotalReverseCharge))
+                                                        }
+                                                        else
+                                                        {
+                                                            @(String.Format("{0:0.##}", ViewBag.SalesReturn.GrandTotalReverseCharge))@ViewBag.SalesReturn.CurrencySymbol
+                                                        }
+                                                    }
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    @if (ViewBag.CustomerPayment != null)
+                    {
+                        if ((ViewBag.CustomerPayment.Amount - ViewBag.TotalRefund) != ViewBag.CustomerPayment.AmountRemaining)
+                        {
+                            <br />
+                            <h4>Invoices Credited</h4>
+                            <div class="table-responsive" id="divDues">
+                                <table id="tblPayments" class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            @*<th>#</th>*@
+                                            <th>Sales Date</th>
+                                            <th>Invoice No</th>
+                                            <th>Invoice Amount</th>
+                                            <th>Payment Amount</th>
+                                            <th class="divReport"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="rows">
+                                        @{
+
+                                            var index = 1;
+                                            foreach (var item in ViewBag.CustomerPayment.CustomerPaymentIds)
+                                            {
+                                                if (item.Type != "Customer Refund")
+                                                {
+                                                    <tr id="tr_@item.CustomerPaymentId">
+                                                        @*<td>@index</td>*@
+                                                        <td>
+                                                            @item.SalesDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                                                        </td>
+                                                        <td>
+                                                            @(item.Type == "Customer Opening Balance Payment" ? "Customer Opening Balance" : item.InvoiceNo)
+                                                        </td>
+                                                        <td>
+                                                            @(item.Type == "Customer Opening Balance Payment" ? @item.OpeningBalance : @item.GrandTotal)
+                                                        </td>
+                                                        <td>
+                                                            @item.Amount
+                                                        </td>
+                                                        <td class="divReport">
+                                                            @if (item.IsCancelled == false)
+                                                            {
+                                                                if (ViewBag.CustomerPaymentPermission.IsDelete)
+                                                                {
+                                                                    <a href="javascript:void(0)" onclick="deletePayment(@item.CustomerPaymentId)" class="btn btn-danger btn-sm" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                                                                }
+                                                                <a href="javascript:void(0)" onclick="openNotificationModal('Credits Applied From Credit Note',@item.CustomerPaymentId)" class="btn btn-warning btn-sm" id="View" data-toggle="tooltip" data-placement="bottom" title="Send Notification"><i class="far fa-envelope"></i></a>
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                    index++;
+                                                }
+                                            }
+                                        }
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    }
+
+
+                    @if (ViewBag.TotalRefund != 0)
+                    {
+                        <br />
+                        <h4>Refunds</h4>
+                        <div class="table-responsive" id="divDues">
+                            <table id="tblPayments" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        @*<th>#</th>*@
+                                        <th>Date</th>
+                                        <th>Payment Type</th>
+                                        <th>Amount Refunded</th>
+                                        <th class="divReport"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="rows">
+                                    @{
+                                        if (ViewBag.CustomerPayment != null)
+                                        {
+                                            var index = 1;
+                                            foreach (var item in ViewBag.CustomerPayment.CustomerPaymentIds)
+                                            {
+                                                if (item.Type == "Customer Refund")
+                                                {
+                                                    <tr id="tr_@item.CustomerPaymentId">
+                                                        @*<td>@index</td>*@
+                                                        <td>
+                                                            @if (item.PaymentDate != null && item.PaymentDate != DateTime.MinValue)
+                                                            {
+                                                                @item.PaymentDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                                                            }
+                                                            else
+                                                            {
+                                                                <text>-</text>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            @(item.PaymentType)
+                                                        </td>
+                                                        <td>
+                                                            @item.Amount
+                                                        </td>
+                                                        <td class="divReport">
+                                                            @if (item.IsCancelled == false)
+                                                            {
+                                                                if (ViewBag.CustomerRefundPermission.IsDelete)
+                                                                {
+                                                                    <a href="javascript:void(0)" onclick="deleteRefund(@item.CustomerPaymentId)" class="btn btn-danger btn-sm" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                                                                }
+                                                                <a href="javascript:void(0)" onclick="openNotificationModal('Refund From Credit Note',@item.CustomerPaymentId)" class="btn btn-warning btn-sm" id="View" data-toggle="tooltip" data-placement="bottom" title="Send Notification"><i class="far fa-envelope"></i></a>
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                    index++;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    @if (ViewBag.IsAccountsAddon == true)
+                    {
+                        <div class="card card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Journal</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row table-responsive">
+                                    <table class="table table-bordered table-striped">
+                                        @{
+                                            <thead id="thead">
+                                                <tr>
+                                                    <th>Account Name</th>
+                                                    <th>Debit</th>
+                                                    <th>Credit</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="table-body">
+                                                @foreach (var item in ViewBag.BankPayments)
+                                                {
+                                                    if (item.Debit != 0 || item.Credit != 0 || item.IsTaxAccount == true)
+                                                    {
+                                                        <tr>
+                                                            <td>@item.AccountName</td>
+                                                            <td>@(String.Format("{0:0.##}", item.Debit))</td>
+                                                            <td>@(String.Format("{0:0.##}", item.Credit))</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                            <tbody>
+                                                <tr>
+                                                    <td colspan="1" data-title="Total" class="text-right"></td>
+                                                    <td data-title="Due Amount" class="text-bold">@(String.Format("{0:0.##}", ViewBag.TotalDebit))</td>
+                                                    <td data-title="Due Amount" class="text-bold">@(String.Format("{0:0.##}", ViewBag.TotalCredit))</td>
+                                                </tr>
+                                            </tbody>
+
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}
+
+
+

@@ -1,0 +1,397 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Loyalty Program Settings";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1> Loyalty Program Settings</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item active">Loyalty Program Settings</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/settings/index" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <form id="frmRewardPoints">
+                        <input type="hidden" id="hdnRewardPointSettingsId" value="@(ViewBag.RewardPointSetting != null ? ViewBag.RewardPointSetting.RewardPointSettingsId : 0)">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="chkEnableRewardPoint"
+                                                   @(ViewBag.RewardPointSetting != null && ViewBag.RewardPointSetting.EnableRewardPoint == true ? "checked" : "")
+                                                   onchange="toggleRewardPointsConfig()">
+                                            <label class="custom-control-label" for="chkEnableRewardPoint">Enable Loyalty Program</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row" id="divRewardPointsConfig" @(ViewBag.RewardPointSetting != null && ViewBag.RewardPointSetting.EnableRewardPoint == true ? "" : "style='display:none;'")>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Display Name <i class="fa fa-info-circle text-info" data-toggle="tooltip" title="What to call points (e.g., Points, Rewards, Cashback)"></i></label>
+                                        <input type="text" class="form-control divDisplayName_ctrl" id="txtDisplayName"
+                                               value="@(ViewBag.RewardPointSetting != null ? ViewBag.RewardPointSetting.DisplayName : "Points")"
+                                               placeholder="Points">
+                                        <small class="text-red font-weight-bold errorText" id="divDisplayName"></small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <h5 class="mt-3 mb-3"> Points Earning Rules</h5>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Amount Spent for 1 Point <span class="text-danger">*</span></label>
+                                        <div class="input-group divAmountSpentForUnitPoint_ctrl">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]</span>
+                                            </div>
+                                            <input type="number" class="form-control" id="txtAmountSpentForUnitPoint"
+                                                   value="@(ViewBag.RewardPointSetting != null ? ViewBag.RewardPointSetting.AmountSpentForUnitPoint : 100)"
+                                                   min="0.01" step="0.01" required>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divAmountSpentForUnitPoint"></small>
+                                        <small class="text-muted">Example: 100 means ₹100 spent = 1 point</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Minimum Order Total to Earn Points</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]</span>
+                                            </div>
+                                            <input type="number" class="form-control" id="txtMinOrderTotalToEarnReward"
+                                                   value="@(ViewBag.RewardPointSetting != null ? ViewBag.RewardPointSetting.MinOrderTotalToEarnReward : 0)"
+                                                   min="0" step="0.01">
+                                        </div>
+                                        <small class="text-muted">Minimum order amount required to earn points</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Maximum Points Per Order</label>
+                                        <input type="number" class="form-control" id="txtMaxPointsPerOrder"
+                                               value="@(ViewBag.RewardPointSetting != null ? ViewBag.RewardPointSetting.MaxPointsPerOrder : 0)"
+                                               min="0" step="1">
+                                        <small class="text-muted">0 = No limit</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <h5 class="mt-3 mb-3"> Tiered Points Rules (Optional)</h5>
+                                    <p class="text-muted">Define different point rates based on order amount ranges. If no tier matches, the default rate above will be used.</p>
+
+                                    <div class="card card-outline card-info">
+                                        <div class="card-header">
+                                            <h3 class="card-title">Tier Rules</h3>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-sm btn-primary" onclick="addTier()">
+                                                    <i class="fas fa-plus"></i> Add Tier
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-bordered" id="tblTiers">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 5%;">Priority</th>
+                                                            <th style="width: 20%;">Min Amount</th>
+                                                            <th style="width: 20%;">Max Amount</th>
+                                                            <th style="width: 25%;">Amount for 1 Point</th>
+                                                            <th style="width: 15%;">Status</th>
+                                                            <th style="width: 15%;">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="tblTiersBody">
+                                                        @{
+                                                            var tiersList = ViewBag.RewardPointTiers as System.Collections.IEnumerable;
+                                                            var currencySymbol = Request.Cookies["data"].Value.Split('&')[5].Split('=')[1];
+                                                        }
+                                                        @if (tiersList != null)
+                                                        {
+                                                            var tiersArray = tiersList.Cast<object>().ToArray();
+                                                            if (tiersArray.Length > 0)
+                                                            {
+                                                                // Sort by Priority using reflection/dynamic access
+                                                                var sortedTiers = tiersArray.OrderBy(t =>
+                                                                {
+                                                                    dynamic tier = t;
+                                                                    return (int)tier.Priority;
+                                                                }).ToArray();
+
+                                                                foreach (dynamic tier in sortedTiers)
+                                                                {
+                                                                    var maxAmount = tier.MaxAmount != null ? (decimal)tier.MaxAmount : 0;
+                                                                    <tr data-tier-id="@tier.RewardPointTierId" class="tier-row">
+                                                                        <td>
+                                                                            <input type="number" class="form-control form-control-sm tier-priority"
+                                                                                   value="@tier.Priority" min="1" step="1"
+                                                                                   data-original-value="@tier.Priority">
+                                                                        </td>
+                                                                        <td>
+                                                                            <div class="input-group input-group-sm">
+                                                                                <div class="input-group-prepend">
+                                                                                    <span class="input-group-text">@currencySymbol</span>
+                                                                                </div>
+                                                                                <input type="number" class="form-control tier-min-amount"
+                                                                                       value="@string.Format("{0:F2}", (decimal)tier.MinAmount)"
+                                                                                       min="0" step="0.01"
+                                                                                       data-original-value="@string.Format("{0:F2}", (decimal)tier.MinAmount)">
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <div class="input-group input-group-sm">
+                                                                                <div class="input-group-prepend">
+                                                                                    <span class="input-group-text">@currencySymbol</span>
+                                                                                </div>
+                                                                                <input type="number" class="form-control tier-max-amount"
+                                                                                       value="@(tier.MaxAmount != null ? string.Format("{0:F2}", (decimal)tier.MaxAmount) : "")"
+                                                                                       min="0" step="0.01"
+                                                                                       data-original-value="@(tier.MaxAmount != null ? string.Format("{0:F2}", (decimal)tier.MaxAmount) : "")">
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <div class="input-group input-group-sm">
+                                                                                <div class="input-group-prepend">
+                                                                                    <span class="input-group-text">@currencySymbol</span>
+                                                                                </div>
+                                                                                <input type="number" class="form-control tier-amount-for-point"
+                                                                                       value="@string.Format("{0:F2}", (decimal)tier.AmountSpentForUnitPoint)"
+                                                                                       min="0.01" step="0.01"
+                                                                                       data-original-value="@string.Format("{0:F2}", (decimal)tier.AmountSpentForUnitPoint)">
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <select class="form-control form-control-sm tier-status">
+                                                                                <option value="true" @(tier.IsActive ? "selected" : "")>Active</option>
+                                                                                <option value="false" @(!tier.IsActive ? "selected" : "")>Inactive</option>
+                                                                            </select>
+                                                                        </td>
+                                                                        <td>
+                                                                            @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsEdit)
+                                                                            {
+                                                                                <button type="button" class="btn btn-sm btn-danger" onclick="removeTierRow(this)" title="Remove">
+                                                                                    <i class="fas fa-trash"></i>
+                                                                                </button>
+                                                                            }
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <tr class="empty-message-row">
+                                                                    <td colspan="6" class="text-center text-muted">No tiers defined. Click "Add Tier" to create one.</td>
+                                                                </tr>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <tr class="empty-message-row">
+                                                                <td colspan="6" class="text-center text-muted">No tiers defined. Click "Add Tier" to create one.</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <h5 class="mt-3 mb-3"> Points Redemption Rules</h5>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Redeem Amount per Point <span class="text-danger">*</span></label>
+                                        <div class="input-group divRedeemAmountPerUnitPoint_ctrl">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]</span>
+                                            </div>
+                                            <input type="number" class="form-control" id="txtRedeemAmountPerUnitPoint"
+                                                   value="@(ViewBag.RewardPointSetting != null ? ViewBag.RewardPointSetting.RedeemAmountPerUnitPoint : 0.5)"
+                                                   min="0.01" step="0.01" required>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divRedeemAmountPerUnitPoint"></small>
+                                        <small class="text-muted">Example: 0.5 means 1 point = ₹0.50 discount</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Minimum Order Total to Redeem Points</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]</span>
+                                            </div>
+                                            <input type="number" class="form-control" id="txtMinimumOrderTotalToRedeemPoints"
+                                                   value="@(ViewBag.RewardPointSetting != null ? ViewBag.RewardPointSetting.MinimumOrderTotalToRedeemPoints : 0)"
+                                                   min="0" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Minimum Points to Redeem</label>
+                                        <input type="number" class="form-control" id="txtMinimumRedeemPoint"
+                                               value="@(ViewBag.RewardPointSetting != null ? ViewBag.RewardPointSetting.MinimumRedeemPoint : 0)"
+                                               min="0" step="1">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Maximum Points Per Order (Redemption)</label>
+                                        <input type="number" class="form-control" id="txtMaximumRedeemPointPerOrder"
+                                               value="@(ViewBag.RewardPointSetting != null ? ViewBag.RewardPointSetting.MaximumRedeemPointPerOrder : 0)"
+                                               min="0" step="1">
+                                        <small class="text-muted">0 = No limit</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <h5 class="mt-3 mb-3"> Points Expiry Rules</h5>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Expiry Period</label>
+                                        <input type="number" class="form-control" id="txtExpiryPeriod"
+                                               value="@(ViewBag.RewardPointSetting != null ? ViewBag.RewardPointSetting.ExpiryPeriod : 0)"
+                                               min="0" step="1">
+                                        <small class="text-muted">0 = Never expires</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Expiry Period Type</label>
+                                        <select class="form-control select2" id="ddlExpiryPeriodType">
+                                            <option value="1" @(ViewBag.RewardPointSetting != null && ViewBag.RewardPointSetting.ExpiryPeriodType == 1 ? "selected" : "")>Days</option>
+                                            <option value="2" @(ViewBag.RewardPointSetting != null && ViewBag.RewardPointSetting.ExpiryPeriodType == 2 ? "selected" : "")>Months</option>
+                                            <option value="3" @(ViewBag.RewardPointSetting != null && ViewBag.RewardPointSetting.ExpiryPeriodType == 3 ? "selected" : "")>Years</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="button" class="btn btn-primary float-right mr-2" onclick="update()"><i class="fas fa-edit"></i> Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tier Add/Edit Modal -->
+<div class="modal fade" id="modalTier" tabindex="-1" role="dialog" aria-labelledby="modalTierLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTierLabel">Add Tier Rule</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="frmTier">
+                    <input type="hidden" id="hdnTierId" value="0">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Priority <span class="text-danger">*</span> <i class="fa fa-info-circle text-info" data-toggle="tooltip" title="Lower number = higher priority (checked first)"></i></label>
+                                <input type="number" class="form-control divTierPriority_ctrl" id="txtTierPriority" min="1" step="1" required>
+                                <small class="text-red font-weight-bold errorText" id="divTierPriority"></small>
+                                <small class="text-muted">Tiers are checked in priority order</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Minimum Amount <span class="text-danger">*</span></label>
+                                <div class="input-group divTierMinAmount_ctrl">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]</span>
+                                    </div>
+                                    <input type="number" class="form-control" id="txtTierMinAmount" min="0" step="0.01" required>
+                                </div>
+                                <small class="text-red font-weight-bold errorText" id="divTierMinAmount"></small>
+                                <small class="text-muted">Order amount must be >= this value</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Maximum Amount <i class="fa fa-info-circle text-info" data-toggle="tooltip" title="Leave empty for no upper limit"></i></label>
+                                <div class="input-group divTierMaxAmount_ctrl">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]</span>
+                                    </div>
+                                    <input type="number" class="form-control" id="txtTierMaxAmount" min="0" step="0.01">
+                                </div>
+                                <small class="text-red font-weight-bold errorText" id="divTierMaxAmount"></small>
+                                <small class="text-muted">Order amount must be < this value (leave empty for unlimited)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Amount Spent for 1 Point <span class="text-danger">*</span></label>
+                                <div class="input-group divTierAmountSpentForUnitPoint_ctrl">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]</span>
+                                    </div>
+                                    <input type="number" class="form-control" id="txtTierAmountSpentForUnitPoint" min="0.01" step="0.01" required>
+                                </div>
+                                <small class="text-red font-weight-bold errorText" id="divTierAmountSpentForUnitPoint"></small>
+                                <small class="text-muted">Example: 50 means ₹50 spent = 1 point in this tier</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="chkTierIsActive" checked>
+                                    <label class="custom-control-label" for="chkTierIsActive">Active</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveTier()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script src="~/Content/JQuery/Customer/Settings/RewardPointSettings.js"></script>
+

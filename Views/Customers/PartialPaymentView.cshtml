@@ -1,0 +1,439 @@
+﻿
+@if (ViewBag.CustomerPayment != null)
+{
+    <div class="modal-header">
+        <h4 class="modal-title">Payment Details</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div class="card card-primary card-outline">
+
+            <!-- form start -->
+            <div id="quickForm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 @(ViewBag.Branchs.Count >1 ? "":"hidden")">
+                            <div class="form-group">
+                                <label>Business Location</label>
+                                <div class="input-group">
+                                    @foreach (var item in ViewBag.Branchs)
+                                    {
+                                        if (ViewBag.CustomerPayment.BranchId == item.BranchId)
+                                        {
+                                            <span>@item.Branch</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                            <!-- text input -->
+                            <div class="form-group">
+                                <label>Customer Name <span class="danger">*</span></label>
+                                <div class="input-group divSupplier divCustomer_M_ctrl">
+                                    @foreach (var item in ViewBag.Users)
+                                    {
+                                        if (ViewBag.CustomerPayment.CustomerId == item.UserId)
+                                        {
+                                            <span>
+                                                @item.Name
+                                                @if (item.MobileNo != null && item.MobileNo != "")
+                                                {
+                                                    <span>- @item.MobileNo</span>
+                                                }
+                                            </span>
+                                        }
+                                    }
+                                </div>
+                                <small class="text-red font-weight-bold" id="divDue"></small>
+                                <small class="text-red font-weight-bold errorText" id="divCustomer_M"></small>
+                            </div>
+                        </div>
+                        @if (ViewBag.BusinessSetting.CountryId == 2)
+                        {
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divPlaceOfSupply">
+                                <!-- text input -->
+                                <div class="form-group">
+                                    <label>Place Of Supply</label>
+                                    <div class="input-group divPlaceOfSupply_ctrl">
+                                        @foreach (var item in ViewBag.PlacesOfSupply)
+                                        {
+                                            if (ViewBag.CustomerPayment.PlaceOfSupplyId == item.StateId)
+                                            {
+                                                <span>@item.State</span>
+                                            }
+                                        }
+                                    </div>
+                                    <small class="text-red font-weight-bold errorText" id="divPlaceOfSupply"></small>
+                                </div>
+                            </div>
+                        }
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                            <div class="form-group">
+                                <label>Tax</label>
+                                <div class="input-group" id="divTax">
+                                    @foreach (var item in ViewBag.Taxs)
+                                    {
+                                        if (ViewBag.CustomerPayment.TaxId == item.TaxId)
+                                        {
+                                            <span>@item.Tax</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                            <!-- text input -->
+                            <div class="form-group">
+                                <label>Amount <span class="danger">*</span></label>
+                                <div class="input-group">
+                                    <span>@ViewBag.CustomerPayment.Amount</span>
+                                </div>
+
+                                <small class="text-red font-weight-bold errorText" id="divAmount_M"></small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                            <!-- text input -->
+                            <div class="form-group">
+                                <label>Paid On <span class="danger">*</span></label>
+                                <div class="input-group date" id="_PaymentDate" data-target-input="nearest">
+                                    <span>@ViewBag.CustomerPayment.PaymentDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</span>
+                                </div>
+                                @*<input type="datetime-local" class="form-control" id="txtPaymentDate">*@
+                                <small class="text-red font-weight-bold errorText" id="divPaymentDate_M"></small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                            <div class="form-group">
+                                <label>Payment Method <span class="danger">*</span></label>
+                                <div class="input-group divPaymentType_M_ctrl">
+                                    @{
+                                        if (ViewBag.PaymentTypes != null)
+                                        {
+                                            foreach (var item in ViewBag.PaymentTypes)
+                                            {
+                                                if (ViewBag.CustomerPayment.PaymentTypeId == item.PaymentTypeId)
+                                                {
+                                                    <span>@item.PaymentType</span>
+                                                }
+                                            }
+                                        }
+                                    }
+                                </div>
+                                <small class="text-red font-weight-bold errorText" id="divPaymentType_M"></small>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divLAccount @(ViewBag.IsAccountsAddon == true ? "" : "hidden")">
+                            <!-- text input -->
+                            <div class="form-group">
+                                <label>Deposit To <span class="danger">*</span> </label>
+                                <div class="input-group">
+                                    @{
+                                        if (ViewBag.AccountSubTypes != null)
+                                        {
+                                            foreach (var item in ViewBag.AccountSubTypes)
+                                            {
+                                                if (item.Accounts.Count > 0)
+                                                {
+                                                    foreach (var inner in item.Accounts)
+                                                    {
+                                                        if (ViewBag.CustomerPayment.AccountId == inner.AccountId)
+                                                        {
+                                                            <span>@inner.DisplayAs</span>
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                            <div class="form-group">
+                                <label>Attach Document</label>
+                                <div class="input-group">
+                                    <img id="blahPaymentAttachDocument" src="@ViewBag.CustomerPayment.AttachDocument" alt="" height="60" style="padding-top:10px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                            <!-- text input -->
+                            <div class="form-group">
+                                <label>Reference No <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                                <div class="input-group">
+                                    <span>@ViewBag.CustomerPayment.ReferenceNo</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                            <!-- text input -->
+                            <div class="form-group">
+                                <label>Notes</label>
+                                <div class="input-group">
+                                    <span>@ViewBag.CustomerPayment.Notes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        @if (ViewBag.CustomerPayment.AmountRemaining > 0)
+                        {
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                <!-- text input -->
+                                <div class="form-group">
+                                    <label>Unused Amount</label>
+                                    <div class="input-group">
+                                        <span class="bg-primary p-2">@ViewBag.CustomerPayment.AmountRemaining</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        @if (ViewBag.TotalRefund > 0)
+                        {
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                <!-- text input -->
+                                <div class="form-group">
+                                    <label>Payment Refund</label>
+                                    <div class="input-group">
+                                        <span class="bg-danger p-2">@ViewBag.TotalRefund</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    @if ((ViewBag.CustomerPayment.Amount - ViewBag.TotalRefund) != ViewBag.CustomerPayment.AmountRemaining)
+                    {
+                        <br />
+                        <h4>Payment For</h4>
+                        <div class="table-responsive" id="divDues">
+                            <table id="tblPayments" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        @{
+                                            // Detect if any of the child payments are booking-related
+                                            bool hasBookingRows = false;
+                                            if (ViewBag.CustomerPayment != null && ViewBag.CustomerPayment.CustomerPaymentIds != null)
+                                            {
+                                                foreach (var row in ViewBag.CustomerPayment.CustomerPaymentIds)
+                                                {
+                                                    if ((row.Type != null && row.Type.ToString().Contains("Booking")) ||
+                                                        (row.BookingId != null && row.BookingId > 0))
+                                                    {
+                                                        hasBookingRows = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        @if (ViewBag.Booking != null || hasBookingRows)
+                                        {
+                                            <th>#</th>
+                                            <th>Booking Date</th>
+                                            <th>Booking No / Ref</th>
+                                            <th>Deposit Amount</th>
+                                            <th>Payment Amount</th>
+                                        }
+                                        else
+                                        {
+                                            <th>#</th>
+                                            <th>Sales Date</th>
+                                            <th>Invoice No</th>
+                                            <th>Invoice Amount</th>
+                                            <th>Payment Amount</th>
+                                        }
+                                        @*<th></th>*@
+                                    </tr>
+                                </thead>
+                                <tbody class="rows">
+                                    @{
+                                        if (ViewBag.CustomerPayment != null)
+                                        {
+                                            // Show invoice/sales information (original logic)
+                                            var index = 1;
+                                            foreach (var item in ViewBag.CustomerPayment.CustomerPaymentIds)
+                                            {
+                                                if (item.Type != "Customer Refund")
+                                                {
+                                                    bool isBookingRow = (item.Type != null && item.Type.ToString().Contains("Booking")) ||
+                                                                        (item.BookingId != null && item.BookingId > 0);
+                                                    <tr id="tr_@item.CustomerPaymentId">
+                                                        <td>@index</td>
+                                                        <td>
+                                                            @if (isBookingRow && item.BookingDate != null && item.BookingDate != DateTime.MinValue)
+                                                            {
+                                                                @Convert.ToDateTime(item.BookingDate).ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                                                            }
+                                                            else
+                                                            {
+                                                                @item.SalesDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            @if (isBookingRow)
+                                                            {
+                                                                @(item.BookingNo != null ? item.BookingNo.ToString() : (item.ReferenceNo != null ? item.ReferenceNo.ToString() : "-"))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(item.Type == "Customer Opening Balance Payment" ? "Customer Opening Balance" : item.InvoiceNo)
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            @if (isBookingRow)
+                                                            {
+                                                                @item.DepositAmount
+                                                            }
+                                                            else
+                                                            {
+                                                                @(item.Type == "Customer Opening Balance Payment" ? @item.OpeningBalance : @item.GrandTotal)
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            @item.Amount
+                                                        </td>
+                                                        @*<td>
+                                                                @if (ViewBag.CustomerPaymentPermission.IsDelete)
+                                                                {
+                                                                    if (item.ParentId != 0)
+                                                                    {
+                                                                        <a href="javascript:void(0)" onclick="Delete(@item.CustomerPaymentId, '@item.ReferenceNo', true,@ViewBag.CustomerPayment.CustomerPaymentId)" class="btn btn-danger btn-sm" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                                                                    }
+                                                                }
+                                                                <a href="javascript:void(0)" onclick="openNotificationModal('Credits Applied From Customer Advance Payment',@item.CustomerPaymentId)" class="btn btn-warning btn-sm" id="View" data-toggle="tooltip" data-placement="bottom" title="Send Notification"><i class="far fa-envelope"></i></a>
+                                                            </td>*@
+                                                    </tr>
+                                                    index++;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    @if (ViewBag.TotalRefund != 0)
+                    {
+                        <br />
+                        <h4>Refunds</h4>
+                        <div class="table-responsive" id="divDues">
+                            <table id="tblPayments" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Payment Type</th>
+                                        <th>Amount Refunded</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="rows">
+                                    @{
+                                        if (ViewBag.CustomerPayment != null)
+                                        {
+                                            var index = 1;
+                                            foreach (var item in ViewBag.CustomerPayment.CustomerPaymentIds)
+                                            {
+                                                if (item.Type == "Customer Refund")
+                                                {
+                                                    <tr id="tr_@item.CustomerPaymentId">
+                                                        <td>@index</td>
+                                                        <td>
+                                                            @item.PaymentDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                                                        </td>
+                                                        <td>
+                                                            @(item.PaymentType)
+                                                        </td>
+                                                        <td>
+                                                            @item.Amount
+                                                        </td>
+                                                        <td>
+                                                            @if (ViewBag.CustomerRefundPermission.IsDelete)
+                                                            {
+                                                                <a href="javascript:void(0)" onclick="deleteRefund(@item.CustomerPaymentId,'@item.ReferenceNo',@ViewBag.CustomerPayment.CustomerPaymentId)" class="btn btn-danger btn-sm" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                                                            }
+                                                            <a href="javascript:void(0)" onclick="openNotificationModal('Refund From Customer Advance Payment',@item.CustomerPaymentId)" class="btn btn-warning btn-sm" id="View" data-toggle="tooltip" data-placement="bottom" title="Send Notification"><i class="far fa-envelope"></i></a>
+                                                        </td>
+                                                    </tr>
+                                                    index++;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    @if (ViewBag.IsAccountsAddon == true)
+                    {
+                        <div class="card card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">Journal</h3>
+                            </div>
+                            <div class="card-body">
+                                @{
+                                    foreach (var sale in ViewBag.Sales)
+                                    {
+                                        decimal TotalDebit = 0, TotalCredit = 0;
+                                        if (ViewBag.Sales.Count > 1)
+                                        {
+                                            <h3 class="card-title pb-2">@sale.Type</h3>
+                                        }
+                                        <div class="row table-responsive">
+
+                                            <table class="table table-bordered table-striped">
+
+                                                <thead id="thead">
+                                                    <tr>
+                                                        <th>Account Name</th>
+                                                        <th>Debit</th>
+                                                        <th>Credit</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="table-body">
+                                                    @foreach (var item in sale.Payments)
+                                                    {
+                                                        if (item.Debit != 0 || item.Credit != 0 || item.IsTaxAccount == true)
+                                                        {
+                                                            <tr>
+                                                                <td>@item.AccountName</td>
+                                                                <td>@(String.Format("{0:0.##}", item.Debit))</td>
+                                                                <td>@(String.Format("{0:0.##}", item.Credit))</td>
+                                                            </tr>
+                                                            TotalDebit = TotalDebit + item.Debit;
+                                                            TotalCredit = TotalCredit + item.Credit;
+                                                        }
+                                                    }
+                                                </tbody>
+                                                <tbody>
+                                                    <tr>
+                                                        <td colspan="1" data-title="Total" class="text-right"></td>
+                                                        <td data-title="Due Amount" class="text-bold">@(String.Format("{0:0.##}", TotalDebit))</td>
+                                                        <td data-title="Due Amount" class="text-bold">@(String.Format("{0:0.##}", TotalCredit))</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    }
+                                }
+                            </div>
+
+                        </div>
+                    }
+                </div>
+                <!-- /.card-body -->
+
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,163 @@
+﻿
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th>Sln</th>
+            <th>Added On</th>
+            <th>Ticket No</th>
+            <th>Help Topic</th>
+            <th>Subject</th>
+            @*<th>Message</th>*@
+            <th>Status</th>
+            <th>Attachment1</th>
+            <th>Attachment2</th>
+            <th>Attachment3</th>
+            <th>Attachment4</th>
+            <th>Attachment5</th>
+            <th>Name</th>
+            <th>Email Id</th>
+            <th>Mobile No</th>
+            <th class="hide noPrint">Action</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.SupportTickets)
+        {
+        <tr>
+            <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1)+count)</td>
+            <td>@item.AddedOn.ToString(Request.Cookies["aBusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["aBusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+            <td>@item.SupportTicketNo</td>
+            <td>
+                @if (item.HelpTopic == 1)
+                {
+                    <span>Technical Support</span>
+                }
+                else if (item.HelpTopic == 2)
+                {
+                    <span>Sales Support</span>
+                }
+                else if (item.HelpTopic == 3)
+                {
+                    <span>Renewal Support</span>
+                }
+                else if (item.HelpTopic == 4)
+                {
+                    <span>Addons Upgrade Support</span>
+                }
+                else
+                {
+                    <span>Other</span>
+                }
+            </td>
+            <td>@item.Subject</td>
+            @*<td>@item.Message</td>*@
+            <td>
+                @if (item.IsActive == true)
+                {
+                    <span class="text-danger font-weight-bold">Open</span>
+                }
+                else
+                {
+                    <span class="text-primary font-weight-bold">Closed</span>
+                }
+            </td>
+            <td>
+                <img src="@item.Attachment1" width="50" />
+                @if (item.Attachment1 != "" && item.Attachment1 != null)
+                {
+                    <a target="_blank" href="@item.Attachment1">Download</a>
+                }
+            </td>
+            <td>
+                <img src="@item.Attachment2" width="50" />
+                @if (item.Attachment2 != "" && item.Attachment2 != null)
+                {
+                    <a target="_blank" href="@item.Attachment2">Download</a>
+                }
+            </td>
+            <td>
+                <img src="@item.Attachment3" width="50" />
+                @if (item.Attachment3 != "" && item.Attachment3 != null)
+                {
+                    <a target="_blank" href="@item.Attachment3">Download</a>
+                }
+            </td>
+            <td>
+                <img src="@item.Attachment4" width="50" />
+                @if (item.Attachment4 != "" && item.Attachment4 != null)
+                {
+                    <a target="_blank" href="@item.Attachment4">Download</a>
+                }
+            </td>
+            <td>
+                <img src="@item.Attachment5" width="50" />
+                @if (item.Attachment5 != "" && item.Attachment5 != null)
+                {
+                    <a target="_blank" href="@item.Attachment5">Download</a>
+                }
+            </td>
+            <td>@item.Name</td>
+            <td>@item.EmailId</td>
+            <td>@item.MobileNo</td>
+            <td class="hide noPrint">
+
+                @*@if (ViewBag.MenuPermission.IsDelete)
+            {*@
+                <a href="/adminsupportticket/SupportTicketDetails?Under=@item.Under&SupportTicketId=@item.SupportTicketId" class="btn btn-primary btn-sm" data-toggle="tooltip" data-placement="bottom" title="View"><i class="far fa-eye"></i></a>
+                @*}*@
+
+            </td>
+        </tr>
+            count++;
+        }
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="13">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    $('#divActiveCount').text('Open : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('Closed: '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));
+</script>
+

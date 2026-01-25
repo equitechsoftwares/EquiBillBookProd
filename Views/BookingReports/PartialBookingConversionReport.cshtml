@@ -1,0 +1,91 @@
+@{
+    var bookings = ViewBag.Bookings as System.Collections.Generic.List<EquiBillBook.Models.ClsTableBookingVm> ?? new System.Collections.Generic.List<EquiBillBook.Models.ClsTableBookingVm>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var currentPageIndex = ViewBag.CurrentPageIndex ?? 1;
+    var pageCount = ViewBag.PageCount ?? 0;
+}
+
+<thead id="thead">
+    <tr>
+        <th>Booking No</th>
+        <th>Booking Date</th>
+        <th>Customer</th>
+        <th>Table</th>
+        <th>Status</th>
+        <th>Converted to Sales</th>
+        <th>Sales No</th>
+        <th>Converted to KOT</th>
+        <th>KOT No</th>
+        <th>Conversion Status</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (bookings != null && bookings.Count > 0)
+    {
+        foreach (var booking in bookings)
+        {
+            var hasSales = booking.SalesId != null && booking.SalesId != 0;
+            var hasKot = booking.KotNos != null && ((System.Collections.Generic.List<string>)booking.KotNos).Count > 0;
+            var kotNosList = hasKot ? (System.Collections.Generic.List<string>)booking.KotNos : new System.Collections.Generic.List<string>();
+            var conversionStatus = hasSales && hasKot ? "Fully Converted" : hasSales ? "Sales Only" : hasKot ? "KOT Only" : "Not Converted";
+            var conversionBadge = hasSales && hasKot ? "success" : hasSales || hasKot ? "info" : "warning";
+            
+            <tr>
+                <td><a href="/tablebooking/details/@booking.BookingId">@booking.BookingNo</a></td>
+                <td>@(booking.BookingDate != null ? ((DateTime)booking.BookingDate).ToString("dd/MM/yyyy") : "")</td>
+                <td>@(booking.CustomerName ?? "-")</td>
+                <td>@(booking.TableNo ?? "-")</td>
+                <td><span class="badge badge-@(booking.Status == "Confirmed" ? "success" : booking.Status == "Cancelled" ? "danger" : booking.Status == "Completed" ? "info" : "warning")">@booking.Status</span></td>
+                <td>@(hasSales ? "Yes" : "No")</td>
+                <td>@(hasSales ? (booking.SalesNo ?? "-") : "-")</td>
+                <td>@(hasKot ? "Yes" : "No")</td>
+                <td>@(hasKot ? string.Join(", ", kotNosList) : "-")</td>
+                <td><span class="badge badge-@conversionBadge">@conversionStatus</span></td>
+            </tr>
+        }
+    }
+</tbody>
+<tbody class="hide noPrint">
+    <tr></tr>
+    <tr>
+        <td colspan="10">
+            <div class="dataTables_info" id="tblBookingConversion_info_custom" role="status" aria-live="polite">Showing @((currentPageIndex - 1) * pageSize + 1) to @(Math.Min(currentPageIndex * pageSize, totalCount)) of @totalCount entries</div>
+            @if (pageCount > 1)
+            {
+                int j = 0;
+                <div class="dataTables_paginate paging_simple_numbers" id="tblBookingConversion_paginate_custom" style="float:right">
+                    <ul class="pagination">
+                        @if (currentPageIndex > 1)
+                        {
+                            <li class="paginate_button page-item previous" id="tblBookingConversion_previous">
+                                <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblBookingConversion" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                            </li>
+                            <li class="paginate_button page-item previous" id="tblBookingConversion_previous">
+                                <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblBookingConversion" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                            </li>
+                        }
+                        @for (int i = currentPageIndex; i <= pageCount; i++)
+                        {
+                            <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblBookingConversion" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                            </li>
+                            if (j == 10)
+                            {
+                                i = pageCount + 1;
+                            }
+                            j++;
+                        }
+                        @if (currentPageIndex < pageCount)
+                        {
+                            <li class="paginate_button page-item next" id="tblBookingConversion_next">
+                                <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblBookingConversion" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </td>
+    </tr>
+</tbody>
+

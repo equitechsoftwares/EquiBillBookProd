@@ -1,0 +1,177 @@
+﻿@{
+    var count = 1;
+    <thead>
+        <tr role="row">
+            <th>Sln</th>
+            <th>Action</th>
+            <th>Date</th>
+            <th>Invoice No</th>
+            <th>Customer Name</th>
+            <th>Customer Mobile No</th>
+            <th>Status</th>
+            <th>Total Items</th>
+            <th>Total Discount</th>
+            <th>Grand Total</th>
+            <th>Total Paid</th>
+            <th>Total Due</th>
+            <th>Total Return Due</th>
+            <th>Payment Status</th>
+            @*<th>Added By</th>
+            <th>Added On</th>
+            <th>Last Modified By</th>
+            <th>Last Modified On</th>*@
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in ViewBag.Sales)
+        {
+            <tr>
+                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>
+                <td>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-info">Action</button>
+                        <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <div class="dropdown-menu" role="menu">
+                            @*<a class="dropdown-item" href="/purchase/view" id="View"><i class="fas fa-eye"></i> View purchase</a>*@
+                            @if (ViewBag.MenuPermission.IsEdit)
+                            {
+                                if (!item.IsSalesReturn)
+                                {
+                                    <a class="dropdown-item" href="/Sales/posedit?SalesId=@item.SalesId" id="Edit"><i class="fas fa-edit"></i> Edit</a>
+                                }
+                            }
+                            <a class="dropdown-item" href="javascript:void(0)" id="" onclick="View(@item.SalesId)"><i class="fas fa-eye"></i> View</a>
+                            @if (ViewBag.POSPaymentPermission.IsAdd)
+                            {
+                                if (item.PaymentStatus != "Paid")
+                                {
+                                    <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openPaymentModal(true,@item.SalesId,'Sales Payment')"><i class="fas fa-plus"></i> Add Payment</a>
+                                }
+                            }
+                            @if (ViewBag.POSPaymentPermission.IsView)
+                            {
+                                <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openPaymentModal(false,@item.SalesId,'Sales Payment')"><i class="fas fa-money-bill"></i> View Payments</a>
+                            }
+                            @if (ViewBag.MenuPermission.IsDelete)
+                            {
+                                <a class="dropdown-item" href="javascript:void(0)" id="Edit" onclick="Delete(@item.SalesId,1)"><i class="fas fa-trash-alt"></i> Delete</a>
+                            }
+                            @*<a class="dropdown-item" href="/purchase/edit" id="Pay"><i class="fas fa-hourglass"></i> Payment Receive</a>*@
+
+                            <div class="dropdown-divider"></div>
+                            @*<a class="dropdown-item" href="javascript:void(0)" id="View" onclick="PrintInvoice('@item.InvoiceNo')"><i class="fas fa-file"></i> Invoice</a>
+                                <a class="dropdown-item" href="javascript:void(0)" onclick="copyCode('@ViewBag.InvoiceUrl')" id="Edit"><i class="fas fa-copy"></i> Copy Invoice Url</a>*@
+                            @if (ViewBag.PosSetting.InvoiceType == 1)
+                            {
+                            @*<a class="dropdown-item" href="javascript:void(0)" id="View" onclick="PrintInvoice('@ViewBag.InvoiceUrl/sales/invoice?InvoiceId=@item.InvoiceId')"><i class="fas fa-file"></i> Invoice</a>
+                                <a class="dropdown-item" href="javascript:void(0)" onclick="copyCode('@ViewBag.InvoiceUrl/sales/invoice?InvoiceId=@item.InvoiceId')" id="Edit"><i class="fas fa-copy"></i> Copy Invoice Url</a>*@
+                            <a class="dropdown-item" href="javascript:void(0)" onclick="openInvoiceCopyModal('@ViewBag.InvoiceUrl/sales/invoice?InvoiceId=@item.InvoiceId','@item.InvoiceNo')" id="Edit"><i class="fas fa-copy"></i> Invoice Url</a>
+                            }
+                            else
+                            {
+                            @*<a class="dropdown-item" href="javascript:void(0)" id="View" onclick="PrintInvoice('@ViewBag.InvoiceUrl/sales/receipt?InvoiceId=@item.InvoiceId')"><i class="fas fa-file"></i> Invoice</a>
+                                <a class="dropdown-item" href="javascript:void(0)" onclick="copyCode('@ViewBag.InvoiceUrl/sales/receipt?InvoiceId=@item.InvoiceId')" id="Edit"><i class="fas fa-copy"></i> Copy Invoice Url</a>*@
+                            <a class="dropdown-item" href="javascript:void(0)" onclick="openInvoiceCopyModal('@ViewBag.InvoiceUrl/sales/receipt?InvoiceId=@item.InvoiceId','@item.InvoiceNo')" id="Edit"><i class="fas fa-copy"></i> Invoice Url</a>
+                            }
+                            @*<a class="dropdown-item" href="/purchase/edit" id="View"><i class="fas fa-print"></i> Print</a>
+                                <a class="dropdown-item" href="/purchase/edit" id="Edit"><i class="fas fa-file-pdf"></i> PDF</a>
+                            *@
+                            @if (ViewBag.SalesReturnPermission.IsDelete)
+                            {
+                                <a class="dropdown-item" href="/sales/salesreturnadd?SalesId=@item.SalesId" id="Edit"><i class="fas fa-undo"></i> Sales Return</a>
+                            }
+                        </div>
+                    </div>
+                </td>
+
+                <td>@item.SalesDate</td>
+                <td>
+                    @item.InvoiceNo
+                    @if (item.IsSalesReturn)
+                    {
+                        <i tabindex="0" class="fa fa-info-circle text-danger hover-q no-print" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Some quantities are returned from this sale"></i>
+                    }
+                </td>
+                <td>@item.Customer</td>
+                <td>@item.CustomerMobileNo</td>
+                <td>@item.Status</td>
+                <td>@item.TotalItems @*@item.TotalQuantity*@</td>
+                <td>@item.TotalDiscount</td>
+                <td>@item.GrandTotal</td>
+                <td>@item.Paid</td>
+                <td>@item.Due</td>
+                <td>@item.ReturnDue</td>
+                <td>
+                    @if (item.PaymentStatus == "Due")
+                    {
+                        <span class='p-1 bg-warning' style='cursor:pointer'>  @item.PaymentStatus</span>
+                    }
+                    else if (item.PaymentStatus == "Partially Paid")
+                    {
+                        <span class='p-1 bg-info' style='cursor:pointer'>  @item.PaymentStatus</span>
+                    }
+                    else
+                    {
+                        <span class='p-1 bg-success' style='cursor:pointer'>  @item.PaymentStatus</span>
+                    }
+
+                </td>
+                @*<td>@item.AddedByCode</td>
+                <td>@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                <td>@item.ModifiedByCode</td>
+                <td>@(item.ModifiedOn != null ? item.ModifiedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1]) : "")</td>*@
+            </tr>
+            count++;
+        }
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="18">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1) + 1) to @(ViewBag.PageSize * ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    $('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));
+</script>
+

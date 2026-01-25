@@ -1,0 +1,274 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Settings";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Settings</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        @*<li class="breadcrumb-item"><a href="/reports/index">Reports</a></li>*@
+                        <li class="breadcrumb-item active">Settings</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+
+                <div class="card card-outline">
+                    <div class="card-body">
+                        <div class="row invoice-info">
+                            <!-- /.col -->
+                            @{
+                                var count = 1;
+                                foreach (var item in ViewBag.Headers)
+                                {
+                                    if (((IEnumerable<dynamic>)item.Menus).Any(a => a.IsView))
+                                    {
+                                        if (item.HeaderName == "Taxes & Compliances")
+                                        {
+                                            if (ViewBag.BusinessSetting.IsBusinessRegistered == 1)
+                                            {
+                                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(count > 6 ? "mt-5" : "")">*@
+                                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mb-5">
+                                                    <div class="widget-user-header">
+                                                        <h5 class="">@item.HeaderName</h5>
+                                                    </div>
+                                                    <div>
+                                                        <ul class="nav flex-column">
+                                                            @foreach (var inner in item.Menus)
+                                                            {
+                                                                if (inner.IsView == true)
+                                                                {
+                                                                    <li class="nav-item ">
+                                                                        <a href="/@inner.Url" class="nav-link">
+                                                                            @inner.Title
+                                                                        </a>
+                                                                    </li>
+                                                                }
+                                                            }
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(item.Menus.Count == 0?"hidden":"") @(count > 6 ? "mt-5" : "")">*@
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(item.Menus.Count == 0?"hidden":"") mb-5">
+                                                <div class="widget-user-header">
+                                                    <h5 class="">@item.HeaderName</h5>
+                                                </div>
+                                                <div>
+                                                    <ul class="nav flex-column">
+                                                        @foreach (var inner in item.Menus)
+                                                        {
+                                                            if (inner.IsView == true)
+                                                            {
+                                                                if (inner.Menu == "Sub Categories")
+                                                                {
+                                                                    if (ViewBag.ItemSetting.EnableSubCategory)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Sub Sub Categories")
+                                                                {
+                                                                    if (ViewBag.ItemSetting.EnableSubSubCategory)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Secondary Units")
+                                                                {
+                                                                    if (ViewBag.ItemSetting.EnableSecondaryUnit)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Tertiary Units")
+                                                                {
+                                                                    if (ViewBag.ItemSetting.EnableTertiaryUnit)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Quaternary Units")
+                                                                {
+                                                                    if (ViewBag.ItemSetting.EnableQuaternaryUnit)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Variation")
+                                                                {
+                                                                    if (ViewBag.ItemSetting.EnableProductVariation)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Warranties")
+                                                                {
+                                                                    if (ViewBag.ItemSetting.EnableWarranty)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Brand")
+                                                                {
+                                                                    if (ViewBag.ItemSetting.EnableBrands)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Salt")
+                                                                {
+                                                                    if (ViewBag.ItemSetting.EnableSalt)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Selling Price Group")
+                                                                {
+                                                                    if (ViewBag.ItemSetting.EnableSellingPriceGroup)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Customer Group")
+                                                                {
+                                                                    if (ViewBag.SaleSetting.EnableCustomerGroup)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Vehicle")
+                                                                {
+                                                                    if (ViewBag.ExpenseSetting.EnableMileage)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Stock Adjustment Reasons")
+                                                                {
+                                                                    if (ViewBag.ItemSetting.EnableStockAdjustment)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "Stock Transfer Reasons")
+                                                                {
+                                                                    if (ViewBag.ItemSetting.EnableStockTransfer)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else if (inner.Menu == "POS Settings")
+                                                                {
+                                                                    if (ViewBag.SaleSetting.EnablePos)
+                                                                    {
+                                                                        <li class="nav-item ">
+                                                                            <a href="/@inner.Url" class="nav-link">
+                                                                                @inner.Title
+                                                                            </a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <li class="nav-item ">
+                                                                        <a href="/@inner.Url" class="nav-link">
+                                                                            @inner.Title
+                                                                        </a>
+                                                                    </li>
+                                                                }
+                                                            }
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            </div>
+
+                                        }
+                                        count++;
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card-body -->
+
+            </div>
+        </div>
+    </div>
+    <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>

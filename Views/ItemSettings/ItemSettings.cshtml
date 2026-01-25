@@ -1,0 +1,933 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Item Settings";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Item Settings</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item active">Item Settings</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/settings/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+                            <div class="row">
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Stock Accounting Method<span class="danger">*</span></label>
+                                            <div class="input-group">
+                                                <select class="form-control" id="ddlStockAccountingMethod">
+                                                    @{
+                                                        if (ViewBag.ItemSetting.StockAccountingMethod == 1)
+                                                        {
+                                                            <option value="1" selected>FIFO (First In First Out)</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="1">FIFO (First In First Out)</option>
+                                                        }
+                                                        if (ViewBag.ItemSetting.StockAccountingMethod == 2)
+                                                        {
+                                                            <option value="2" selected>LIFO (Last In First Out)</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="2">LIFO (Last In First Out)</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Default Profit Percent <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Default profit margin of a product. <br><small class='text-muted'>Used to calculate selling price based on purchase price entered.<br/> You can modify this value for indivisual products while adding</small>"></i></label>
+                                        <input type="number" class="form-control" id="txtDefaultProfitPercent" placeholder="" value="@(ViewBag.ItemSetting.DefaultProfitPercent > 0 ? ViewBag.ItemSetting.DefaultProfitPercent :"")">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" style="display:none">
+                                    <div class="form-group">
+                                        <label>Selling Price Tax Type </label>
+                                        <select class="form-control" style="width: 100%;" id="ddlTaxType">
+                                            @if (ViewBag.ItemSetting.TaxType == "Inclusive")
+                                            {
+                                                <option value="Inclusive" selected>Inclusive</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="Inclusive">Inclusive</option>
+                                            }
+                                            @if (ViewBag.ItemSetting.TaxType == "Exclusive")
+                                            {
+                                                <option value="Exclusive" selected>Exclusive</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="Exclusive">Exclusive</option>
+                                            }
+                                            @if (ViewBag.ItemSetting.TaxType == "Let me choose")
+                                            {
+                                                <option value="Let me choose" selected>Let me choose</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="Let me choose">Let me choose</option>
+                                            }
+                                        </select>
+                                        <small class="text-red font-weight-bold errorText" id="divTaxType"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableSalt)
+                                            {
+                                                <input type="checkbox" id="chkEnableSalt" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableSalt">
+                                            }
+                                            <label for="chkEnableSalt" class="mt-2">
+                                                Enable Salt
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableBrands)
+                                            {
+                                                <input type="checkbox" id="chkEnableBrands" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableBrands">
+                                            }
+                                            <label for="chkEnableBrands" class="mt-2">
+                                                Enable Brands
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <br>
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                @if (ViewBag.ItemSetting.EnableCategory)
+                                                {
+                                                    <input type="checkbox" id="chkEnableCategory" checked>
+                                                }
+                                                else
+                                                {
+                                                    <input type="checkbox" id="chkEnableCategory">
+                                                }
+                                                <label for="chkEnableCategory" class="mt-2">
+                                                    Enable Categories
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableSubCategory)
+                                            {
+                                                <input type="checkbox" id="chkEnableSubCategory" checked onchange="toggleSubCategory()">
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableSubCategory" onchange="toggleSubCategory()">
+                                            }
+                                            <label for="chkEnableSubCategory" class="mt-2">
+                                                Enable Sub Categories
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableSubSubCategory)
+                                            {
+                                                <input type="checkbox" id="chkEnableSubSubCategory" checked onchange="toggleSubSubCategory()">
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableSubSubCategory" onchange="toggleSubSubCategory()">
+                                            }
+                                            <label for="chkEnableSubSubCategory" class="mt-2">
+                                                Enable Sub Sub Categories
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <br>
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                @if (ViewBag.ItemSetting.EnableTax_PriceInfo)
+                                                {
+                                                    <input type="checkbox" id="chkEnableTax_PriceInfo" checked>
+                                                }
+                                                else
+                                                {
+                                                    <input type="checkbox" id="chkEnableTax_PriceInfo">
+                                                }
+                                                <label for="chkEnableTax_PriceInfo" class="mt-2">
+                                                    Enable Price & Tax Info
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Default Unit</label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlDefaultUnit">
+                                                <option value="0">Select</option>
+                                                @{
+                                                    foreach (var item in ViewBag.Units)
+                                                    {
+                                                        if (item.IsPredefined == false)
+                                                        {
+                                                            if (ViewBag.ItemSetting.DefaultUnitId == item.UnitId)
+                                                            {
+                                                                <option value="@item.UnitId" selected>@item.UnitName</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.UnitId">@item.UnitName</option>
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                            @if (ViewBag.UnitsPermission.IsAdd == true)
+                                            {
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#unitModal">+ </a>
+                                                </span>
+                                            }
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableRacks)
+                                            {
+                                                <input type="checkbox" id="chkEnableRacks" checked onchange="toggleEnableRacks()">
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableRacks" onchange="toggleEnableRacks()">
+                                            }
+                                            <label for="chkEnableRacks" class="mt-2">
+                                                Enable Racks <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Enable this to add rack details of a product for different branches while adding products"></i>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableRow)
+                                            {
+                                                <input type="checkbox" id="chkEnableRow" checked onchange="toggleEnableRow()">
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableRow" onchange="toggleEnableRow()">
+                                            }
+                                            <label for="chkEnableRow" class="mt-2">
+                                                Enable Row
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnablePosition)
+                                            {
+                                                <input type="checkbox" id="chkEnablePosition" checked onchange="toggleEnablePosition()">
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnablePosition" onchange="toggleEnablePosition()">
+                                            }
+                                            <label for="chkEnablePosition" class="mt-2">
+                                                Enable Position
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableWarranty)
+                                            {
+                                                <input type="checkbox" id="chkEnableWarranty" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableWarranty">
+                                            }
+                                            <label for="chkEnableWarranty" class="mt-2">
+                                                Enable Warranty
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableProductVariation)
+                                            {
+                                                <input type="checkbox" id="chkEnableProductVariation" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableProductVariation">
+                                            }
+                                            <label for="chkEnableProductVariation" class="mt-2">
+                                                Enable Variable Product
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableComboProduct)
+                                            {
+                                                <input type="checkbox" id="chkEnableComboProduct" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableComboProduct">
+                                            }
+                                            <label for="chkEnableComboProduct" class="mt-2">
+                                                Enable Combo Product
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableProductDescription)
+                                            {
+                                                <input type="checkbox" id="chkEnableProductDescription" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableProductDescription">
+                                            }
+                                            <label for="chkEnableProductDescription" class="mt-2">
+                                                Enable Item Description
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableMrp)
+                                            {
+                                                <input type="checkbox" id="chkEnableMrp" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableMrp">
+                                            }
+                                            <label for="chkEnableMrp" class="mt-2">
+                                                Enable Item MRP
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnablePrintLabel)
+                                            {
+                                                <input type="checkbox" id="chkEnablePrintLabel" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnablePrintLabel">
+                                            }
+                                            <label for="chkEnablePrintLabel" class="mt-2">
+                                                Enable Print Label
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableStockAdjustment)
+                                            {
+                                                <input type="checkbox" id="chkEnableStockAdjustment" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableStockAdjustment">
+                                            }
+                                            <label for="chkEnableStockAdjustment" class="mt-2">
+                                                Enable Stock Adjustment
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableStockTransfer)
+                                            {
+                                                <input type="checkbox" id="chkEnableStockTransfer" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableStockTransfer" onchange="checkBranchCount()">
+                                            }
+                                            <label for="chkEnableStockTransfer" class="mt-2">
+                                                Enable Stock Transfer
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableSellingPriceGroup)
+                                            {
+                                                <input type="checkbox" id="chkEnableSellingPriceGroup" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableSellingPriceGroup">
+                                            }
+                                            <label for="chkEnableSellingPriceGroup" class="mt-2">
+                                                Enable Selling Price Group
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <br>
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                @if (ViewBag.ItemSetting.EnableImei)
+                                                {
+                                                    <input type="checkbox" id="chkEnableImei" checked>
+                                                }
+                                                else
+                                                {
+                                                    <input type="checkbox" id="chkEnableImei">
+                                                }
+                                                <label for="chkEnableImei" class="mt-2">
+                                                    Enable Item IMEI, Serial number or other informations
+                                                    <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Enable or disable adding IMEI, Serial number or any other informations while selling items"></i>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableSecondaryUnit)
+                                            {
+                                                <input type="checkbox" id="chkEnableSecondaryUnit" checked onchange="toggleSecondaryUnit()">
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableSecondaryUnit" onchange="toggleSecondaryUnit()">
+                                            }
+                                            <label for="chkEnableSecondaryUnit" class="mt-2">
+                                                Enable Secondary Unit
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableTertiaryUnit)
+                                            {
+                                                <input type="checkbox" id="chkEnableTertiaryUnit" checked onchange="toggleTertiaryUnit()">
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableTertiaryUnit" onchange="toggleTertiaryUnit()">
+                                            }
+                                            <label for="chkEnableTertiaryUnit" class="mt-2">
+                                                Enable Tertiary Unit
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableQuaternaryUnit)
+                                            {
+                                                <input type="checkbox" id="chkEnableQuaternaryUnit" checked onchange="toggleQuaternaryUnit()">
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableQuaternaryUnit" onchange="toggleQuaternaryUnit()">
+                                            }
+                                            <label for="chkEnableQuaternaryUnit" class="mt-2">
+                                                Enable Quaternary Unit
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableItemImage)
+                                            {
+                                                <input type="checkbox" id="chkEnableItemImage" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableItemImage">
+                                            }
+                                            <label for="chkEnableItemImage" class="mt-2">
+                                                Enable Item Image
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableLotNo == true)
+                                            {
+                                                <input type="checkbox" id="chkEnableLotNo" checked onchange="checkLotNo()">
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableLotNo" onchange="checkLotNo()">
+                                            }
+                                            <label for="chkEnableLotNo" class="mt-2">
+                                                Enable Batch/LOT Number
+                                                <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="This will enable you to enter Batch/LOT number for each purchase line in purchase screen"></i>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divLot " style="display:@(ViewBag.ItemSetting.EnableLotNo == false?"none":"flex")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.ItemSetting.EnableItemExpiry)
+                                            {
+                                                <input type="checkbox" id="chkEnableItemExpiry" checked onchange="toggleItemExpiry()">
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableItemExpiry" onchange="toggleItemExpiry()">
+                                            }
+                                            <label for="chkEnableItemExpiry" class="mt-2">
+                                                Enable Item Expiry
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Date Format</label>
+                                        <select class="form-control select2" style="width: 100%;" id="ddlExpiryDateFormat" value="@ViewBag.ItemSetting.ExpiryDateFormat">
+                                            @{
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "dd-MM-yyyy")
+                                                {
+                                                    <option value="dd-MM-yyyy" selected>dd-mm-yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="dd-MM-yyyy">dd-mm-yyyy</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "MM-dd-yyyy")
+                                                {
+                                                    <option value="MM-dd-yyyy" selected>mm-dd-yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="MM-dd-yyyy">mm-dd-yyyy</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "yyyy-MM-dd")
+                                                {
+                                                    <option value="yyyy-MM-dd" selected>yyyy-mm-dd</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy-MM-dd">yyyy-mm-dd</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "yyyy-dd-MM")
+                                                {
+                                                    <option value="yyyy-dd-MM" selected>yyyy-dd-mm</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy-dd-MM">yyyy-dd-mm</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "yyyy-MM")
+                                                {
+                                                    <option value="yyyy-MM" selected>yyyy-mm</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy-MM">yyyy-mm</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "MM-yyyy")
+                                                {
+                                                    <option value="MM-yyyy" selected>mm-yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="MM-yyyy">mm-yyyy</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "dd/MM/yyyy")
+                                                {
+                                                    <option value="dd/MM/yyyy" selected>dd/mm/yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="dd/MM/yyyy">dd/mm/yyyy</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "MM/dd/yyyy")
+                                                {
+                                                    <option value="MM/dd/yyyy" selected>mm/dd/yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="MM/dd/yyyy">mm/dd/yyyy</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "yyyy/MM/dd")
+                                                {
+                                                    <option value="yyyy/MM/dd" selected>yyyy/mm/dd</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy/MM/dd">yyyy/mm/dd</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "yyyy/dd/MM")
+                                                {
+                                                    <option value="yyyy/dd/MM" selected>yyyy/dd/mm</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy/dd/MM">yyyy/dd/mm</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "yyyy/MM")
+                                                {
+                                                    <option value="yyyy/MM" selected>yyyy/mm</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy/MM">yyyy/mm</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "MM/yyyy")
+                                                {
+                                                    <option value="MM/yyyy" selected>mm/yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="MM/yyyy">mm/yyyy</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "dd MM yyyy")
+                                                {
+                                                    <option value="dd MM yyyy" selected>dd mm yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="dd MM yyyy">dd mm yyyy</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "MM dd yyyy")
+                                                {
+                                                    <option value="MM dd yyyy" selected>mm dd yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="MM dd yyyy">mm dd yyyy</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "yyyy MM dd")
+                                                {
+                                                    <option value="yyyy MM dd" selected>yyyy mm dd</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy MM dd">yyyy mm dd</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "yyyy dd MM")
+                                                {
+                                                    <option value="yyyy dd MM" selected>yyyy dd mm</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy dd MM">yyyy dd mm</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "yyyy MM")
+                                                {
+                                                    <option value="yyyy MM" selected>yyyy mm</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy MM">yyyy mm</option>
+                                                }
+                                                if (ViewBag.ItemSetting.ExpiryDateFormat == "MM yyyy")
+                                                {
+                                                    <option value="MM yyyy" selected>mm yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="MM yyyy">mm yyyy</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divItemExpiry @(ViewBag.ItemSetting.EnableItemExpiry== true ? "":"hidden")">
+                                    <div class="form-group">
+                                        <label>Expiry Type <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Enable product expiry. <br/> <br/><b>Add item expiry</b>: To directly add item expiry only. <br/> <b>Add manufacturing date & expiry period</b>: To add manufacturing date & expiry period and calculate expiry date based on that."></i></label>
+                                        <div class="input-group">
+                                            <select class="form-control" style="width: 100%;" id="ddlExpiryType">
+                                                @if (ViewBag.ItemSetting.ExpiryType == 1)
+                                                {
+                                                    <option value="1" selected>Add Item Expiry</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="1">Add Item Expiry</option>
+                                                }
+                                                @if (ViewBag.ItemSetting.ExpiryType == 2)
+                                                {
+                                                    <option value="2" selected>Add Manufacturing Date & Expiry Period</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="2">Add Manufacturing Date & Expiry Period</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divItemExpiry @(ViewBag.ItemSetting.EnableItemExpiry== true ? "":"hidden")">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>On Product Expiry <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Specify action that needs to be done on product expiry. <br><br> <b>Keep Selling</b>: Products will be kept on selling after expiry also. <br> <b>Stop Selling</b>: Stop selling item n days before expiry."></i></label>
+                                        <div class="input-group">
+                                            <select class="form-control " style="width: 70%;" id="ddlOnItemExpiry" onchange="toggleOnExpiry()">
+                                                @{
+                                                    if (ViewBag.ItemSetting.OnItemExpiry == 1)
+                                                    {
+                                                        <option value="1" selected>Keep Selling</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="1">Keep Selling</option>
+                                                    }
+                                                    if (ViewBag.ItemSetting.OnItemExpiry == 2)
+                                                    {
+                                                        <option value="2" selected>Stop Selling on days Before</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="2">Stop Selling on days Before</option>
+                                                    }
+                                                }
+                                            </select>
+                                            @if (ViewBag.ItemSetting.OnItemExpiry == 2)
+                                            {
+                                                <input type="number" class="form-control" id="txtStopSellingBeforeDays" placeholder="" style="width:30%" value="@ViewBag.ItemSetting.StopSellingBeforeDays">
+                                            }
+                                            else
+                                            {
+                                                <input type="number" class="form-control" id="txtStopSellingBeforeDays" disabled placeholder="" style="width:30%" value="@ViewBag.ItemSetting.StopSellingBeforeDays">
+                                            }
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary float-right" onclick="itemUpdate()"><i class="fas fa-edit"></i> Update</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade" id="unitModal">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Unit</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Unit Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divUnitName_M_ctrl" id="txtUnitName" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divUnitName_M"></small>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Unit Short Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divUnitShortName_M_ctrl" id="txtUnitShortName" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divUnitShortName_M"></small>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertUnit()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I add and update product categories?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    •	To add a new product category, click on the ‘Add New’ button at the top of the screen
+                                    •	To update an existing product category, click on 'Edit' button beside the name of product category you want to change, make your changes and then click the ‘Save’ button at the bottom of the screen.
+                                    •	To delete an existing product category, tick the box that is to the left of the product category you would like to delete and then click the ‘Delete’ button at the top of the list.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I make a product category inactive?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    IMS allows you stop an entire product category from displaying in your catalogue, by marking it as inactive. This is sometimes better than deleting all those products since all the product information is retained but the products are not shown in the catalogue. To mark a product category as inactive, follow these steps:
+
+                                    •	Click on the name of the product category that you want to make active.
+                                    •	Change the status field from ‘Active’ to ‘Inactive’.
+                                    •	Click the ‘Save’ button at the bottom of the page.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Settings/ItemSettings/ItemSettings.js"></script>
+
+

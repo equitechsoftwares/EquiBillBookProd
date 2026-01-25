@@ -1,0 +1,455 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Activity Log";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Activity Log Report</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/reports/index">Reports</a></li>
+                        <li class="breadcrumb-item active">Activity Log Report</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 noPrint">
+                @*<div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                        <h5><i class="fas fa-info"></i> Note:</h5>
+                        This page has been enhanced for printing. Click the print button at the bottom of the invoice to test.
+                    </div>*@
+                <div class="card  card-primary card-outline collapsed-card">
+                    <div class="card-header" data-card-widget="collapse" title="Collapse">
+                        <h3 class="card-title">Filter</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            @*@if (ViewBag.Branchs.Count > 1)
+                                {*@
+                            @*<div class="col-sm-3 @(ViewBag.Branchs.Count > 1 ? "":"hidden")">
+                                <div class="form-group">
+                                    <label>Business Location</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlBranch" onchange="UsersBranchWise()">
+                                        <option value="0">All</option>
+                                        @foreach (var item in ViewBag.Branchs)
+                                        {
+                                            <option value="@item.BranchId">@item.Branch</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>*@
+                            @*}*@
+                            <div class="col-sm-3">
+                                <div class="form-group" id="divUser">
+                                    <label>User</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlUser">
+                                        <option value="">All</option>
+                                        @foreach (var item in ViewBag.Users)
+                                        {
+                                            <option value="@item.UserId">
+                                                @item.Username
+                                                @*@item.Name
+                                                @if (item.MobileNo != null && item.MobileNo != "")
+                                                {
+                                                    <span>- @item.MobileNo</span>
+                                                }*@
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            @*<div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Role</label>
+                                        <select class="form-control select2" style="width: 100%;" id="ddlRole">
+                                            <option value="">Select</option>
+                                            @foreach (var item in ViewBag.Roles)
+                                            {
+                                                <option value="@item.RoleId">@item.RoleName</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>*@
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Log Type</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlType">
+                                        @{
+                                            <option selected="selected" value="">All</option>
+                                            foreach (var item in ViewBag.Menus)
+                                            {
+                                                if (item.Menu != "Dashboard" && item.Menu != "Reports" && item.Menu != "Subscription"
+                                                    && item.Menu != "Feedback" && item.Menu != "Support Ticket")
+                                                {
+                                                    <optgroup label="@item.Title">
+                                                        @foreach (var inner in item.InnerMenus)
+                                                        {
+                                                            if (inner.Menu != "Print Label")
+                                                            {
+                                                                if (item.Menu == "Items")
+                                                                {
+                                                                    if (inner.Menu == "Brand")
+                                                                    {
+                                                                        if (ViewBag.ItemSetting.EnableBrands == true)
+                                                                        {
+                                                                            <option value="@inner.Menu">@inner.Title</option>
+                                                                        }
+                                                                    }
+                                                                    else if (inner.Menu == "Sub Categories")
+                                                                    {
+                                                                        if (ViewBag.ItemSetting.EnableSubCategory == true)
+                                                                        {
+                                                                            <option value="@inner.Menu">@inner.Title</option>
+                                                                        }
+                                                                    }
+                                                                    else if (inner.Menu == "Sub Sub Categories")
+                                                                    {
+                                                                        if (ViewBag.ItemSetting.EnableSubSubCategory == true)
+                                                                        {
+                                                                            <option value="@inner.Menu">@inner.Title</option>
+                                                                        }
+                                                                    }
+                                                                    else if (inner.Menu == "Warranties")
+                                                                    {
+                                                                        if (ViewBag.ItemSetting.EnableWarranty == true)
+                                                                        {
+                                                                            <option value="@inner.Menu">@inner.Title</option>
+                                                                        }
+                                                                    }
+                                                                    else if (inner.Menu == "Secondary Units")
+                                                                    {
+                                                                        if (ViewBag.ItemSetting.EnableSecondaryUnit == true)
+                                                                        {
+                                                                            <option value="@inner.Menu">@inner.Title</option>
+                                                                        }
+                                                                    }
+                                                                    else if (inner.Menu == "Tertiary Units")
+                                                                    {
+                                                                        if (ViewBag.ItemSetting.EnableTertiaryUnit == true)
+                                                                        {
+                                                                            <option value="@inner.Menu">@inner.Title</option>
+                                                                        }
+                                                                    }
+                                                                    else if (inner.Menu == "Quaternary Units")
+                                                                    {
+                                                                        if (ViewBag.ItemSetting.EnableQuaternaryUnit == true)
+                                                                        {
+                                                                            <option value="@inner.Menu">@inner.Title</option>
+                                                                        }
+                                                                    }
+                                                                    else if (inner.Menu == "Variation")
+                                                                    {
+                                                                        if (ViewBag.ItemSetting.EnableProductVariation == true)
+                                                                        {
+                                                                            <option value="@inner.Menu">@inner.Title</option>
+                                                                        }
+                                                                    }
+                                                                    else if (inner.Menu == "Stock Adjust")
+                                                                    {
+                                                                        if (ViewBag.ItemSetting.EnableStockAdjustment == true)
+                                                                        {
+                                                                            <option value="@inner.Menu">@inner.Title</option>
+                                                                        }
+                                                                    }
+                                                                    else if (inner.Menu == "Stock Transfer")
+                                                                    {
+                                                                        if (ViewBag.ItemSetting.EnableStockTransfer == true)
+                                                                        {
+                                                                            <option value="@inner.Menu">@inner.Title</option>
+                                                                        }
+                                                                    }
+                                                                    else if (inner.Menu == "Selling Price Group")
+                                                                    {
+                                                                        if (ViewBag.ItemSetting.EnableSellingPriceGroup == true)
+                                                                        {
+                                                                            <option value="@inner.Menu">@inner.Title</option>
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@inner.Menu">@inner.Title</option>
+                                                                    }
+                                                                }
+                                                                else if (item.Menu == "Sales")
+                                                                {
+                                                                    if (inner.Menu == "Customer Group")
+                                                                    {
+                                                                        if (ViewBag.SaleSetting.EnableCustomerGroup == true)
+                                                                        {
+                                                                            <option value="@inner.Menu">@inner.Title</option>
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@inner.Menu">@inner.Title</option>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@inner.Menu">@inner.Title</option>
+                                                                }
+
+                                                                if (inner.Menu == "Items")
+                                                                {
+                                                                    <option value="Opening Stock">Opening Stock</option>
+                                                                }
+                                                            }
+                                                        }
+                                                    </optgroup>
+                                                }
+                                            }
+                                        }
+                                        <optgroup label="Others">
+                                            <option value="Profile Update">Profile Update</option>
+                                            <option value="Change Password">Change Password</option>
+                                            <option value="Change Login Mail">Login Mail Changed</option>
+                                            <option value="Password Reset">Password Reset</option>
+                                            <option value="Subscription Plan">Subscription Plan</option>
+                                            <option value="Feedback">Feedback/ Suggestion</option>
+                                            <option value="Support Ticket">Support Ticket</option>
+                                            <option value="Login">Login</option>
+                                            <option value="Logout">Logout</option>
+                                        </optgroup>
+                                        @*<option selected="selected" value="">All</option>
+        <option value="Login">Login</option>
+        <option value="User Role">User Role</option>
+        <option value="Users">Users</option>
+        <option value="Categories">Categories</option>
+        <option value="Sub Category">Sub Categories</option>
+        <option value="Sub Sub Category">Sub Sub Categories</option>
+        <option value="Unit">Units</option>
+        <option value="Secondary Unit">Secondary Units</option>
+        <option value="Tertiary Unit">Tertiary Units</option>
+        <option value="Quaternary Unit">Quaternary Units</option>
+        <option value="Variation">Variation</option>
+        <option value="Warranty">Warranties</option>
+        <option value="Brand">Brand</option>
+        <option value="Item">Items</option>
+        <option value="Opening Stock">Opening Stock</option>
+        <option value="Selling Price Group">Selling Price Group</option>
+        <option value="Stock Adjust">Stock Adjustment</option>
+        <option value="Stock Transfer">Stock Transfer</option>
+        <option value="Print Label">Print Label</option>
+        <option value="Supplier">Suppliers</option>
+        <option value="Purchase">Purchase Quotation</option>
+        <option value="Purchase">Purchase Order</option>
+        <option value="Purchase">Purchase Bill</option>
+        <option value="Purchase">Purchase Payment</option>
+        <option value="Purchase Return">Purchase Return</option>
+        <option value="Supplier Refund">Purchase Refund</option>
+        <option value="Supplier Payments">Supplier Payments</option>
+        <option value="Supplier Refunds">Supplier Refunds</option>
+        <option value="Expense">Expense</option>
+        <option value="Customer Group">Customer Group</option>
+        <option value="Customer">Customers</option>
+        <option value="Draft">Sales Quotation</option>
+        <option value="Quotation">Sales Order</option>
+        <option value="Proforma Invoice">Sales Proforma</option>
+        <option value="Customer">Delivery Challan</option>
+        <option value="Sales">Sales Invoice</option>
+        <option value="Pos">Pos</option>
+        <option value="Sales Payment">Sales Payment</option>
+        <option value="Sales Return">Sales Return</option>
+        <option value="Customer Refund">Sales Refund</option>
+        <option value="Supplier Payments">Customer Payments</option>
+        <option value="Supplier Refunds">Customer Refunds</option>
+        <option value="State">State</option>
+        <option value="City">City</option>
+        <option value="Branch">Business Locations</option>
+        <option value="Expense Category">Bank/ Credit Card</option>
+        <option value="Expense Sub Category">Contra</option>
+        <option value="Account Type">Account Group</option>
+        <option value="Account Sub Type">Chart of Accounts</option>
+        <option value="Bank Accounts">Journal</option>
+        <option value="Currency">Currency</option>
+        <option value="Tax">Taxes </option>
+        <option value="Tax Group">Tax Groups</option>
+        <option value="Payment Method">Payment Methods</option>
+        <option value="Business Settings Update">Business Settings Update</option>
+        <option value="Notification Templates">Notification Templates</option>
+        <option value="Profile Update">Profile Update</option>
+        <option value="Change Password">Change Password</option>
+        <option value="Change Login Email">Change Login Email</option>
+        <option value="Domain">Domain</option>
+        <option value="Subscription Plan">Subscription Plan</option>
+        <option value="Feedback">Feedback/ Suggestion</option>
+        <option value="Support Ticket">Support Ticket</option>
+        <option value="Logout">Logout</option>*@
+                                    </select>
+                                </div>
+                            </div>
+                            @*<div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Activity Type</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlType">
+                                        <option selected="selected" value="">All</option>
+                                        <option selected="selected" value="">Create</option>
+                                        <option selected="selected" value="">Modify</option>
+                                        <option selected="selected" value="">Delete</option>
+                                    </select>
+                                </div>
+                            </div>*@
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Date Range:</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="far fa-calendar-alt"></i>
+                                            </span>
+                                        </div>
+                                        <input type="text" class="form-control float-right" id="txtDateRange" value="@(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) +" - "+ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]))">
+                                    </div>
+                                </div>
+                            </div>
+                            @*<div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>From Date</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                </span>
+                                            </div>
+                                            <input type="date" class="form-control float-right" id="txtFromDate" value="@(ViewBag.FromDate != null?ViewBag.FromDate.ToString("yyyy-MM-dd"):DateTime.Now)">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>To Date</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                </span>
+                                            </div>
+                                            <input type="date" class="form-control float-right" id="txtToDate" value="@(ViewBag.ToDate != null?ViewBag.ToDate.ToString("yyyy-MM-dd"):DateTime.Now)">
+                                        </div>
+                                    </div>
+                                </div>*@
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary float-right mt-2" onclick="fetchList(1)">Search</button>
+                        <button type="submit" class="btn btn-warning float-right mt-2 mr-2" onclick="window.location.reload()">Refresh</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+
+                <!-- /.card -->
+                <div class="card  card-primary card-outline">
+                    @*<div class="card-header">
+                            <h5>
+                                <span class="success" id="divTotalCount">
+                                    Total : 0
+                                </span>
+                                |
+                                <span class="primary" id="divActiveCount">
+                                    Active : 0
+                                </span>
+                                |
+                                <span class="danger" id="divInactiveCount">In-Active : 0</span>
+                            </h5>
+                        </div>*@
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                            <div class="dataTables_length noPrint" id="tblUserRole_length">
+                                <label>
+                                    Show
+                                    <select name="tblUserRole_length" aria-controls="tblUserRole" class="custom-select custom-select-sm form-control form-control-sm"
+                                            onchange="fetchList(1)" id="txtPageSize">
+                                        @{
+                                            if (ViewBag.PageSize == 10)
+                                            {
+                                                <option value="10" selected>10</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="10">10</option>
+                                            }
+                                            if (ViewBag.PageSize == 25)
+                                            {
+                                                <option value="25" selected>25</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="25">25</option>
+                                            }
+                                            if (ViewBag.PageSize == 50)
+                                            {
+                                                <option value="50" selected>50</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="50">50</option>
+                                            }
+                                            if (ViewBag.PageSize == 100)
+                                            {
+                                                <option value="100" selected>100</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="100">100</option>
+                                            }
+                                            if (ViewBag.PageSize == 500)
+                                            {
+                                                <option value="500" selected>500</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="500">500</option>
+                                            }
+                                        }
+                                    </select> entries
+                                </label>
+                            </div>
+                            @if (ViewBag.MenuPermission.IsExport)
+                            {
+                               <div class="dt-buttons btn-group flex-wrap noPrint">
+                                   <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+                                   <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+                                   <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+                                   <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+                               </div>
+                            }
+                            <div id="tblUserRole_filter" class="dataTables_filter noPrint" style="visibility:hidden"><label>Search:<input type="text" class="form-control form-control-sm" placeholder="" aria-controls="tblUserRole" id="txtSearch" onkeyup="fetchList(1)"></label></div>
+                            <div class="row mt-1">
+                                <div class="col-sm-12 table-responsive">
+                                    <table id="tblData" class="table table-bordered table-striped">
+                                        @Html.Partial("PartialActivityLog")
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<script src="~/Content/JQuery/Customer/Reports/ActivityReports/ActivityLogReport.js"></script>

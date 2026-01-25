@@ -1,0 +1,1050 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Restaurant Settings";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+    var restaurantSettings = ViewBag.RestaurantSettings as EquiBillBook.Models.ClsRestaurantSettingsVm;
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Restaurant Settings</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantsettings/index">Restaurant Settings</a></li>
+                        <li class="breadcrumb-item active">Edit Restaurant Settings</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/restaurantsettings/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline card-outline-tabs">
+                    <div class="card-header p-0 border-bottom-0">
+                        <ul class="nav nav-tabs" id="restaurant-settings-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="basic-settings-tab" data-toggle="pill" href="#basic-settings" role="tab" aria-controls="basic-settings" aria-selected="true">
+                                    <i class="fas fa-cog mr-1"></i> Basic Settings
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="booking-settings-tab" data-toggle="pill" href="#booking-settings" role="tab" aria-controls="booking-settings" aria-selected="false">
+                                    <i class="fas fa-calendar-check mr-1"></i> Booking Settings
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="deposit-settings-tab" data-toggle="pill" href="#deposit-settings" role="tab" aria-controls="deposit-settings" aria-selected="false">
+                                    <i class="fas fa-money-bill-wave mr-1"></i> Deposit Settings
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="public-booking-tab" data-toggle="pill" href="#public-booking" role="tab" aria-controls="public-booking" aria-selected="false">
+                                    <i class="fas fa-globe mr-1"></i> Public Booking
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="date-overrides-tab" data-toggle="pill" href="#date-overrides" role="tab" aria-controls="date-overrides" aria-selected="false">
+                                    <i class="fas fa-calendar-alt mr-1"></i> Date Overrides
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="restaurant-settings-tabContent">
+                            <input type="hidden" id="editBranchId" value="@(restaurantSettings != null ? restaurantSettings.BranchId : 0)">
+                            
+                            <!-- Basic Settings Tab -->
+                            <div class="tab-pane fade show active" id="basic-settings" role="tabpanel" aria-labelledby="basic-settings-tab">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <h5 class="text-dark"><i class="fas fa-info-circle mr-2"></i>Basic Information</h5>
+                                        <hr>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Branch</label>
+                                            <input type="text" class="form-control" value="@(restaurantSettings != null && restaurantSettings.Branch != null ? restaurantSettings.Branch : "N/A")" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-12 mb-3">
+                                        <h5 class="text-dark"><i class="fas fa-utensils mr-2"></i>Kitchen Display Settings</h5>
+                                        <hr>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="editChkEnableKitchenDisplay" name="EnableKitchenDisplay" @(restaurantSettings != null && restaurantSettings.EnableKitchenDisplay ? "checked" : "")>
+                                                <label class="custom-control-label" for="editChkEnableKitchenDisplay">Enable Kitchen Display</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="editChkAutoPrintKot" name="AutoPrintKot" @(restaurantSettings != null && restaurantSettings.AutoPrintKot ? "checked" : "")>
+                                                <label class="custom-control-label" for="editChkAutoPrintKot">Auto Print KOT</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Booking Settings Tab -->
+                            <div class="tab-pane fade" id="booking-settings" role="tabpanel" aria-labelledby="booking-settings-tab">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <h5 class="text-dark"><i class="fas fa-calendar-check mr-2"></i>Table Booking Configuration</h5>
+                                        <hr>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="editChkEnableTableBooking" name="EnableTableBooking" @(restaurantSettings != null && restaurantSettings.EnableTableBooking ? "checked" : "")>
+                                                <label class="custom-control-label" for="editChkEnableTableBooking">Enable Table Booking</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="editChkEnableRecurringBooking" name="EnableRecurringBooking" @(restaurantSettings != null && restaurantSettings.EnableRecurringBooking ? "checked" : "")>
+                                                <label class="custom-control-label" for="editChkEnableRecurringBooking">Enable Recurring Booking</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Booking Advance Days</label>
+                                            <input type="number" class="form-control" id="editTxtBookingAdvanceDays" name="BookingAdvanceDays" min="1" value="@(restaurantSettings != null ? restaurantSettings.BookingAdvanceDays : 30)">
+                                            <small class="text-red font-weight-bold errorText" id="divBookingAdvanceDays"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Default Booking Duration (min)</label>
+                                            <input type="number" class="form-control" id="editTxtDefaultBookingDuration" name="DefaultBookingDuration" min="30" step="30" value="@(restaurantSettings != null ? restaurantSettings.DefaultBookingDuration : 120)">
+                                            <small class="text-red font-weight-bold errorText" id="divDefaultBookingDuration"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-12 mb-3">
+                                        <h5 class="text-dark"><i class="fas fa-clock mr-2"></i>Time Slot Configuration</h5>
+                                        <hr>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Booking Time Slot Mode</label>
+                                            <select class="form-control" id="editSelBookingTimeSlotMode" name="BookingTimeSlotMode">
+                                                @{
+                                                    var bookingTimeSlotMode = restaurantSettings != null && restaurantSettings.BookingTimeSlotMode != null ? restaurantSettings.BookingTimeSlotMode : "Auto";
+                                                }
+                                                <option value="Auto" @(bookingTimeSlotMode == "Auto" ? "selected" : "")>Auto</option>
+                                                <option value="Manual" @(bookingTimeSlotMode == "Manual" ? "selected" : "")>Manual</option>
+                                            </select>
+                                            <small class="text-muted">Auto: Calculate slots automatically. Manual: Use custom time slots.</small>
+                                            <small class="text-red font-weight-bold errorText" id="divBookingTimeSlotMode"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivBookingStartTime" style="@(restaurantSettings != null && restaurantSettings.BookingTimeSlotMode == "Auto" ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <label>Booking Start Time</label>
+                                            <input type="time" class="form-control" id="editTxtBookingStartTime" name="BookingStartTime" value="@(restaurantSettings != null && restaurantSettings.BookingStartTime.HasValue ? string.Format("{0:D2}:{1:D2}", restaurantSettings.BookingStartTime.Value.Hours, restaurantSettings.BookingStartTime.Value.Minutes) : "09:00")">
+                                            <small class="text-muted">Start time for auto time slot calculation</small>
+                                            <small class="text-red font-weight-bold errorText" id="divBookingStartTime"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivBookingEndTime" style="@(restaurantSettings != null && restaurantSettings.BookingTimeSlotMode == "Auto" ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <label>Booking End Time</label>
+                                            <input type="time" class="form-control" id="editTxtBookingEndTime" name="BookingEndTime" value="@(restaurantSettings != null && restaurantSettings.BookingEndTime.HasValue ? string.Format("{0:D2}:{1:D2}", restaurantSettings.BookingEndTime.Value.Hours, restaurantSettings.BookingEndTime.Value.Minutes) : "22:00")">
+                                            <small class="text-muted">End time for auto time slot calculation</small>
+                                            <small class="text-red font-weight-bold errorText" id="divBookingEndTime"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Operating Days Section -->
+                                <div class="row mt-4">
+                                    <div class="col-12 mb-3">
+                                        <h5 class="text-dark"><i class="fas fa-calendar-week mr-2"></i>Operating Days</h5>
+                                        <p class="text-muted">Select the days of the week when the restaurant is open for bookings.</p>
+                                        <hr>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <div class="row">
+                                                @{
+                                                    var operatingDays = restaurantSettings != null && restaurantSettings.OperatingDays != null ? restaurantSettings.OperatingDays.Select(od => od.DayOfWeek).ToList() : new List<int>();
+                                                    var daysOfWeek = new[] { 
+                                                        new { Value = 0, Name = "Sunday" },
+                                                        new { Value = 1, Name = "Monday" },
+                                                        new { Value = 2, Name = "Tuesday" },
+                                                        new { Value = 3, Name = "Wednesday" },
+                                                        new { Value = 4, Name = "Thursday" },
+                                                        new { Value = 5, Name = "Friday" },
+                                                        new { Value = 6, Name = "Saturday" }
+                                                    };
+                                                }
+                                                @foreach (var day in daysOfWeek)
+                                                {
+                                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                        <div class="custom-control custom-checkbox">
+                                                            <input type="checkbox" class="custom-control-input operating-day-checkbox" id="editChkOperatingDay_@day.Value" value="@day.Value" @(operatingDays.Contains(day.Value) ? "checked" : "")>
+                                                            <label class="custom-control-label" for="editChkOperatingDay_@day.Value">@day.Name</label>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divOperatingDays"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Manual Time Slots Section (shown when BookingTimeSlotMode is Manual) -->
+                                <div class="row mt-4" id="editDivManualTimeSlots" style="@(restaurantSettings != null && restaurantSettings.BookingTimeSlotMode == "Manual" ? "" : "display: none;")">
+                                    <div class="col-12 mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="text-primary mb-0"><i class="fas fa-clock mr-2"></i>Manual Time Slots</h5>
+                                            <button type="button" class="btn btn-sm btn-primary" id="btnAddTimeSlot">
+                                                <i class="fas fa-plus"></i> Add Time Slot
+                                            </button>
+                                        </div>
+                                        <p class="text-muted">Configure custom time slots for bookings. Only shown when Time Slot Mode is set to "Manual".</p>
+                                        <hr>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <div id="editTimeSlotsContainer">
+                                                @if (restaurantSettings != null && restaurantSettings.BookingTimeSlotsNormalized != null && restaurantSettings.BookingTimeSlotsNormalized.Any())
+                                                {
+                                                    <div class="row">
+                                                        @foreach (var slot in restaurantSettings.BookingTimeSlotsNormalized.OrderBy(s => 
+                                                        {
+                                                            // Use TimeSlotString if available, otherwise try TimeSlot
+                                                            if (!string.IsNullOrEmpty(s.TimeSlotString))
+                                                            {
+                                                                TimeSpan ts;
+                                                                if (TimeSpan.TryParse(s.TimeSlotString, out ts))
+                                                                    return ts;
+                                                            }
+                                                            // Fallback to TimeSlot property if it's not zero
+                                                            if (s.TimeSlot != null && s.TimeSlot != TimeSpan.Zero)
+                                                            {
+                                                                return s.TimeSlot;
+                                                            }
+                                                            return TimeSpan.Zero;
+                                                        }))
+                                                        {
+                                                            <div class="col-6 col-md-4 col-lg-3 mb-2 time-slot-item" data-slot-id="@slot.BookingTimeSlotId">
+                                                                <div class="input-group">
+                                                                    <div class="input-group-prepend">
+                                                                        <span class="input-group-text bg-light">
+                                                                            <i class="fas fa-clock text-muted"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                    @{
+                                                                        string timeValue = "";
+                                                                        // Prefer TimeSlotString from API, fallback to TimeSlot property
+                                                                        if (!string.IsNullOrEmpty(slot.TimeSlotString))
+                                                                        {
+                                                                            timeValue = slot.TimeSlotString;
+                                                                        }
+                                                                        else if (slot.TimeSlot != null && slot.TimeSlot != TimeSpan.Zero)
+                                                                        {
+                                                                            timeValue = string.Format("{0:D2}:{1:D2}", slot.TimeSlot.Hours, slot.TimeSlot.Minutes);
+                                                                        }
+                                                                    }
+                                                                    <input type="time" class="form-control time-slot-input" value="@timeValue" step="60">
+                                                                    <div class="input-group-append">
+                                                                        <button type="button" class="btn btn-outline-danger remove-time-slot" title="Remove">
+                                                                            <i class="fas fa-times"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divTimeSlots"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Deposit Settings Tab -->
+                            <div class="tab-pane fade" id="deposit-settings" role="tabpanel" aria-labelledby="deposit-settings-tab">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <h5 class="text-dark"><i class="fas fa-money-bill-wave mr-2"></i>Deposit Configuration</h5>
+                                        <hr>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="editChkRequireDeposit" name="RequireDeposit" @(restaurantSettings != null && restaurantSettings.RequireDeposit ? "checked" : "")>
+                                                <label class="custom-control-label" for="editChkRequireDeposit">Require Deposit</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivDepositMode" style="@(restaurantSettings != null && restaurantSettings.RequireDeposit ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <label>Deposit Mode</label>
+                                            <select class="form-control" id="editSelDepositMode" name="DepositMode">
+                                                @{
+                                                    var depositMode = restaurantSettings != null && restaurantSettings.DepositMode != null ? restaurantSettings.DepositMode : "Fixed";
+                                                }
+                                                <option value="Fixed" @(depositMode == "Fixed" ? "selected" : "")>Fixed Amount</option>
+                                                <option value="PerGuest" @(depositMode == "PerGuest" ? "selected" : "")>Per Guest</option>
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divDepositMode"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivDepositFixedAmount" style="@(restaurantSettings != null && restaurantSettings.RequireDeposit && ((restaurantSettings.DepositMode ?? "Fixed") == "Fixed") ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <label>Deposit Amount</label>
+                                            <input type="number" class="form-control" id="editTxtDepositFixedAmount" name="DepositFixedAmount" min="0" step="0.01" value="@(restaurantSettings != null ? restaurantSettings.DepositFixedAmount.ToString() : "0")">
+                                            <small class="text-red font-weight-bold errorText" id="divDepositFixedAmount"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivDepositPerGuestAmount" style="@(restaurantSettings != null && restaurantSettings.RequireDeposit && ((restaurantSettings.DepositMode ?? "Fixed") == "PerGuest") ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <label>Deposit per Guest</label>
+                                            <input type="number" class="form-control" id="editTxtDepositPerGuestAmount" name="DepositPerGuestAmount" min="0" step="0.01" value="@(restaurantSettings != null ? restaurantSettings.DepositPerGuestAmount.ToString() : "0")">
+                                            <small class="text-red font-weight-bold errorText" id="divDepositPerGuestAmount"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-12 mb-3">
+                                        <h5 class="text-dark"><i class="fas fa-ban mr-2"></i>Cancellation Charges</h5>
+                                        <hr>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivCancellationChargeMode">
+                                        <div class="form-group">
+                                            <label>Cancellation Charge Mode</label>
+                                            <select class="form-control" id="editSelCancellationChargeMode" name="PublicBookingCancellationChargeMode">
+                                                <option value="None" @(restaurantSettings != null && restaurantSettings.PublicBookingCancellationChargeMode == "None" ? "selected" : "")>None</option>
+                                                <option value="Fixed" @(restaurantSettings != null && restaurantSettings.PublicBookingCancellationChargeMode == "Fixed" ? "selected" : "")>Fixed</option>
+                                                <option value="Percentage" @(restaurantSettings != null && restaurantSettings.PublicBookingCancellationChargeMode == "Percentage" ? "selected" : "")>Percentage</option>
+                                                <option value="PerGuest" @(restaurantSettings != null && restaurantSettings.PublicBookingCancellationChargeMode == "PerGuest" ? "selected" : "")>Per Guest</option>
+                                            </select>
+                                            <small class="text-muted">Cancellation charge type</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivCancellationFixedCharge" style="@{
+                                        var cancellationChargeMode = restaurantSettings != null && restaurantSettings.PublicBookingCancellationChargeMode != null ? restaurantSettings.PublicBookingCancellationChargeMode : "None";
+                                        if (cancellationChargeMode != "Fixed") { Write("display: none;"); }
+                                    }">
+                                        <div class="form-group">
+                                            <label>Cancellation Fixed Charge</label>
+                                            <input type="number" class="form-control" id="editTxtCancellationFixedCharge" name="PublicBookingCancellationFixedCharge" placeholder="100.00" min="0" step="0.01" value="@(restaurantSettings != null ? restaurantSettings.PublicBookingCancellationFixedCharge.ToString() : "")">
+                                            <small class="text-muted">Fixed cancellation charge amount</small>
+                                            <small class="text-red font-weight-bold errorText" id="divCancellationFixedCharge"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivCancellationPercentage" style="@{
+                                        var cancellationChargeMode2 = restaurantSettings != null && restaurantSettings.PublicBookingCancellationChargeMode != null ? restaurantSettings.PublicBookingCancellationChargeMode : "None";
+                                        if (cancellationChargeMode2 != "Percentage") { Write("display: none;"); }
+                                    }">
+                                        <div class="form-group">
+                                            <label>Cancellation Percentage (%)</label>
+                                            <input type="number" class="form-control" id="editTxtCancellationPercentage" name="PublicBookingCancellationPercentage" placeholder="10" min="0" max="100" step="0.01" value="@(restaurantSettings != null ? restaurantSettings.PublicBookingCancellationPercentage.ToString() : "")">
+                                            <small class="text-muted">Cancellation charge as percentage of deposit</small>
+                                            <small class="text-red font-weight-bold errorText" id="divCancellationPercentage"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivCancellationPerGuestCharge" style="@{
+                                        var cancellationChargeMode3 = restaurantSettings != null && restaurantSettings.PublicBookingCancellationChargeMode != null ? restaurantSettings.PublicBookingCancellationChargeMode : "None";
+                                        if (cancellationChargeMode3 != "PerGuest") { Write("display: none;"); }
+                                    }">
+                                        <div class="form-group">
+                                            <label>Cancellation Charge per Guest</label>
+                                            <input type="number" class="form-control" id="editTxtCancellationPerGuestCharge" name="PublicBookingCancellationPerGuestCharge" placeholder="50.00" min="0" step="0.01" value="@(restaurantSettings != null ? restaurantSettings.PublicBookingCancellationPerGuestCharge.ToString() : "")">
+                                            <small class="text-muted">Cancellation charge per guest</small>
+                                            <small class="text-red font-weight-bold errorText" id="divCancellationPerGuestCharge"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Public Booking Tab -->
+                            <div class="tab-pane fade" id="public-booking" role="tabpanel" aria-labelledby="public-booking-tab">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <h5 class="text-dark"><i class="fas fa-globe mr-2"></i>Public Online Booking Settings</h5>
+                                        <hr>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="editChkEnablePublicBooking" name="EnablePublicBooking" @(restaurantSettings != null && restaurantSettings.EnablePublicBooking ? "checked" : "")>
+                                                <label class="custom-control-label" for="editChkEnablePublicBooking">Enable Public Booking</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivPublicBookingSlug" style="@(restaurantSettings != null && restaurantSettings.EnablePublicBooking ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <label>Public Booking Slug <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="editTxtPublicBookingSlug" name="PublicBookingSlug" placeholder="restaurant-name" value="@(restaurantSettings != null && restaurantSettings.PublicBookingSlug != null ? restaurantSettings.PublicBookingSlug : "")">
+                                            <small class="text-muted">URL slug for public booking page (e.g., restaurant-name)</small>
+                                            <br>
+                                            <small class="text-red font-weight-bold errorText" id="divPublicBookingSlug"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivPublicBookingAdvanceDays" style="@(restaurantSettings != null && restaurantSettings.EnablePublicBooking ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <label>Public Booking Advance Days</label>
+                                            <input type="number" class="form-control" id="editTxtPublicBookingAdvanceDays" name="PublicBookingAdvanceDays" min="1" value="@(restaurantSettings != null ? restaurantSettings.PublicBookingAdvanceDays : 30)">
+                                            <small class="text-red font-weight-bold errorText" id="divPublicBookingAdvanceDays"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivPublicBookingAutoConfirm" style="@(restaurantSettings != null && restaurantSettings.EnablePublicBooking ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="editChkPublicBookingAutoConfirm" name="PublicBookingAutoConfirm" @(restaurantSettings != null && restaurantSettings.PublicBookingAutoConfirm ? "checked" : "")>
+                                                <label class="custom-control-label" for="editChkPublicBookingAutoConfirm">Auto Confirm</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-12 mb-3">
+                                        <h5 class="text-dark"><i class="fas fa-money-bill-wave mr-2"></i>Public Booking Deposit Settings</h5>
+                                        <hr>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivPublicBookingRequireDeposit" style="@(restaurantSettings != null && restaurantSettings.EnablePublicBooking ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="editChkPublicBookingRequireDeposit" name="PublicBookingRequireDeposit" @(restaurantSettings != null && restaurantSettings.PublicBookingRequireDeposit ? "checked" : "")>
+                                                <label class="custom-control-label" for="editChkPublicBookingRequireDeposit">Require Deposit</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivPublicBookingDepositMode" style="@(restaurantSettings != null && restaurantSettings.EnablePublicBooking && restaurantSettings.PublicBookingRequireDeposit ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <label>Deposit Mode</label>
+                                            <select class="form-control" id="editSelPublicBookingDepositMode" name="PublicBookingDepositMode">
+                                                @{
+                                                    var publicBookingDepositMode = restaurantSettings != null && restaurantSettings.PublicBookingDepositMode != null ? restaurantSettings.PublicBookingDepositMode : "Fixed";
+                                                }
+                                                <option value="Fixed" @(publicBookingDepositMode == "Fixed" ? "selected" : "")>Fixed Amount</option>
+                                                <option value="Percentage" @(publicBookingDepositMode == "Percentage" ? "selected" : "")>Percentage</option>
+                                                <option value="PerGuest" @(publicBookingDepositMode == "PerGuest" ? "selected" : "")>Per Guest</option>
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divPublicBookingDepositMode"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivPublicBookingDepositFixedAmount" style="@(restaurantSettings != null && restaurantSettings.EnablePublicBooking && restaurantSettings.PublicBookingRequireDeposit && ((restaurantSettings.PublicBookingDepositMode ?? "Fixed") == "Fixed") ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <label>Deposit Amount</label>
+                                            <input type="number" class="form-control" id="editTxtPublicBookingDepositFixedAmount" name="PublicBookingDepositFixedAmount" min="0" step="0.01" value="@(restaurantSettings != null ? restaurantSettings.PublicBookingDepositFixedAmount.ToString() : "0")">
+                                            <small class="text-red font-weight-bold errorText" id="divPublicBookingDepositFixedAmount"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivPublicBookingDepositPercentage" style="@(restaurantSettings != null && restaurantSettings.EnablePublicBooking && restaurantSettings.PublicBookingRequireDeposit && ((restaurantSettings.PublicBookingDepositMode ?? "Fixed") == "Percentage") ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <label>Deposit Percentage (%)</label>
+                                            <input type="number" class="form-control" id="editTxtPublicBookingDepositPercentage" name="PublicBookingDepositPercentage" min="0" max="100" step="0.01" value="@(restaurantSettings != null ? restaurantSettings.PublicBookingDepositPercentage.ToString() : "0")">
+                                            <small class="text-muted">Percentage of booking amount</small>
+                                            <small class="text-red font-weight-bold errorText" id="divPublicBookingDepositPercentage"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivPublicBookingDepositPerGuestAmount" style="@(restaurantSettings != null && restaurantSettings.EnablePublicBooking && restaurantSettings.PublicBookingRequireDeposit && ((restaurantSettings.PublicBookingDepositMode ?? "Fixed") == "PerGuest") ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <label>Deposit per Guest</label>
+                                            <input type="number" class="form-control" id="editTxtPublicBookingDepositPerGuestAmount" name="PublicBookingDepositPerGuestAmount" min="0" step="0.01" value="@(restaurantSettings != null ? restaurantSettings.PublicBookingDepositPerGuestAmount.ToString() : "0")">
+                                            <small class="text-red font-weight-bold errorText" id="divPublicBookingDepositPerGuestAmount"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-12 mb-3">
+                                        <h5 class="text-dark"><i class="fas fa-ban mr-2"></i>Public Booking Cancellation Settings</h5>
+                                        <hr>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivPublicBookingCancellation" style="@(restaurantSettings != null && restaurantSettings.EnablePublicBooking ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="editChkPublicBookingCancellation" name="EnablePublicBookingCancellation" @(restaurantSettings != null && restaurantSettings.EnablePublicBookingCancellation ? "checked" : "")>
+                                                <label class="custom-control-label" for="editChkPublicBookingCancellation">Enable Public Cancellation</label>
+                                            </div>
+                                            <small class="text-muted">Allow customers to cancel bookings from the public page</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivAllowCancelAfterConfirm" style="@(restaurantSettings != null && restaurantSettings.EnablePublicBooking && restaurantSettings.EnablePublicBookingCancellation ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="editChkAllowCancelAfterConfirm" name="AllowCancelAfterConfirm" @(restaurantSettings != null && restaurantSettings.AllowCancelAfterConfirm ? "checked" : "")>
+                                                <label class="custom-control-label" for="editChkAllowCancelAfterConfirm">Allow Cancel After Confirm</label>
+                                            </div>
+                                            <small class="text-muted">Allow cancellation even after booking is confirmed</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4" id="editDivCancellationDaysBefore" style="@(restaurantSettings != null && restaurantSettings.EnablePublicBooking && restaurantSettings.EnablePublicBookingCancellation ? "" : "display: none;")">
+                                        <div class="form-group">
+                                            <label>Cancellation Days Before *</label>
+                                            <input type="number" class="form-control" id="editTxtCancellationDaysBefore" name="PublicBookingCancellationDaysBefore" placeholder="2" min="0" value="@(restaurantSettings != null ? restaurantSettings.PublicBookingCancellationDaysBefore.ToString() : "0")">
+                                            <small class="text-muted">Minimum days before booking date to allow cancellation</small>
+                                            <small class="text-red font-weight-bold errorText" id="divCancellationDaysBefore"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Date Overrides Tab -->
+                            <div class="tab-pane fade" id="date-overrides" role="tabpanel" aria-labelledby="date-overrides-tab">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h5 class="text-primary mb-0"><i class="fas fa-calendar-alt mr-2"></i>Date-Specific Overrides</h5>
+                                                <p class="text-muted mb-0">Configure special dates (holidays, special events) with custom availability or closures.</p>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-primary" id="btnAddDateOverride">
+                                                <i class="fas fa-plus"></i> Add Date Override
+                                            </button>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <div id="editDateOverridesContainer">
+                                                @if (restaurantSettings != null && restaurantSettings.DateOverrides != null && restaurantSettings.DateOverrides.Any())
+                                                {
+                                                    foreach (var overrideItem in restaurantSettings.DateOverrides.OrderBy(d => d.OverrideDate))
+                                                    {
+                                                        <div class="date-override-item mb-3" data-override-id="@overrideItem.BookingDateOverrideId">
+                                                            <div class="card border-0 shadow-sm" style="border-left: 4px solid @(overrideItem.IsClosed ? "#dc3545" : "#28a745") !important;">
+                                                                <div class="card-body p-4">
+                                                                    <div class="row mb-3">
+                                                                        <div class="col-12 col-md-3 mb-3 mb-md-0">
+                                                                            <label class="form-label font-weight-bold mb-2">
+                                                                                <i class="fas fa-calendar-alt text-primary mr-1"></i>Date
+                                                                            </label>
+                                                                            <input type="date" class="form-control override-date" value="@(!string.IsNullOrEmpty(overrideItem.OverrideDateString) ? overrideItem.OverrideDateString : overrideItem.OverrideDate.ToString("yyyy-MM-dd"))">
+                                                                        </div>
+                                                                        <div class="col-12 col-md-2 mb-3 mb-md-0">
+                                                                            <label class="form-label font-weight-bold mb-2">
+                                                                                <i class="fas fa-toggle-on text-info mr-1"></i>Status
+                                                                            </label>
+                                                                            <select class="form-control override-is-closed">
+                                                                                <option value="false" @(!overrideItem.IsClosed ? "selected" : "")>Open</option>
+                                                                                <option value="true" @(overrideItem.IsClosed ? "selected" : "")>Closed</option>
+                                                                            </select>
+                                                                        </div>
+                                                                        <div class="col-12 col-md-5 mb-3 mb-md-0">
+                                                                            <label class="form-label font-weight-bold mb-2">
+                                                                                <i class="fas fa-comment-alt text-secondary mr-1"></i>Reason
+                                                                            </label>
+                                                                            <input type="text" class="form-control override-reason" placeholder="e.g., Christmas, New Year, Special Event" value="@(overrideItem.Reason ?? "")">
+                                                                        </div>
+                                                                        <div class="col-12 col-md-2 text-md-right">
+                                                                            <label class="form-label d-block mb-2">&nbsp;</label>
+                                                                            <button type="button" class="btn btn-danger remove-date-override" title="Delete Date Override">
+                                                                                <i class="fas fa-trash-alt mr-1"></i>Delete
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="override-time-slots-container" style="@(overrideItem.IsClosed ? "display: none;" : "")">
+                                                                        <div class="border-top pt-3 mt-3">
+                                                                            <label class="form-label font-weight-bold mb-3">
+                                                                                <i class="fas fa-clock text-success mr-1"></i>Custom Time Slots
+                                                                            </label>
+                                                                            <div class="override-time-slots-list">
+                                                                                @if (overrideItem.TimeSlots != null && overrideItem.TimeSlots.Any())
+                                                                                {
+                                                                                    <div class="row">
+                                                                                        @foreach (var slot in overrideItem.TimeSlots.OrderBy(s => 
+                                                                                        {
+                                                                                            // Use TimeSlotString if available, otherwise try TimeSlot
+                                                                                            if (!string.IsNullOrEmpty(s.TimeSlotString))
+                                                                                            {
+                                                                                                TimeSpan ts;
+                                                                                                if (TimeSpan.TryParse(s.TimeSlotString, out ts))
+                                                                                                    return ts;
+                                                                                            }
+                                                                                            // Fallback to TimeSlot property if it's not zero
+                                                                                            if (s.TimeSlot != null && s.TimeSlot != TimeSpan.Zero)
+                                                                                            {
+                                                                                                return s.TimeSlot;
+                                                                                            }
+                                                                                            return TimeSpan.Zero;
+                                                                                        }))
+                                                                                        {
+                                                                                            <div class="col-6 col-md-4 col-lg-3 mb-2 override-slot-item">
+                                                                                                <div class="input-group">
+                                                                                                    <div class="input-group-prepend">
+                                                                                                        <span class="input-group-text bg-light">
+                                                                                                            <i class="fas fa-clock text-muted"></i>
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                    @{
+                                                                                                        string timeValue = "";
+                                                                                                        // Prefer TimeSlotString from API, fallback to TimeSlot property
+                                                                                                        if (!string.IsNullOrEmpty(slot.TimeSlotString))
+                                                                                                        {
+                                                                                                            timeValue = slot.TimeSlotString;
+                                                                                                        }
+                                                                                                        else if (slot.TimeSlot != null && slot.TimeSlot != TimeSpan.Zero)
+                                                                                                        {
+                                                                                                            timeValue = string.Format("{0:D2}:{1:D2}", slot.TimeSlot.Hours, slot.TimeSlot.Minutes);
+                                                                                                        }
+                                                                                                    }
+                                                                                                    <input type="time" class="form-control override-slot-time" value="@timeValue" step="60">
+                                                                                                    <div class="input-group-append">
+                                                                                                        <button type="button" class="btn btn-outline-danger remove-override-slot" title="Remove">
+                                                                                                            <i class="fas fa-times"></i>
+                                                                                                        </button>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        }
+                                                                                    </div>
+                                                                                }
+                                                                                <button type="button" class="btn btn-outline-primary add-override-slot mt-2">
+                                                                                    <i class="fas fa-plus mr-1"></i>Add Time Slot
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divDateOverrides"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.tab-content -->
+                    </div>
+                    <!-- /.card-body -->
+                    <div class="card-footer">
+                        <button id="btnUpdate" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<style>
+    .date-override-item {
+        transition: all 0.3s ease;
+    }
+    .date-override-item .card {
+        transition: all 0.3s ease;
+    }
+    .date-override-item:hover .card {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-2px);
+    }
+    .date-override-item .form-label {
+        font-size: 0.875rem;
+        color: #495057;
+    }
+    .date-override-item .form-label i {
+        width: 16px;
+    }
+    .override-time-slots-list .override-slot-item {
+        transition: all 0.2s ease;
+    }
+    .override-time-slots-list .override-slot-item:hover {
+        transform: scale(1.02);
+    }
+    .override-time-slots-list input[type="time"] {
+        cursor: pointer;
+    }
+    .override-time-slots-list .input-group-text {
+        border-right: none;
+    }
+    .override-time-slots-list .form-control {
+        border-left: none;
+    }
+    .override-time-slots-list .form-control:focus {
+        border-color: #ced4da;
+        box-shadow: none;
+    }
+    .override-time-slots-list .form-control:focus + .input-group-append .btn {
+        border-color: #80bdff;
+    }
+    .time-slot-item {
+        transition: all 0.2s ease;
+    }
+    .time-slot-item:hover {
+        transform: scale(1.02);
+    }
+    .time-slot-item input[type="time"] {
+        cursor: pointer;
+    }
+    .time-slot-item .input-group-text {
+        border-right: none;
+    }
+    .time-slot-item .form-control {
+        border-left: none;
+    }
+    .time-slot-item .form-control:focus {
+        border-color: #ced4da;
+        box-shadow: none;
+    }
+    .time-slot-item .form-control:focus + .input-group-append .btn {
+        border-color: #80bdff;
+    }
+    .nav-tabs .nav-link {
+        color: #495057;
+    }
+    .nav-tabs .nav-link.active {
+        color: #007bff;
+        font-weight: 600;
+    }
+    .tab-content {
+        padding-top: 1rem;
+    }
+    .tab-pane h5 {
+        margin-bottom: 0.5rem;
+    }
+    .tab-pane hr {
+        margin-top: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    @@media (max-width: 768px) {
+        .date-override-item .card-body {
+            padding: 1.5rem !important;
+        }
+        .override-time-slots-list .override-slot-item {
+            margin-bottom: 0.75rem;
+        }
+        .time-slot-item {
+            margin-bottom: 0.75rem;
+        }
+        .nav-tabs {
+            flex-wrap: wrap;
+        }
+        .nav-tabs .nav-item {
+            flex: 1 1 auto;
+            min-width: 120px;
+        }
+    }
+</style>
+<script src="~/Content/JQuery/Customer/Settings/RestaurantSettings.js"></script>
+<script>
+    $(document).ready(function () {
+        function toggleDepositFields() {
+            const requireDeposit = $('#editChkRequireDeposit').is(':checked');
+            const mode = ($('#editSelDepositMode').val() || 'Fixed');
+            
+            if (requireDeposit) {
+                $('#editDivDepositMode').show();
+                if (mode === 'PerGuest') {
+                    $('#editDivDepositPerGuestAmount').show();
+                    $('#editDivDepositFixedAmount').hide();
+                } else {
+                    $('#editDivDepositFixedAmount').show();
+                    $('#editDivDepositPerGuestAmount').hide();
+                }
+            } else {
+                $('#editDivDepositMode').hide();
+                $('#editDivDepositFixedAmount').hide();
+                $('#editDivDepositPerGuestAmount').hide();
+            }
+        }
+
+        // Handle require deposit checkbox change
+        $('#editChkRequireDeposit').change(toggleDepositFields);
+        
+        // Handle deposit mode change
+        $('#editSelDepositMode').change(toggleDepositFields);
+        
+        // Initialize on load
+        toggleDepositFields();
+
+        function toggleCancellationChargeFields() {
+            const cancellationChargeMode = ($('#editSelCancellationChargeMode').val() || 'None');
+            
+            // Show/hide cancellation charge fields based on mode
+            if (cancellationChargeMode === 'Fixed') {
+                $('#editDivCancellationFixedCharge').show();
+                $('#editDivCancellationPercentage').hide();
+                $('#editDivCancellationPerGuestCharge').hide();
+            } else if (cancellationChargeMode === 'Percentage') {
+                $('#editDivCancellationFixedCharge').hide();
+                $('#editDivCancellationPercentage').show();
+                $('#editDivCancellationPerGuestCharge').hide();
+            } else if (cancellationChargeMode === 'PerGuest') {
+                $('#editDivCancellationFixedCharge').hide();
+                $('#editDivCancellationPercentage').hide();
+                $('#editDivCancellationPerGuestCharge').show();
+            } else {
+                // None selected - hide all charge fields
+                $('#editDivCancellationFixedCharge').hide();
+                $('#editDivCancellationPercentage').hide();
+                $('#editDivCancellationPerGuestCharge').hide();
+            }
+        }
+
+        // Handle cancellation charge mode change
+        $('#editSelCancellationChargeMode').change(toggleCancellationChargeFields);
+
+        // Initialize cancellation charge fields on load
+        toggleCancellationChargeFields();
+
+        function togglePublicBookingFields() {
+            const enablePublic = $('#editChkEnablePublicBooking').is(':checked');
+            const requireDeposit = $('#editChkPublicBookingRequireDeposit').is(':checked');
+            const mode = ($('#editSelPublicBookingDepositMode').val() || 'Fixed');
+            const enableCancellation = $('#editChkPublicBookingCancellation').is(':checked');
+
+            if (enablePublic) {
+                $('#editDivPublicBookingSlug').show();
+                $('#editDivPublicBookingAdvanceDays').show();
+                $('#editDivPublicBookingRequireDeposit').show();
+                $('#editDivPublicBookingAutoConfirm').show();
+                $('#editDivPublicBookingCancellation').show();
+                if (enableCancellation) {
+                    $('#editDivAllowCancelAfterConfirm').show();
+                    $('#editDivCancellationDaysBefore').show();
+                } else {
+                    $('#editDivAllowCancelAfterConfirm').hide();
+                    $('#editDivCancellationDaysBefore').hide();
+                }
+                if (requireDeposit) {
+                    $('#editDivPublicBookingDepositMode').show();
+                    if (mode === 'PerGuest') {
+                        $('#editDivPublicBookingDepositPerGuestAmount').show();
+                        $('#editDivPublicBookingDepositFixedAmount').hide();
+                        $('#editDivPublicBookingDepositPercentage').hide();
+                    } else if (mode === 'Percentage') {
+                        $('#editDivPublicBookingDepositPerGuestAmount').hide();
+                        $('#editDivPublicBookingDepositFixedAmount').hide();
+                        $('#editDivPublicBookingDepositPercentage').show();
+                    } else {
+                        $('#editDivPublicBookingDepositFixedAmount').show();
+                        $('#editDivPublicBookingDepositPerGuestAmount').hide();
+                        $('#editDivPublicBookingDepositPercentage').hide();
+                    }
+                } else {
+                    $('#editDivPublicBookingDepositMode').hide();
+                    $('#editDivPublicBookingDepositFixedAmount').hide();
+                    $('#editDivPublicBookingDepositPercentage').hide();
+                    $('#editDivPublicBookingDepositPerGuestAmount').hide();
+                }
+            } else {
+                $('#editDivPublicBookingSlug').hide();
+                $('#editDivPublicBookingAdvanceDays').hide();
+                $('#editDivPublicBookingRequireDeposit').hide();
+                $('#editDivPublicBookingDepositMode').hide();
+                $('#editDivPublicBookingDepositFixedAmount').hide();
+                $('#editDivPublicBookingDepositPercentage').hide();
+                $('#editDivPublicBookingDepositPerGuestAmount').hide();
+                $('#editDivPublicBookingAutoConfirm').hide();
+                $('#editDivPublicBookingCancellation').hide();
+                $('#editDivAllowCancelAfterConfirm').hide();
+                $('#editDivCancellationDaysBefore').hide();
+            }
+        }
+
+        // Handle enable public booking checkbox change
+        $('#editChkEnablePublicBooking').change(togglePublicBookingFields);
+
+        // Handle public booking require deposit checkbox change
+        $('#editChkPublicBookingRequireDeposit').change(togglePublicBookingFields);
+
+        // Handle public booking deposit mode change
+        $('#editSelPublicBookingDepositMode').change(togglePublicBookingFields);
+
+        // Handle public booking cancellation checkbox change
+        $('#editChkPublicBookingCancellation').change(togglePublicBookingFields);
+
+        // Initialize on load
+        togglePublicBookingFields();
+
+        // Handle BookingTimeSlotMode change
+        function toggleBookingTimeSlotFields() {
+            const mode = $('#editSelBookingTimeSlotMode').val();
+            if (mode === 'Auto') {
+                $('#editDivBookingStartTime').show();
+                $('#editDivBookingEndTime').show();
+                $('#editDivManualTimeSlots').hide();
+            } else {
+                $('#editDivBookingStartTime').hide();
+                $('#editDivBookingEndTime').hide();
+                $('#editDivManualTimeSlots').show();
+            }
+        }
+        $('#editSelBookingTimeSlotMode').change(toggleBookingTimeSlotFields);
+        toggleBookingTimeSlotFields();
+
+        // Time Slot Management
+        let timeSlotCounter = 0;
+        $('#btnAddTimeSlot').click(function() {
+            const slotHtml = `
+                <div class="col-6 col-md-4 col-lg-3 mb-2 time-slot-item" data-slot-id="0">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-clock text-muted"></i>
+                            </span>
+                        </div>
+                        <input type="time" class="form-control time-slot-input" value="09:00" step="60">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-danger remove-time-slot" title="Remove">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            const container = $('#editTimeSlotsContainer');
+            const existingRow = container.find('.row').first();
+            
+            if (existingRow.length === 0) {
+                container.prepend('<div class="row"></div>');
+                container.find('.row').first().append(slotHtml);
+            } else {
+                existingRow.append(slotHtml);
+            }
+        });
+
+        $(document).on('click', '.remove-time-slot', function() {
+            $(this).closest('.time-slot-item').remove();
+        });
+
+        // Date Override Management
+        $('#btnAddDateOverride').click(function() {
+            const today = new Date().toISOString().split('T')[0];
+            const overrideHtml = `
+                <div class="date-override-item mb-3" data-override-id="0">
+                    <div class="card border-0 shadow-sm" style="border-left: 4px solid #28a745 !important;">
+                        <div class="card-body p-4">
+                            <div class="row mb-3">
+                                <div class="col-12 col-md-3 mb-3 mb-md-0">
+                                    <label class="form-label font-weight-bold mb-2">
+                                        <i class="fas fa-calendar-alt text-primary mr-1"></i>Date
+                                    </label>
+                                    <input type="date" class="form-control override-date" value="${today}">
+                                </div>
+                                <div class="col-12 col-md-2 mb-3 mb-md-0">
+                                    <label class="form-label font-weight-bold mb-2">
+                                        <i class="fas fa-toggle-on text-info mr-1"></i>Status
+                                    </label>
+                                    <select class="form-control override-is-closed">
+                                        <option value="false" selected>Open</option>
+                                        <option value="true">Closed</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-5 mb-3 mb-md-0">
+                                    <label class="form-label font-weight-bold mb-2">
+                                        <i class="fas fa-comment-alt text-secondary mr-1"></i>Reason
+                                    </label>
+                                    <input type="text" class="form-control override-reason" placeholder="e.g., Christmas, New Year, Special Event">
+                                </div>
+                                <div class="col-12 col-md-2 text-md-right">
+                                    <label class="form-label d-block mb-2">&nbsp;</label>
+                                    <button type="button" class="btn btn-danger remove-date-override" title="Delete Date Override">
+                                        <i class="fas fa-trash-alt mr-1"></i>Delete
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="override-time-slots-container">
+                                <div class="border-top pt-3 mt-3">
+                                    <label class="form-label font-weight-bold mb-3">
+                                        <i class="fas fa-clock text-success mr-1"></i>Custom Time Slots
+                                    </label>
+                                    <div class="override-time-slots-list">
+                                        <button type="button" class="btn btn-outline-primary add-override-slot mt-2">
+                                            <i class="fas fa-plus mr-1"></i>Add Time Slot
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#editDateOverridesContainer').append(overrideHtml);
+        });
+
+        $(document).on('click', '.remove-date-override', function() {
+            $(this).closest('.date-override-item').remove();
+        });
+
+        $(document).on('change', '.override-is-closed', function() {
+            const isClosed = $(this).val() === 'true';
+            const overrideItem = $(this).closest('.date-override-item');
+            const card = overrideItem.find('.card');
+            const container = overrideItem.find('.override-time-slots-container');
+            
+            // Update border color based on status
+            if (isClosed) {
+                card.css('border-left-color', '#dc3545');
+                container.hide();
+            } else {
+                card.css('border-left-color', '#28a745');
+                container.show();
+            }
+        });
+
+        $(document).on('click', '.add-override-slot', function() {
+            const slotHtml = `
+                <div class="col-6 col-md-4 col-lg-3 mb-2 override-slot-item">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-clock text-muted"></i>
+                            </span>
+                        </div>
+                        <input type="time" class="form-control override-slot-time" value="09:00" step="60">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-danger remove-override-slot" title="Remove">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            const listContainer = $(this).closest('.override-time-slots-list');
+            const existingRow = listContainer.find('.row').first();
+            
+            if (existingRow.length === 0) {
+                listContainer.prepend('<div class="row"></div>');
+                listContainer.find('.row').first().prepend(slotHtml);
+            } else {
+                existingRow.prepend(slotHtml);
+            }
+        });
+
+        $(document).on('click', '.remove-override-slot', function() {
+            $(this).closest('.override-slot-item').remove();
+        });
+    });
+
+</script>

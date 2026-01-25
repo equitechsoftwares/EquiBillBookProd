@@ -1,0 +1,1400 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Import Customer";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+<style>
+    table td {
+        white-space: normal !important;
+    }
+</style>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Import Customer</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/Customers/index">Customer List</a></li>
+                        <li class="breadcrumb-item active">Import Customer</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/Customers/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-sm-12">
+                <div class="card card-primary card-outline card-outline-tabs">
+                    <div class="card-header p-0 border-bottom-0">
+                        <ul class="nav nav-tabs" id="custom-tabs-four-tab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="import-excel-tab" data-toggle="pill" href="#import-excel" role="tab" aria-controls="import-excel" aria-selected="true">Import From Excel</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="import-other-software-tab" data-toggle="pill" href="#import-other-software" role="tab" aria-controls="import-other-software" aria-selected="false">Import From Any Other Software</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="custom-tabs-four-tabContent">
+                            <div class="tab-pane fade show active" id="import-excel" role="tabpanel" aria-labelledby="import-excel-tab">
+                                <div class="alert alert-warning alert-dismissible" id="divErrorMsg" style="display:none">
+                                    <button type="button" class="close" onclick="closeErrorMsg()">×</button>
+                                    <h5><i class="icon fas fa-exclamation-triangle"></i> Data not imported!</h5>
+                                    One or more errors found. Please fix the errors stated below in the excel file and then upload it again
+                                    <hr />
+                                    <div class="form-group">
+                                        <label style="width:100%">Errors which needs to be fixed</label>
+                                        <p id="txtErrorMsg" class="mb-0">  </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 noPrint">
+                                        <div class="card  card-primary card-outline ">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-sm-3">
+                                                        <div class="form-group">
+                                                            <label>Choose File To Import </label>
+                                                            <div class="input-group">
+                                                                <input type="file" id="excelfile" accept=".xlsx, .xls, .csv" style="padding:0px" onchange="uploadExcel()">
+                                                            </div>
+                                                            <small class="text-red font-weight-bold errorText" id="divExcel"></small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-footer">
+                                                <button type="submit" class="btn btn-primary float-right mt-2" onclick="BulkInsert(1)">Submit</button>
+                                                <button type="submit" class="btn btn-success float-right mt-2 mr-2" onclick="BulkInsert(2)">Submit & Add Another</button>
+                                                <div class="btn-group float-sm-right mt-2 mr-2">
+                                                    <button type="button" class="btn btn-primary">Download Sample</button>
+                                                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <div class="dropdown-menu" role="menu">
+                                                        <a class="dropdown-item" href="@Url.Action("DownloadCustomerSampleXlsx", "Customers")"> XLSX</a>
+                                                        <a class="dropdown-item" href="@Url.Action("DownloadCustomerSample", "Customers")">CSV</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <!-- /.card -->
+                                        <div class="card  card-primary card-outline">
+                                            <div class="card-header">
+                                                <div class="row">
+                                                    <div class="col-sm-6">
+                                                        <h5>
+                                                            <span id="divTotalCount">
+                                                                Instructions
+                                                            </span>
+                                                        </h5>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <!-- /.card-header -->
+                                            <div class="card-body">
+                                                <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                                                    <div class="dataTables_length noPrint" id="tblUserRole_length">
+                                                        <label>
+                                                            <b>Follow the instructions carefully before importing the file.</b><br />
+                                                            The columns of the file should be in the following order.
+
+                                                        </label>
+                                                    </div>
+
+                                                    <div class="row mt-1">
+                                                        <div class="col-sm-12 table-responsive">
+                                                            <table id="" class="table table-bordered table-striped">
+                                                                <thead id="thead">
+                                                                    <tr>
+                                                                        <th>Column No</th>
+                                                                        <th>Column Name </th>
+                                                                        <th>Instruction</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                @if (ViewBag.BusinessSetting.CountryId == 2)
+                                                                {
+                                                                    <tbody class="table-body">
+                                                                        @{
+                                                                            int columnNumber = 1;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>Name (Required)</td>
+                                                                            <td>
+                                                                                Name of the Customer
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>MobileNo (Required)</td>
+                                                                            <td>Mobile No of the Customer. Must be numeric value</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>EmailId (Optional)</td>
+                                                                            <td>
+                                                                                Email Id of the Customer
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>AltMobileNo (Optional)</td>
+                                                                            <td>
+                                                                                Alternative Mobile No of the Customer. Must be numeric value
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>BusinessName (Optional)</td>
+                                                                            <td>Business Name of the Customer</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>DOB (Optional)</td>
+                                                                            <td>
+                                                                                Date of Birth in format yyyy-mm-dd . Example: 1998-04-21
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>JoiningDate (Optional)</td>
+                                                                            <td>Joining Date in format yyyy-mm-dd . Example: 1998-04-21</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        @if (ViewBag.SaleSetting.EnableCustomerGroup == true)
+                                                                        {
+                                                                            <tr>
+                                                                                <td>@columnNumber</td>
+                                                                                <td>UserGroup (Optional)</td>
+                                                                                <td>
+                                                                                    Customer Group <br />
+                                                                                    Available Options
+                                                                                    <div class="row">
+                                                                                        <div class="col-sm-4">
+                                                                                            <!-- text input -->
+                                                                                            <div class="form-group">
+                                                                                                <div class="input-group">
+                                                                                                    <select class="form-control select2" id="ddlCurrency" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                        <option value="0">Select</option>
+                                                                                                        @foreach (var item in ViewBag.UserGroups)
+                                                                                                        {
+                                                                                                            <option value="@item.UserGroup">@item.UserGroup</option>
+                                                                                                        }
+                                                                                                    </select>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </td>
+                                                                            </tr>
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <!--<tr>
+                                                                        <td>10</td>
+                                                                        <td>CurrencyName (Required) </td>
+                                                                        <td>
+                                                                            Name of the currency<br />
+                                                                            Available Options
+                                                                            <div class="row">
+                                                                                <div class="col-sm-3">-->
+                                                                        <!-- text input -->
+                                                                        <!--<div class="form-group">
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" id="ddlCurrency" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="0">Select</option>
+                                                                                                    @foreach (var item in ViewBag.Currencys)
+                                                                                                    {
+                                                                                                        <option value="@item.CurrencyName">@item.CurrencyName</option>
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>-->
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>CreditLimit (Optional)</td>
+                                                                            <td>Must be numeric value</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>OpeningBalance (Optional)</td>
+                                                                            <td>Opening Balance. Must be numeric value</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>PaymentTerm (Optional)</td>
+                                                                            <td>
+                                                                                Available Options
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-4">
+                                                                                        <!-- text input -->
+                                                                                        <div class="form-group">
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" id="ddlCurrency" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="0">Select</option>
+                                                                                                    @foreach (var item in ViewBag.PaymentTerms)
+                                                                                                    {
+                                                                                                        <option value="@item.PaymentTerm">@item.PaymentTerm</option>
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @*<tr>
+                                                                                <td>14</td>
+                                                                                <td>BranchNames (Required)</td>
+                                                                                <td>
+                                                                                    Business Locations separated with '|' <br />
+                                                                                    (Ex: Business Location A|Business Location B) <br />
+                                                                                    Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                    @{
+                                                                                        foreach (var tag in ViewBag.Branchs)
+                                                                                        {
+                                                                                            <a href="javascript:void(0)" onclick="copyTag('@tag.Branch')">@tag.Branch | </a>
+                                                                                        }
+                                                                                    }
+                                                                                </td>
+                                                                            </tr>*@
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>GstTreatment (Required)</td>
+                                                                            <td>
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i>
+                                                                                <br />
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Taxable Supply (Registered)')">Taxable Supply (Registered) | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Composition Taxable Supply')">Composition Taxable Supply</a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Taxable Supply to Unregistered Person')">Taxable Supply to Unregistered Person</a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Taxable Supply to Consumer')">Taxable Supply to Consumer</a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Export of Goods / Services (Zero-Rated Supply)')">Export of Goods / Services (Zero-Rated Supply)</a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Supply to SEZ Unit (Zero-Rated Supply)')">Supply to SEZ Unit (Zero-Rated Supply)</a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Deemed Export')">Deemed Export</a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('Supply by SEZ Developer')">Supply by SEZ Developer</a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>
+                                                                                GSTIN
+                                                                                <br />
+                                                                                (Required if GstTreatment is 'Taxable Supply (Registered)/ Composition Taxable Supply/
+                                                                                Supply to SEZ Unit (Zero-Rated Supply)/ Deemed Export/ Supply by SEZ Developer)
+                                                                            </td>
+                                                                            <td></td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>BusinessLegalName (Optional)</td>
+                                                                            <td>Business Legal Name</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>BusinessTradeName (Optional)</td>
+                                                                            <td>Business Trade Name</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>PanNo (Optional)</td>
+                                                                            <td></td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>PlaceOfSupply (Required)</td>
+                                                                            <td>
+                                                                                Place Of Supply<br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-4">
+                                                                                        <!-- text input -->
+                                                                                        <div class="form-group">
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="0">Select</option>
+                                                                                                    @foreach (var item in ViewBag.PlacesOfSupply)
+                                                                                                    {
+                                                                                                        if (item.CountryId == 2)
+                                                                                                        {
+                                                                                                            <option value="@item.State">@item.State</option>
+                                                                                                        }
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>TaxPreference (Required)</td>
+                                                                            <td>
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                @{
+                                                                                    foreach (var tag in ViewBag.Taxs)
+                                                                                    {
+                                                                                        if (tag.Tax == "Taxable" || tag.Tax == "Non-Taxable")
+                                                                                        {
+                                                                                            <a href="javascript:void(0)" onclick="copyTag('@tag.Tax')">@tag.Tax | </a>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>
+                                                                                TaxExemptionReason <br />
+                                                                                (Required if Tax Preference is Non-Taxable)
+                                                                            </td>
+                                                                            <td>
+                                                                                Tax Exemption Reason<br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />                                                                                
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-4">
+                                                                                        <!-- text input -->
+                                                                                        <div class="form-group">
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="0">Select</option>
+                                                                                                    @foreach (var item in ViewBag.TaxExemptions)
+                                                                                                    {
+                                                                                                        <option value="@item.Reason">@item.Reason</option>
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @*<tr>
+                                                                                <td>20</td>
+                                                                                <td>BillingCustomerName (Optional)</td>
+                                                                                <td>Name of the billing customer</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>21</td>
+                                                                                <td>BillingMobileNo (Optional)</td>
+                                                                                <td>Mobile No of the billing customer</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>22</td>
+                                                                                <td>BillingAltMobileNo (Optional)</td>
+                                                                                <td>Alternate Mobile No of the billing customer</td>
+                                                                            </tr>*@
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>BillingLandmark (Optional)</td>
+                                                                            <td>Landmark of the billing address</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>BillingCountryName (Optional)</td>
+                                                                            <td>
+                                                                                Name of country on the billing address<br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-4">
+                                                                                        <!-- text input -->
+                                                                                        <div class="form-group">
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="0">Select</option>
+                                                                                                    @foreach (var item in ViewBag.Countrys)
+                                                                                                    {
+                                                                                                        <option value="@item.Country">@item.Country</option>
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                @*@{
+                                                                                        foreach (var tag in ViewBag.Countrys)
+                                                                                        {
+                                                                                            <a href="javascript:void(0)" onclick="copyTag('@tag.Country')">@tag.Country | </a>
+                                                                                        }
+                                                                                    }*@
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>BillingStateName (Optional)</td>
+                                                                            <td>
+                                                                                Name of state on the billing address<br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-4">
+                                                                                        <!-- text input -->
+                                                                                        <div class="form-group">
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="0">Select</option>
+                                                                                                    @foreach (var item in ViewBag.States)
+                                                                                                    {
+                                                                                                        <option value="@item.State">@item.State</option>
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>BillingCityName (Optional)</td>
+                                                                            <td>
+                                                                                Name of city on billing address
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-4">
+                                                                                        <!-- text input -->
+                                                                                        <div class="form-group">
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="0">Select</option>
+                                                                                                    @foreach (var item in ViewBag.Citys)
+                                                                                                    {
+                                                                                                        <option value="@item.City">@item.City</option>
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>BillingZipcode (Optional)</td>
+                                                                            <td>Billing Pincode. Must be numeric value</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>BillingAddress (Optional)</td>
+                                                                            <td>Billing Address</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>IsShippingAddressDifferent (Optional)</td>
+                                                                            <td>
+                                                                                Shipping address is different from billing address? <br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <a href="javascript:void(0)" onclick="copyTag('True')">True | </a>
+                                                                                <a href="javascript:void(0)" onclick="copyTag('False')">False </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ShippingCustomerName (Optional)</td>
+                                                                            <td>Name of customer on the shipping address</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ShippingMobileNo (Optional)</td>
+                                                                            <td>Mobile No on the shipping address</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ShippingEmailId (Optional)</td>
+                                                                            <td>
+                                                                                Email Id on the Shipping address
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ShippingAltMobileNo (Optional)</td>
+                                                                            <td>Alternate Mobile No on the shipping address</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ShippingLandmark (Optional)</td>
+                                                                            <td>Landmark on the shipping address</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ShippingCountryName (Optional)</td>
+                                                                            <td>
+                                                                                Name of country on the shipping address<br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-4">
+                                                                                        <!-- text input -->
+                                                                                        <div class="form-group">
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" id="ddlAltCountry" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="0">Select</option>
+                                                                                                    @foreach (var item in ViewBag.Countrys)
+                                                                                                    {
+                                                                                                        <option value="@item.Country">@item.Country</option>
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                @*@{
+                                                                                        foreach (var tag in ViewBag.Countrys)
+                                                                                        {
+                                                                                            <a href="javascript:void(0)" onclick="copyTag('@tag.Country')">@tag.Country | </a>
+                                                                                        }
+                                                                                    }*@
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ShippingStateName (Optional)</td>
+                                                                            <td>
+                                                                                Name of state on the shipping address<br />
+                                                                                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-4">
+                                                                                        <!-- text input -->
+                                                                                        <div class="form-group">
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="0">Select</option>
+                                                                                                    @foreach (var item in ViewBag.States)
+                                                                                                    {
+                                                                                                        <option value="@item.State">@item.State</option>
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ShippingCityName (Optional)</td>
+                                                                            <td>
+                                                                                Name of city on the shipping address <br />
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-4">
+                                                                                        <!-- text input -->
+                                                                                        <div class="form-group">
+                                                                                            <div class="input-group">
+                                                                                                <select class="form-control select2" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                                    <option value="0">Select</option>
+                                                                                                    @foreach (var item in ViewBag.Citys)
+                                                                                                    {
+                                                                                                        <option value="@item.City">@item.City</option>
+                                                                                                    }
+                                                                                                </select>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ShippingZipcode (Optional)</td>
+                                                                            <td>Shipping Pincode. Must be numeric value</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                        <tr>
+                                                                            <td>@columnNumber</td>
+                                                                            <td>ShippingAddress (Optional)</td>
+                                                                            <td>Shipping Address</td>
+                                                                        </tr>
+                                                                        @{
+                                                                            columnNumber++;
+                                                                        }
+                                                                    </tbody>
+                                                                }
+                                                                else
+                                                                {
+                                                            <tbody class="table-body">
+                                                                @{
+                                                                    int columnNumber = 1;
+                                                                }
+                                                                @*<tr>
+            <td>1</td>
+            <td>Username (Optional) </td>
+            <td>Customer Code. If blank, it will be automatically generated</td>
+        </tr>*@
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>Name (Required)</td>
+                                                                    <td>
+                                                                        Name of the Customer
+                                                                    </td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>MobileNo (Required)</td>
+                                                                    <td>Mobile No of the Customer. Must be numeric value</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>EmailId (Optional)</td>
+                                                                    <td>
+                                                                        Email Id of the Customer
+                                                                    </td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>AltMobileNo (Optional)</td>
+                                                                    <td>
+                                                                        Alternative Mobile No of the Customer. Must be numeric value
+                                                                    </td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>BusinessName (Optional)</td>
+                                                                    <td>Business Name of the Customer</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>DOB (Optional)</td>
+                                                                    <td>
+                                                                        Date of Birth in format yyyy-mm-dd . Example: 1998-04-21
+                                                                    </td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>JoiningDate (Optional)</td>
+                                                                    <td>Joining Date in format yyyy-mm-dd . Example: 1998-04-21</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>UserGroup (Optional)</td>
+                                                                    <td>
+                                                                        Available Options
+                                                                        <div class="row">
+                                                                            <div class="col-sm-6">
+                                                                                <!-- text input -->
+                                                                                <div class="form-group">
+                                                                                    <div class="input-group">
+                                                                                        <select class="form-control select2" id="ddlCurrency" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                            <option value="0">Select</option>
+                                                                                            @foreach (var item in ViewBag.UserGroups)
+                                                                                            {
+                                                                                                <option value="@item.UserGroup">@item.UserGroup</option>
+                                                                                            }
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                <!--<tr>
+    <td>10</td>
+    <td>CurrencyName (Required) </td>
+    <td>
+        Name of the currency<br />
+        Available Options
+        <div class="row">
+            <div class="col-sm-3">-->
+                                                                <!-- text input -->
+                                                                <!--<div class="form-group">
+                        <div class="input-group">
+                            <select class="form-control select2" id="ddlCurrency" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                <option value="0">Select</option>
+                                @foreach (var item in ViewBag.Currencys)
+                                {
+                                    <option value="@item.CurrencyName">@item.CurrencyName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>-->
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>CreditLimit (Optional)</td>
+                                                                    <td>Must be numeric value</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>OpeningBalance (Optional)</td>
+                                                                    <td>Opening Balance. Must be numeric value</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>PaymentTerm (Optional)</td>
+                                                                    <td>
+                                                                        Available Options
+                                                                        <div class="row">
+                                                                            <div class="col-sm-6">
+                                                                                <!-- text input -->
+                                                                                <div class="form-group">
+                                                                                    <div class="input-group">
+                                                                                        <select class="form-control select2" id="ddlCurrency" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                            <option value="0">Select</option>
+                                                                                            @foreach (var item in ViewBag.PaymentTerms)
+                                                                                            {
+                                                                                                <option value="@item.PaymentTerm">@item.PaymentTerm</option>
+                                                                                            }
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                @*<tr>
+            <td>14</td>
+            <td>BranchNames (Required)</td>
+            <td>
+                Business Locations separated with '|' <br />
+                (Ex: Business Location A|Business Location B) <br />
+                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                @{
+                    foreach (var tag in ViewBag.Branchs)
+                    {
+                        <a href="javascript:void(0)" onclick="copyTag('@tag.Branch')">@tag.Branch | </a>
+                    }
+                }
+            </td>
+        </tr>*@
+                                                                @*<tr>
+            <td>14</td>
+            <td>GstTreatment (Required)</td>
+            <td>
+                Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i>
+                <br />
+                <a href="javascript:void(0)" onclick="copyTag('Taxable Supply (Registered)')">Taxable Supply (Registered) | </a>
+                <a href="javascript:void(0)" onclick="copyTag('Composition Taxable Supply')">Composition Taxable Supply</a>
+                <a href="javascript:void(0)" onclick="copyTag('Taxable Supply to Unregistered Person')">Taxable Supply to Unregistered Person</a>
+                <a href="javascript:void(0)" onclick="copyTag('Taxable Supply to Consumer')">Taxable Supply to Consumer</a>
+                <a href="javascript:void(0)" onclick="copyTag('Export of Goods / Services (Zero-Rated Supply)')">Export of Goods / Services (Zero-Rated Supply)</a>
+                <a href="javascript:void(0)" onclick="copyTag('Supply to SEZ Unit (Zero-Rated Supply)')">Supply to SEZ Unit (Zero-Rated Supply)</a>
+                <a href="javascript:void(0)" onclick="copyTag('Deemed Export')">Deemed Export</a>
+                <a href="javascript:void(0)" onclick="copyTag('Supply by SEZ Developer')">Supply by SEZ Developer</a>
+            </td>
+        </tr>*@
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>IsBusinessRegistered (Required)</td>
+                                                                    <td>
+                                                                        Is Business Registered?<br />
+                                                                        Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i>
+                                                                        <br />
+                                                                        <a href="javascript:void(0)" onclick="copyTag('True')">True</a>
+                                                                        <a href="javascript:void(0)" onclick="copyTag('False')">False</a>
+                                                                    </td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>
+                                                                        BusinessRegistrationName
+                                                                        <br />
+                                                                        (Required if IsBusinessRegistered is True)
+                                                                    </td>
+                                                                    <td>Business Registration Name</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>TaxPreference (Required)</td>
+                                                                    <td>
+                                                                        Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                        @{
+                                                                            foreach (var tag in ViewBag.Taxs)
+                                                                            {
+                                                                                if (tag.Tax == "Taxable" || tag.Tax == "Non-Taxable")
+                                                                                {
+                                                                                    <a href="javascript:void(0)" onclick="copyTag('@tag.Tax')">@tag.Tax | </a>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    </td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>
+                                                                        TaxExemptionReason <br />
+                                                                        (Required if Tax Preference is Non-Taxable)
+                                                                    </td>
+                                                                    <td>Tax Exemption Reason</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>BillingCustomerName (Optional)</td>
+                                                                    <td>Name of the billing customer</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>BillingMobileNo (Optional)</td>
+                                                                    <td>Mobile No of the billing customer</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>BillingAltMobileNo (Optional)</td>
+                                                                    <td>Alternate Mobile No of the billing customer</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>BillingLandmark (Optional)</td>
+                                                                    <td>Landmark of the billing customer</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>BillingCountryName (Optional)</td>
+                                                                    <td>
+                                                                        Name of the billing country<br />
+                                                                        Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                        <div class="row">
+                                                                            <div class="col-sm-6">
+                                                                                <!-- text input -->
+                                                                                <div class="form-group">
+                                                                                    <div class="input-group">
+                                                                                        <select class="form-control select2" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                            <option value="0">Select</option>
+                                                                                            @foreach (var item in ViewBag.Countrys)
+                                                                                            {
+                                                                                                <option value="@item.Country">@item.Country</option>
+                                                                                            }
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        @*@{
+                    foreach (var tag in ViewBag.Countrys)
+                    {
+                        <a href="javascript:void(0)" onclick="copyTag('@tag.Country')">@tag.Country | </a>
+                    }
+                }*@
+                                                                    </td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>BillingStateName (Optional)</td>
+                                                                    <td>
+                                                                        Name of the billing state<br />
+                                                                        Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                        <div class="row">
+                                                                            <div class="col-sm-6">
+                                                                                <!-- text input -->
+                                                                                <div class="form-group">
+                                                                                    <div class="input-group">
+                                                                                        <select class="form-control select2" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                            <option value="0">Select</option>
+                                                                                            @foreach (var item in ViewBag.States)
+                                                                                            {
+                                                                                                <option value="@item.State">@item.State</option>
+                                                                                            }
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>BillingCityName (Optional)</td>
+                                                                    <td>
+                                                                        Name of the billing city
+                                                                        (If not found new city with the given name will be created)
+                                                                    </td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>BillingZipcode (Optional)</td>
+                                                                    <td>Billing Pincode. Must be numeric value</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>BillingAddress (Optional)</td>
+                                                                    <td>Billing Address</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>ShippingCustomerName (Optional)</td>
+                                                                    <td>Name of the shipping customer</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>ShippingMobileNo (Optional)</td>
+                                                                    <td>Mobile No of the shipping customer</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>ShippingAltMobileNo (Optional)</td>
+                                                                    <td>Alternate Mobile No of the shipping customer</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>ShippingLandmark (Optional)</td>
+                                                                    <td>Landmark of the shipping customer</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>ShippingCountryName (Optional)</td>
+                                                                    <td>
+                                                                        Name of the shipping country<br />
+                                                                        Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                        <div class="row">
+                                                                            <div class="col-sm-6">
+                                                                                <!-- text input -->
+                                                                                <div class="form-group">
+                                                                                    <div class="input-group">
+                                                                                        <select class="form-control select2" id="ddlAltCountry" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                            <option value="0">Select</option>
+                                                                                            @foreach (var item in ViewBag.Countrys)
+                                                                                            {
+                                                                                                <option value="@item.Country">@item.Country</option>
+                                                                                            }
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        @*@{
+                    foreach (var tag in ViewBag.Countrys)
+                    {
+                        <a href="javascript:void(0)" onclick="copyTag('@tag.Country')">@tag.Country | </a>
+                    }
+                }*@
+                                                                    </td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>ShippingStateName (Optional)</td>
+                                                                    <td>
+                                                                        Name of the shipping State<br />
+                                                                        Available Options: <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any option to copy"></i><br />
+                                                                        <div class="row">
+                                                                            <div class="col-sm-6">
+                                                                                <!-- text input -->
+                                                                                <div class="form-group">
+                                                                                    <div class="input-group">
+                                                                                        <select class="form-control select2" onchange="if (this.selectedIndex) copyTag(this.value);">
+                                                                                            <option value="0">Select</option>
+                                                                                            @foreach (var item in ViewBag.States)
+                                                                                            {
+                                                                                                <option value="@item.State">@item.State</option>
+                                                                                            }
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>ShippingCityName (Optional)</td>
+                                                                    <td>
+                                                                        Name of the shipping City
+                                                                        (If not found new city with the given name will be created)
+                                                                    </td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>ShippingZipcode (Optional)</td>
+                                                                    <td>Shipping Pincode. Must be numeric value</td>
+                                                                </tr>
+                                                                @{
+                                                                    columnNumber++;
+                                                                }
+                                                                <tr>
+                                                                    <td>@columnNumber</td>
+                                                                    <td>ShippingAddress (Optional)</td>
+                                                                    <td>Shipping Address</td>
+                                                                </tr>
+                                                            </tbody>
+                                                                }
+
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- /.card-body -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="import-other-software" role="tabpanel" aria-labelledby="import-other-software-tab">
+                                <div class="row">
+                                    <div class="col-12 noPrint">
+                                        @*<div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                                                <h5><i class="fas fa-info"></i> Note:</h5>
+                                                This page has been enhanced for printing. Click the print button at the bottom of the invoice to test.
+                                            </div>*@
+                                        <div class="card  card-primary card-outline ">
+                                            @*<div class="card-header" data-card-widget="collapse" title="Collapse">
+                                                    <h3 class="card-title">Filter</h3>
+                                                    <div class="card-tools">
+                                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                                            <i class="fas fa-plus"></i>
+                                                        </button>
+
+                                                    </div>
+                                                </div>*@
+
+                                            <div class="card-body">
+                                                <div class="row">
+
+                                                    <div class="col-sm-3">
+                                                        <div class="form-group">
+                                                            <label>Choose File To Import </label>
+                                                            <div class="input-group">
+                                                                <input type="file" id="otherSoftwareExcelfile" accept=".xlsx, .xls, .csv" style="padding:0px" onchange="getExcelBase64()">
+                                                            </div>
+                                                            <small class="text-red font-weight-bold errorText" id="divOtherSoftwareExcel"></small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-footer">
+                                                <button type="submit" class="btn btn-primary float-right mt-2" onclick="InsertOtherSoftwareImport(1)">Submit</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 noPrint">
+                                        <div class="card  card-primary card-outline ">
+                                            <div class="card-body">
+                                                <table id="tblOtherSoftwareImport" class="table table-bordered table-striped">
+                                                    @Html.Partial("PartialOtherSoftwareImport")
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xls/0.7.4-a/xls.core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+<script src="~/Content/JQuery/Customer/Sales/Customer.js"></script>

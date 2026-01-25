@@ -1,0 +1,984 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add Supplier";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Supplier</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/supplier/index">Supplier List</a></li>
+                        <li class="breadcrumb-item active">Add Supplier</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/supplier/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+                            <div class="card card-outline">
+                                <div class="card-body">
+
+                                    <div class="row">
+                                        <!--<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">-->
+                                        <!-- text input -->
+                                        <!--<div class="form-group">
+                                                <label>Supplier Code <span class="danger">*</span></label>
+                                                <input type="text" class="form-control" id="txtUsername" placeholder="">
+                                                <small class="text-red font-weight-bold errorText" id="divUsername"></small>
+                                            </div>
+                                        </div>-->
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Name <span class="danger">*</span></label>
+                                                <input type="text" class="form-control divName_ctrl" id="txtName" placeholder="" onchange="setName()">
+                                                <small class="text-red font-weight-bold errorText" id="divName"></small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Mobile <span class="danger">*</span></label>
+                                                <div class="input-group">
+                                                    @*<span class="input-group-append">
+                                                            <a href="javascript:void(0)" class="btn bg-gray-light"> @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] </a>
+                                                        </span>*@
+                                                    <input type="text" min="0" class="form-control divMobileNo_ctrl" id="txtMobileNo" placeholder=""
+                                                           onkeypress="return onlyNumberKey(event)" maxlength="10" onchange="setMobile()">
+                                                </div>
+                                                <small class="text-red font-weight-bold errorText" id="divMobileNo"></small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Email</label>
+                                                <input type="text" class="form-control divEmailId_ctrl" id="txtEmailId" placeholder="" onchange="setEmail()">
+                                                <small class="text-red font-weight-bold errorText" id="divEmailId"></small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Alternative Mobile</label>
+                                                <div class="input-group">
+                                                    @*<span class="input-group-append">
+                                                            <a href="javascript:void(0)" class="btn bg-gray-light"> @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] </a>
+                                                        </span>*@
+                                                    <input type="text" min="0" class="form-control divAltMobileNo_ctrl" id="txtAltMobileNo" placeholder=""
+                                                           onkeypress="return onlyNumberKey(event)" maxlength="10" onchange="setAlternativeMobile()">
+                                                </div>
+                                                <small class="text-red font-weight-bold errorText" id="divAltMobileNo"></small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Business Name </label>
+                                                <input type="text" class="form-control" id="txtBusinessName" placeholder="">
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Date of Birth</label>
+                                                <div class="input-group date" id="_DOB" data-target-input="nearest">
+                                                    <input id="txtDOB" type="text" class="form-control datetimepicker-input" data-target="#_DOB" />
+                                                    <div class="input-group-append" data-target="#_DOB" data-toggle="datetimepicker">
+                                                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                    </div>
+                                                </div>
+                                                @*<input type="date" class="form-control" id="txtDOB">*@
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Joining Date</label>
+                                                <div class="input-group date" id="_JoiningDate" data-target-input="nearest">
+                                                    <input id="txtJoiningDate" type="text" class="form-control datetimepicker-input divJoiningDate_ctrl" data-target="#_JoiningDate" />
+                                                    <div class="input-group-append" data-target="#_JoiningDate" data-toggle="datetimepicker">
+                                                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                    </div>
+                                                </div>
+                                                <small class="text-red font-weight-bold errorText" id="divJoiningDate"></small>
+                                                @*<input type="date" class="form-control" id="txtJoiningDate" value="@DateTime.Now.ToString("yyyy-MM-dd")">*@
+                                            </div>
+                                            
+                                        </div>
+                                        @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                <div class="form-group">
+                                                    <label>Tax</label>
+                                                    <div class="input-group">
+                                                        <select class="form-control select2" id="ddlTax">
+                                                            @foreach (var item in ViewBag.Taxs)
+                                                            {
+                                                                <option value="@item.TaxId">@item.Tax</option>
+                                                            }
+                                                        </select>
+                                                        @if (ViewBag.TaxListPermission.IsAdd == true)
+                                                        {
+                                                            <span class="input-group-append">
+                                                                <a href="javascript:void(0)" class="btn btn-info" onclick="openTaxModal()">+ </a>
+                                                            </span>
+                                                        }
+
+                                                    </div>
+                                                </div>
+                                            </div>*@
+                                        @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                <div class="form-group">
+                                                    <label>Tax Number</label>
+                                                    <input type="text" class="form-control" id="txtTaxNo" placeholder="">
+                                                </div>
+                                            </div>*@
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Credit Limit</label>
+                                                <input type="number" class="form-control" id="txtCreditLimit" placeholder="" value="@ViewBag.BusinessSetting.CreditLimitForSupplier">
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Opening Balance</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="txtOpeningBalance" placeholder="">
+                                                    @*<select class="form-control select2" style="width: 50%;" id="ddlOpeningBalanceType">
+                                                            <option value="0" selected="selected">Select</option>
+                                                            <option value="1">To Collect</option>
+                                                            <option value="2">To Pay</option>
+                                                        </select>*@
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Payment Term</label>
+                                                <div class="input-group">
+                                                    <select class="form-control select2" id="ddlPaymentTerm">
+                                                        @{
+                                                            @*<option value="0" selected>Select </option>*@
+                                                            foreach (var item in ViewBag.PaymentTerms)
+                                                            {
+                                                                <option value="@item.PaymentTermId"> @item.PaymentTerm </option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                    @if (ViewBag.PaymentTermPermission.IsAdd == true)
+                                                    {
+                                                        <span class="input-group-append">
+                                                            <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#paymentTermModal">+ </a>
+                                                        </span>
+                                                    }
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @if (ViewBag.BusinessSetting.CountryId == 2)
+                                        {
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                <div class="form-group">
+                                                    <label>GST Treatment </label>
+                                                    <div class="input-group divGstTreatment_ctrl">
+                                                        <select class="form-control" id="ddlGstTreatment" onchange="toggleGstTreatment()">
+                                                            <option value="Taxable Supply (Registered)">Taxable Supply (Registered)</option>
+                                                            <option value="Composition Taxable Supply">Composition Taxable Supply</option>
+                                                            <option value="Taxable Supply to Unregistered Person">Taxable Supply to Unregistered Person</option>
+                                                            <option value="Export of Goods / Services (Zero-Rated Supply)">Export of Goods / Services (Zero-Rated Supply)</option>
+                                                            <option value="Supply to SEZ Unit (Zero-Rated Supply)">Supply to SEZ Unit (Zero-Rated Supply)</option>
+                                                            <option value="Deemed Export">Deemed Export</option>
+                                                            <option value="Supply by SEZ Developer">Supply by SEZ Developer</option>
+                                                        </select>
+                                                    </div>
+                                                    <small class="text-red font-weight-bold errorText" id="divGstTreatment"></small>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" style="display:none">
+                                                <div class="form-group">
+                                                    <label>Business Registration Name <span class="danger divSourceOfSupply">*</span></label>
+                                                    <div class="input-group divBusinessRegistrationName_ctrl">
+                                                        <select class="form-control select2" id="ddlBusinessRegistrationName">
+                                                            @foreach (var item in ViewBag.BusinessRegistrationNames)
+                                                            {
+                                                                <option value="@item.BusinessRegistrationNameId">@item.Name</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationName"></small>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divGst">
+                                                <div class="form-group">
+                                                    <label class="lblBusinessRegistrationName">@ViewBag.BusinessRegistrationNames[0].Name <span class="danger divSourceOfSupply">*</span></label>
+                                                    <input type="text" class="form-control divBusinessRegistrationNo_ctrl" id="txtBusinessRegistrationNo" placeholder="">
+                                                    <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationNo"></small>
+                                                </div>
+                                            </div>
+                                            @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divGst">
+                                                    <div class="form-group">
+                                                        <label>Business Legal Name</label>
+                                                        <input type="text" class="form-control" id="txtBusinessLegalName" placeholder="">
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divGst">
+                                                    <div class="form-group">
+                                                        <label>Business Trade Name</label>
+                                                        <input type="text" class="form-control" id="txtBusinessTradeName" placeholder="">
+                                                    </div>
+                                                </div>*@
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                <div class="form-group">
+                                                    <label>PAN</label>
+                                                    <input type="text" class="form-control" id="txtPanNo" placeholder="">
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            if (ViewBag.BusinessRegistrationNames != null && ViewBag.BusinessRegistrationNames.Count > 0)
+                                            {
+                                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                    <br>
+                                                    <div class="form-group">
+                                                        <div class="checkbox icheck-turquoise">
+                                                            <input type="checkbox" id="chkIsBusinessRegistered" onchange="toggleBusinessRegistered()">
+                                                            <label for="chkIsBusinessRegistered" class="mt-2">
+                                                                Is Business Registered?
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                if (ViewBag.BusinessRegistrationNames.Count == 1)
+                                                {
+                                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" style="display:none">
+                                                        <div class="form-group">
+                                                            <label>Business Registration Name <span class="danger">*</span></label>
+                                                            <div class="input-group divBusinessRegistrationName_ctrl">
+                                                                <select class="form-control select2" id="ddlBusinessRegistrationName">
+                                                                    @foreach (var item in ViewBag.BusinessRegistrationNames)
+                                                                    {
+                                                                        <option value="@item.BusinessRegistrationNameId">@item.Name</option>
+                                                                    }
+                                                                </select>
+                                                            </div>
+                                                            <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationName"></small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divBusinessRegistered" style="display:none">
+                                                        <div class="form-group">
+                                                            <label>@ViewBag.BusinessRegistrationNames[0].Name <span class="danger">*</span></label>
+                                                            <input type="text" class="form-control divBusinessRegistrationNo_ctrl" id="txtBusinessRegistrationNo" placeholder="">
+                                                            <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationNo"></small>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divBusinessRegistered" style="display:none">
+                                                        <div class="form-group">
+                                                            <label>Business Registration Name <span class="danger">*</span></label>
+                                                            <div class="input-group divBusinessRegistrationName_ctrl">
+                                                                <select class="form-control select2" id="ddlBusinessRegistrationName" onchange="setBusinessRegistrationName()">
+                                                                    @foreach (var item in ViewBag.BusinessRegistrationNames)
+                                                                    {
+                                                                        <option value="@item.BusinessRegistrationNameId">@item.Name</option>
+                                                                    }
+                                                                </select>
+                                                            </div>
+                                                            <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationName"></small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divBusinessRegistered" style="display:none">
+                                                        <div class="form-group">
+                                                            <label class="lblBusinessRegistrationName">@ViewBag.BusinessRegistrationNames[0].Name <span class="danger">*</span></label>
+                                                            <input type="text" class="form-control divBusinessRegistrationNo_ctrl" id="txtBusinessRegistrationNo" placeholder="">
+                                                            <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationNo"></small>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+
+                                        }
+
+                                        @if (ViewBag.BusinessSetting.CountryId == 2)
+                                        {
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divSourceOfSupply">
+                                                <!-- text input -->
+                                                <div class="form-group">
+                                                    <label>Source Of Supply <span class="danger">*</span></label>
+                                                    <div class="input-group divSourceOfSupply_ctrl">
+                                                        <select class="form-control select2" id="ddlSourceOfSupply">
+                                                            <option value="0">Select</option>
+                                                            @foreach (var item in ViewBag.SourcesOfSupply)
+                                                            {
+                                                                if (ViewBag.MainBranch.StateId == item.StateId)
+                                                                {
+                                                                    <option value="@item.StateId" selected>@item.State</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@item.StateId">@item.State</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <small class="text-red font-weight-bold errorText" id="divSourceOfSupply"></small>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divTaxPreference">
+                                                <div class="form-group">
+                                                    <label>Tax Preference</label>
+                                                    <div class="input-group">
+                                                        <select class="form-control select2" id="ddlTaxPreference" onchange="toggleTaxPreference()">
+                                                            @foreach (var item in ViewBag.Taxs)
+                                                            {
+                                                                if (item.Tax == "Taxable" || item.Tax == "Non-Taxable")
+                                                                {
+                                                                    <option value="@item.TaxId">@item.Tax</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>*@
+                                        @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divNonTaxable" style="display:none">
+                                            
+                                            <div class="form-group">
+                                                <label>Tax Exemption</label>
+                                                <div class="input-group">
+                                                    <select class="form-control select2" id="ddlTaxExemption">
+                                                        <option value="0">Select</option>
+                                                        @foreach (var item in ViewBag.TaxExemptions)
+                                                        {
+                                                            <option value="@item.TaxExemptionId">@item.Reason</option>
+                                                        }
+                                                    </select>
+                                                    @if (ViewBag.TaxExemptionPermission.IsAdd == true)
+                                                    {
+                                                        <span class="input-group-append">
+                                                            <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#taxExemptionModal">+ </a>
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>*@
+                                        @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                <div class="form-group">
+                                                    <label>Pay Term</label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control" id="txtPayTermNo" placeholder="" style="width:50%">
+                                                        <select class="form-control select2" style="width: 50%;" id="ddlPayTerm">
+                                                            <option value="0" selected="selected">Select</option>
+                                                            <option value="1">Days</option>
+                                                            <option value="2">Months</option>
+                                                            <option value="3">Years</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>*@
+                                        @if (ViewBag.CurrencyPermission.IsView == true)
+                                        {
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                <div class="form-group">
+                                                    <label>Currency</label>
+                                                    <div class="input-group">
+                                                        <select class="form-control select2" id="ddlUserCurrency">
+                                                            @*<option value="0">Select</option>*@
+                                                            @foreach (var item in ViewBag.Currencys)
+                                                            {
+                                                                if (item.IsMain == true)
+                                                                {
+                                                                    <option selected value="@item.CurrencyId">@item.CurrencyName (@item.CurrencyCode)</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@item.CurrencyId">@item.CurrencyName (@item.CurrencyCode)</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                        @if (ViewBag.CurrencyPermission.IsAdd == true)
+                                                        {
+                                                            <span class="input-group-append">
+                                                                <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#currencyModal">+ </a>
+                                                            </span>
+                                                        }
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        @*@if (ViewBag.Branchs.Count > 1)
+                                            {
+                                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                    <div class="form-group">
+                                                        <label>Business Location <span class="danger">*</span></label>
+                                                        <select class="select2" multiple="multiple" data-placeholder="" style="width: 100%;" id="ddlBranch">
+                                                            <option value="0">Select</option>
+                                                            @foreach (var item in ViewBag.Branchs)
+                                                            {
+                                                                <option value="@item.BranchId">@item.Branch</option>
+                                                            }
+                                                        </select>
+                                                        <small class="text-red font-weight-bold errorText" id="divCity_M"></small>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 hidden">
+                                                    <div class="form-group">
+                                                        <label>Business Location <span class="danger">*</span></label>
+                                                        <select class="select2 " multiple="multiple" data-placeholder="" style="width: 100%;" id="ddlBranch">
+                                                            @foreach (var item in ViewBag.Branchs)
+                                                            {
+                                                                <option value="@item.BranchId" selected>@item.Branch</option>
+                                                            }
+                                                        </select>
+                                                        <small class="text-red font-weight-bold errorText" id="divCity_M"></small>
+                                                    </div>
+                                                </div>
+                                            }*@
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="card card-outline collapsed-card m-3">
+                            <div class="card-header  bg-info" data-card-widget="collapse" title="Expand/Collapse">
+                                <h3 class="card-title">More Info</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <h4>
+                                        <span>Billing Address</span>
+                                    </h4>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" style="display:none">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Name</label>
+                                            <input type="text" class="form-control" id="txtAddrName">
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" style="display:none">
+                                        <div class="form-group">
+                                            <label>Mobile </label>
+                                            <div class="input-group">
+                                                @*<span class="input-group-append">
+                        <a href="javascript:void(0)" class="btn bg-gray-light"> @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] </a>
+                    </span>*@
+                                                <input type="text" min="0" class="form-control divAddrMobileNo_ctrl" id="txtAddrMobileNo"
+                                                       onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divAddrMobileNo"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" style="display:none">
+                                        <div class="form-group">
+                                            <label>Alternate Mobile </label>
+                                            <div class="input-group">
+                                                @*<span class="input-group-append">
+                        <a href="javascript:void(0)" class="btn bg-gray-light"> @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] </a>
+                    </span>*@
+                                                <input type="text" min="0" class="form-control divAddrMobileNo2_ctrl" id="txtAddrMobileNo2"
+                                                       onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divAddrMobileNo2"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" style="display:none">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Email</label>
+                                            <input type="text" class="form-control" id="txtAddrEmailId">
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Landmark</label>
+                                            <input type="text" class="form-control" id="txtAddrLandmark">
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Country</label>
+                                            <div class="input-group divCountry_ctrl">
+                                                <select class="form-control select2" id="ddlCountry" onchange="fetchActiveStates('')">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.Countrys)
+                                                    {
+                                                        <option value="@item.CountryId">@item.Country</option>
+                                                    }
+                                                </select>
+                                                @*<span class="input-group-append">
+                        <a href="javascript:void(0)" class="btn btn-info" onclick="openCountryModal('ddlCountry')">+ </a>
+                    </span>*@
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divCountry"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" id="p_States_Dropdown">
+                                        @Html.Partial("PartialStatesDropdown")
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" id="p_Citys_Dropdown">
+                                        @Html.Partial("PartialCitysDropdown")
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Pincode</label>
+                                            <input type="text" class="form-control" id="txtZipcode" placeholder="">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Address</label>
+                                            <textarea class="form-control" id="txtAddress" rows="2" placeholder=""></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                <input type="checkbox" id="chkIsShippingAddressDifferent" onchange="toggleShippingAddress()" />
+                                                <label for="chkIsShippingAddressDifferent">Shipping address is different from billing address</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr />
+                                <div style="width:100%;display:none" id="divShippingAddress">
+                                    <div class="row">
+                                        <h4>
+                                            <span>Shipping Address</span>
+                                        </h4>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Name</label>
+                                                <input type="text" class="form-control" id="txtAddrAltName">
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <div class="form-group">
+                                                <label> Mobile </label>
+                                                <div class="input-group">
+                                                    @*<span class="input-group-append">
+                        <a href="javascript:void(0)" class="btn bg-gray-light"> @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] </a>
+                    </span>*@
+                                                    <input type="text" min="0" class="form-control divAddrAltMobileNo_ctrl" id="txtAddrAltMobileNo"
+                                                           onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                                </div>
+                                                <small class="text-red font-weight-bold errorText" id="divAddrAltMobileNo"></small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <div class="form-group">
+                                                <label>Alternate Mobile </label>
+                                                <div class="input-group">
+                                                    @*<span class="input-group-append">
+                        <a href="javascript:void(0)" class="btn bg-gray-light"> @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] </a>
+                    </span>*@
+                                                    <input type="text" min="0" class="form-control divAddrAltMobileNo2_ctrl" id="txtAddrAltMobileNo2"
+                                                           onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                                </div>
+                                                <small class="text-red font-weight-bold errorText" id="divAddrAltMobileNo2"></small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Email</label>
+                                                <input type="text" class="form-control" id="txtAddrAltEmailId">
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Landmark</label>
+                                                <input type="text" class="form-control" id="txtAddrAltLandmark">
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Country</label>
+                                                <div class="input-group divAltCountry_ctrl">
+                                                    <select class="form-control select2" id="ddlAltCountry" onchange="fetchActiveStates('alt')">
+                                                        <option value="0">Select</option>
+                                                        @foreach (var item in ViewBag.Countrys)
+                                                        {
+                                                            <option value="@item.CountryId">@item.Country</option>
+                                                        }
+                                                    </select>
+                                                    @*<span class="input-group-append">
+                        <a href="javascript:void(0)" class="btn btn-info" onclick="openCountryModal('ddlAltCountry')">+ </a>
+                    </span>*@
+                                                </div>
+                                                <small class="text-red font-weight-bold errorText" id="divAltCountry"></small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" id="p_Alt_States_Dropdown">
+                                            @Html.Partial("PartialAltStatesDropdown")
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" id="p_Alt_Citys_Dropdown">
+                                            @Html.Partial("PartialAltCitysDropdown")
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Pincode</label>
+                                                <input type="text" class="form-control" id="txtAltZipcode" placeholder="">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label> Address</label>
+                                                <textarea class="form-control" id="txtAltAddress" rows="2" placeholder=""></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="insert(1)"><i class="fas fa-save"></i> Save</button>
+                            <button id="btnSave_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="insert(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                            @*<a id="btnBack" href="/supplier/index" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade" id="cityModal">
+    <div class="modal-dialog modal-l">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add City</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    @*<div class="col-sm-6">
+                            <div class="form-group">
+                                <label>City Code <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                                <input type="text" class="form-control" id="txtCityCode" placeholder="">
+                                <small class="text-red font-weight-bold errorText" id="divCityCode_M"></small>
+                            </div>
+                        </div>*@
+                    @*<div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Country <span class="danger">*</span></label>
+                                <div class="input-group">
+                                    <select class="form-control select2" style="width: 100%;" id="ddlCityModalCountry" onchange="fetchCityModalActiveStates()">
+                                        <option value="0">Select</option>
+                                        @foreach (var item in ViewBag.Countrys)
+                                        {
+                                            <option value="@item.CountryId">@item.Country</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>*@
+                    @*<div class="col-sm-6" id="p_CityModalStates_Dropdown">
+                            <label>State <span class="danger">*</span></label>
+                            <select class="form-control select2" id="ddlCityModalState" style="width: 100%;">
+                            </select>
+                        </div>*@
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>City Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divCity_M_ctrl" id="txtCity" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divCity_M"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertCity()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Why should I create Supplier?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Parties are your Customers and Suppliers. To make bills for them, you need to add them as a party first.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">I have too many suppliers. How to add them easily?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    IMS provides the option to import your parties data from Excel. To start uploading your parties in bulk
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How to see Supplier Ledger/Statement?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    A supplier's ledger can be seen in two ways:
+                                    1. Select the party in the suppliers table and then click on the "Ledger(Statement)" tab given at top in the new screen that opens.
+                                    2. You can also open Supplier Statement by going to Reports from the side navigation menu and selecting "Supplier Statement (Ledger)". After that, you can select the party whose Supplier Statement you want to see.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How is Supplier balance calculated?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Supplier balance is the outstanding amount of money that you need to collect from or pay to the party. It is calculated based on the Opening Balance you entered while creating the supplier, the invoices(both sales and purchase) you made against the supplier and the payments you made to/received from the supplier.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How to send Invoice SMS to Supplier?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    For every Invoice that you create, an SMS is sent automatically to your party with a link to that Invoice. Incase you want to turn this feature off, you can do that by going to Reminder inside Settings and disabling the "Send billing SMS to Supplier" option. To manually send SMS to Party, open the Invoice and click on the SMS button.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How to create GST/Non-GST supplier? </h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    While creating a party, enter their GSTIN. Accordingly that party will be counted as GST/Non-GST Party. GSTIN along with Place of Supply of supplier will determine whether an Invoice will have IGST or CGST/SGST so make sure you fill this information.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is Opening Balance of supplier? </h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Opening balance is the amount of money that is deposited by the supplier to the branch. From which the purchase amount is deducted from opening balance with the consignee of the supplier.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="currencyModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Currency</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Currency <span class="danger">*</span></label>
+                            <div class="input-group">
+                                <select class="form-control select2" id="ddlCurrency" onchange="setCurrencyName()">
+                                    <option value="0">Select Currency</option>
+                                    @foreach (var item in ViewBag.AllCurrencys)
+                                    {
+                                        <option value="@item.CurrencyId">@item.CurrencyName (@item.CurrencyCode) </option>
+                                    }
+                                </select>
+                            </div>
+                            <small class="text-red font-weight-bold errorText" id="divCurrency"></small>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Exchange Rate</label>
+                            <div class="input-group">
+                                <span class="input-group-append">
+                                    <a href="javascript:void(0)" class="btn bg-gray">1 @ViewBag.Currency.CurrencyCode = </a>
+                                </span>
+                                <input type="number" class="form-control" id="txtExchangeRate" placeholder="Conversion Rate"
+                                       onkeypress="return onlyDecimalKey(event)">
+                                <span class="input-group-append">
+                                    <a href="javascript:void(0)" class="btn bg-gray " id="txtCurrency"> </a>
+                                </span>
+                            </div>
+                            <small class="text-red font-weight-bold errorText" id="divExchangeRate"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertCurrency()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="paymentTermModal">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Payment Term</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Term Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divPaymentTerm_M_ctrl" id="txtPaymentTerm_M" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divPaymentTerm_M"></small>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Days <span class="danger">*</span></label>
+                            <input type="text" class="form-control divDays_M_ctrl" id="txtDays_M" placeholder="" onkeypress="return onlyNumberKey(event)">
+                            <small class="text-red font-weight-bold errorText" id="divDays_M"></small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertPaymentTerm()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+      rel="stylesheet">
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+
+<script src="~/Content/JQuery/Customer/Purchase/Supplier.js"></script>

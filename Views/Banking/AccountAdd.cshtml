@@ -1,0 +1,322 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add Bank/ Credit Card";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Bank/ Credit Card</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/banking/index">Bank/ Credit Card List</a></li>
+                        <li class="breadcrumb-item active">Add Bank/ Credit Card</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/banking/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+
+                            <div class="row">
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Account Type <span class="danger">*</span></label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlAccountType" onchange="fetchActiveAccountSubTypes()">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.AccountTypes)
+                                                    {
+                                                        <option value="@item.AccountTypeId">@item.AccountType</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divAccountType"></small>
+                                        </div>
+                                    </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Account Type </label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlType" onchange="toggleAccountType()">
+                                                <option value="Bank">Bank</option>
+                                                <option value="Credit Card">Credit Card</option>
+                                            </select>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divAccountType"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Account Name <span class="danger">*</span> <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Any unique name to save the Bank/ Credit Card"></i></label>
+                                        <input type="text" class="form-control divAccountName_ctrl" id="txtAccountName" placeholder="">
+                                        <small class="text-red font-weight-bold errorText" id="divAccountName"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label id="lblAccountNumber">Account Number </label>
+                                        <input type="number" class="form-control" id="txtAccountNumber" placeholder="" onkeypress="return onlyNumberKey(event)">
+                                        <small class="text-red font-weight-bold errorText" id="divAccountNumber"></small>
+                                    </div>
+                                </div>
+
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" id="p_SubCategories_Dropdown">
+                                        <div class="form-group">
+                                            <label>Account Sub Type </label>
+                                            <div class="input-group">
+                                                <select tabindex="2" class="form-control select2" id="ddlAccountSubType">
+                                                </select>
+                                                @if (ViewBag.AccountSubTypePermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append hideButton">
+                                                        <a href="javascript:void(0)" class="btn btn-info" onclick="openAccountSubTypeModal()">+ </a>
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Bank Name</label>
+                                        <input type="text" class="form-control" id="txtBankName" placeholder="">
+                                        <small class="text-red font-weight-bold errorText" id="divBankName"></small>
+                                    </div>
+                                </div>
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Branch Name</label>
+                                            <input type="text" class="form-control" id="txtBranchName" placeholder="">
+                                            <small class="text-red font-weight-bold errorText" id="divBranchName"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Branch Code</label>
+                                            <input type="text" class="form-control" id="txtBranchCode" placeholder="">
+                                            <small class="text-red font-weight-bold errorText" id="divBranchCode"></small>
+                                        </div>
+                                    </div>*@
+                                @if (ViewBag.CurrencyPermission.IsView == true)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Currency</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlUserCurrency">
+                                                    @*<option value="0">Select</option>*@
+                                                    @foreach (var item in ViewBag.Currencys)
+                                                    {
+                                                        if (item.IsMain == true)
+                                                        {
+                                                            <option selected value="@item.CurrencyId">@item.CurrencyName (@item.CurrencyCode)</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.CurrencyId">@item.CurrencyName (@item.CurrencyCode)</option>
+                                                        }
+
+                                                    }
+                                                </select>
+                                                @if (ViewBag.CurrencyPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#currencyModal">+ </a>
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Opening Balance</label>
+                                        <input type="number" class="form-control" id="txtOpeningBalance" placeholder="" onkeypress="return onlyDecimalKey(event)">
+                                    </div>
+                                </div>*@
+                                <div class="col-sm-4">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Notes </label>
+                                        <textarea class="form-control" id="txtNotes" placeholder=""></textarea>
+                                        @*<input type="text" class="form-control" id="txtNotes" placeholder="">*@
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <label class="w-50"> Account Details </label>
+                                            <span class="input-group-append">
+                                                <a href="javascript:void(0)" class="btn btn-info btn-sm add-row"><i class="fas fa-plus"> Add</i></a>
+                                            </span>
+                                        </div>
+                                        <br />
+                                        <div id="addrow">
+
+                                        </div>
+
+                                        @*<div class="input-group mb-1">
+                                                <input type="text" class="form-control">
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn btn-danger btn-sm" id="delete-row"><i class="fas fa-minus pt-2"></i></a>
+                                                </span>
+                                            </div>*@
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="insert(1)"><i class="fas fa-save"></i> Save</button>
+                            <button id="btnSave_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="insert(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                            @*<a id="btnBack" href="/accounts/index" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="currencyModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Currency</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Currency <span class="danger">*</span></label>
+                            <div class="input-group">
+                                <select class="form-control select2" id="ddlCurrency" onchange="setCurrencyName()">
+                                    <option value="0">Select Currency</option>
+                                    @foreach (var item in ViewBag.AllCurrencys)
+                                    {
+                                        <option value="@item.CurrencyId">@item.CurrencyName (@item.CurrencyCode) </option>
+                                    }
+                                </select>
+                            </div>
+                            <small class="text-red font-weight-bold errorText" id="divCurrency"></small>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Exchange Rate</label>
+                            <div class="input-group">
+                                <span class="input-group-append">
+                                    <a href="javascript:void(0)" class="btn bg-gray">1 @ViewBag.Currency.CurrencyCode = </a>
+                                </span>
+                                <input type="number" class="form-control" id="txtExchangeRate" placeholder="Conversion Rate"
+                                       onkeypress="return onlyDecimalKey(event)">
+                                <span class="input-group-append">
+                                    <a href="javascript:void(0)" class="btn bg-gray " id="txtCurrency"> </a>
+                                </span>
+                            </div>
+                            <small class="text-red font-weight-bold errorText" id="divExchangeRate"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertCurrency()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is a bank account called?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    A checking account is a deposit account held at a financial institution that allows withdrawals and deposits. Also called demand accounts or transactional accounts, checking accounts are very liquid and can be accessed using checks, automated teller machines, and electronic debits, among other methods.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is bank account an asset or liability?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Is a bank account an asset or liability? A bank account may be an asset or a liability to the bank. For example, if the account incurs fees paid to the bank, it would be an asset, but if it is a savings account that accrues interest, then it would be a liability since the bank would owe this interest
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Banking/Banking.js"></script>

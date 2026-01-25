@@ -1,0 +1,225 @@
+<div class="refundAdd hide">
+    @if (ViewBag.OriginalPayment != null)
+    {
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="">
+                    <label>Original Payment Amount: </label>
+                    <span id="txtOriginalAmount" class="">
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@ViewBag.OriginalPayment.Amount
+                            }
+                            else
+                            {
+                                @ViewBag.OriginalPayment.Amount@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="">
+                    <label>Total Refunded: </label>
+                    <span id="txtTotalRefunded" class="text-warning">
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@ViewBag.OriginalPayment.TotalRefunded
+                            }
+                            else
+                            {
+                                @ViewBag.OriginalPayment.TotalRefunded@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="">
+                    <label>Refundable Amount: </label>
+                    <span id="txtRefundableAmount" class="text-success">
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@ViewBag.OriginalPayment.RefundableAmount
+                            }
+                            else
+                            {
+                                @ViewBag.OriginalPayment.RefundableAmount@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </span>
+                </div>
+            </div>
+        </div>
+    }
+
+    <hr />
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Refund Amount <span class="danger">*</span></label>
+                <input type="number" class="form-control divAmount_M_ctrl" id="txtRefundAmount" onkeypress="return onlyDecimalKey(event)" max="@(ViewBag.OriginalPayment != null ? ViewBag.OriginalPayment.RefundableAmount : 0)">
+                <small class="text-red font-weight-bold errorText" id="divAmount_M"></small>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Refund Date <span class="danger">*</span></label>
+                <div class="input-group date" id="_RefundDate" data-target-input="nearest">
+                    <input id="txtRefundDate" type="text" class="form-control datetimepicker-input divRefundDate_M_ctrl" data-target="#_RefundDate" />
+                    <div class="input-group-append" data-target="#_RefundDate" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                    </div>
+                </div>
+                <small class="text-red font-weight-bold errorText" id="divRefundDate_M"></small>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group divPaymentType_M_ctrl">
+                <label>Payment Method <span class="danger">*</span></label>
+                <select class="form-control select2" style="width: 100%;" id="ddlRefundPaymentType">
+                    <option value="0">Select</option>
+                    @{
+                        if (ViewBag.PaymentTypes != null)
+                        {
+                            foreach (var item in ViewBag.PaymentTypes)
+                            {
+                                <option value="@item.PaymentTypeId">@item.PaymentType</option>
+                            }
+                        }
+                    }
+                </select>
+                <small class="text-red font-weight-bold errorText" id="divPaymentType_M"></small>
+            </div>
+        </div>
+        <div class="col-sm-4 divLAccount @(ViewBag.IsAccountsAddon == true ? "" : "hidden")">
+            <div class="form-group">
+                <label>Refund From</label>
+                <div class="input-group divAccount_M_ctrl">
+                    <select class="form-control select2" id="ddlRefundAccount">
+                        @{
+                            if (ViewBag.Accounts != null)
+                            {
+                                foreach (var item in ViewBag.Accounts)
+                                {
+                                    <option value="@item.AccountId">@item.DisplayAs</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+                <small class="text-red font-weight-bold errorText" id="divAccount_M"></small>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Attach Document</label>
+                <div class="custom-file">
+                    <input type="file" id="RefundAttachDocument" class="custom-file-input" accept='image/*' onchange="getBookingRefundAttachDocumentBase64()">
+                    <label class="custom-file-label" for="RefundAttachDocument">Choose file</label>
+                </div>
+                <img id="blahBookingRefundAttachDocument" alt="" height="60" style="padding-top:10px;">
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Reference No <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                <input type="text" class="form-control" id="txtRefundReferenceNo" />
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Refund Transaction ID</label>
+                <input type="text" class="form-control" id="txtRefundTransactionId" placeholder="Gateway refund transaction ID (if online refund)" />
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Payment Gateway</label>
+                <select class="form-control" id="ddlRefundGatewayType">
+                    <option value="">None</option>
+                    <option value="Razorpay">Razorpay</option>
+                    <option value="PayPal">PayPal</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea rows="2" class="form-control" id="txtRefundNotes" placeholder="Enter refund notes"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="refundList hide">
+    <div class="table-responsive">
+        <table id="tblBookingRefunds" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Refund Date</th>
+                    <th>Reference No</th>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                    <th>Added By</th>
+                    <th>Added On</th>
+                    @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsDelete)
+                    {
+                        <th>Action</th>
+                    }
+                </tr>
+            </thead>
+            <tbody id="booking_refund_table" class="rows">
+                @{
+                    if (ViewBag.BookingRefunds != null)
+                    {
+                        var index = 1;
+                        foreach (var item in ViewBag.BookingRefunds)
+                        {
+                            <tr id="tr_@(item.BookingPaymentId)">
+                                <td>@index</td>
+                                <td>
+                                    @item.PaymentDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                                </td>
+                                <td>@item.ReferenceNo</td>
+                                <td>
+                                    <span class="text-danger">
+                                        @{
+                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                            {
+                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@item.Amount
+                                            }
+                                            else
+                                            {
+                                                @item.Amount@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                            }
+                                        }
+                                    </span>
+                                </td>
+                                <td>@item.PaymentType</td>
+                                <td>@item.AddedByCode</td>
+                                <td>@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                                @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsDelete)
+                                {
+                                    <td>
+                                        <a href="javascript:void(0)" onclick="deleteBookingRefund(@item.BookingPaymentId)" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                                    </td>
+                                }
+                            </tr>
+                            index++;
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+

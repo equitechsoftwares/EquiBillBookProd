@@ -1,0 +1,1567 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Sales Quotation";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+<style>
+    .ui-datepicker {
+        z-index: 99999 !important
+    }
+
+    .ui-widget-content {
+        background: #fff !important;
+    }
+
+    .note-editor.note-frame {
+        border: none !important;
+    }
+
+    /* Fix autocomplete dropdown positioning within modals */
+    .ui-autocomplete {
+        z-index: 9999 !important;
+        max-height: 200px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+        .ui-autocomplete .ui-menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+            .ui-autocomplete .ui-menu-item:hover,
+            .ui-autocomplete .ui-menu-item.ui-state-focus {
+                background-color: #007bff;
+                color: white;
+            }
+
+            .ui-autocomplete .ui-menu-item:last-child {
+                border-bottom: none;
+            }
+
+    /* Ensure autocomplete appears above modal backdrop */
+    .modal-open .ui-autocomplete {
+        z-index: 9999 !important;
+    }
+</style>
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                @{
+                    <h1>Edit Sales Quotation</h1>
+                }
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        @{
+                            <li class="breadcrumb-item"><a href="/SalesQuotation/index">Sales Quotation List</a></li>
+                            <li class="breadcrumb-item active">Edit Sales Quotation</li>
+                        }
+
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                @{
+                    <a id="btnBack" href="/SalesQuotation/index" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>
+                }
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+                    <div class="card-body">
+                        <div class="card card-outline">
+                            @*<div class="card-header bg-info">
+                                    <h3 class="card-title">Customer Info</h3>
+                                </div>*@
+                            <!-- form start -->
+
+                            <div class="card-body">
+
+                                <div class="row">
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Sales Quotation#</label>
+                                            <input disabled type="text" class="form-control" id="txtInvoiceNo" value="@ViewBag.SalesQuotation.InvoiceNo">
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Business Location </label>
+                                            <div class="input-group divBranch_ctrl">
+                                                <select disabled class="form-control select2" style="width: 100%;" id="ddlBranch"
+                                                        onchange="fetchUpdatedItems(true)">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.Branchs)
+                                                    {
+                                                        if (ViewBag.SalesQuotation.BranchId == item.BranchId)
+                                                        {
+                                                            <option value="@item.BranchId" selected>@item.Branch</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.BranchId">@item.Branch</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Customer Name <span class="danger">*</span></label>
+                                            <div class="input-group divSupplier divCustomer_ctrl">
+                                                <select disabled class="form-control select2" id="ddlCustomer" onchange="FetchUserCurrency()">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.Users)
+                                                    {
+                                                        if (ViewBag.SalesQuotation.CustomerId == item.UserId)
+                                                        {
+                                                            <option value="@item.UserId" selected>
+                                                                @item.Name
+                                                                @if (item.MobileNo != null && item.MobileNo != "")
+                                                                {
+                                                                    <span>- @item.MobileNo</span>
+                                                                }
+                                                            </option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.UserId">
+                                                                @item.Name
+                                                                @if (item.MobileNo != null && item.MobileNo != "")
+                                                                {
+                                                                    <span>- @item.MobileNo</span>
+                                                                }
+                                                            </option>
+                                                        }
+                                                    }
+                                                </select>
+                                                @*@if (ViewBag.CustomersPermission.IsAdd == true)
+                                                    {
+                                                        <span class="input-group-append">
+                                                            <a href="javascript:void(0)" class="btn btn-info" onclick="openCustomerModal()">+ </a>
+                                                        </span>
+                                                    }*@
+                                            </div>
+                                            <input type="text" hidden class="form-control" id="txtTaxExemptionId" value="@ViewBag.SalesQuotation.TaxExemptionId">
+                                            <small class="text-red font-weight-bold" id="divCustomer"></small>
+                                        </div>
+                                    </div>
+                                    @if (ViewBag.BusinessSetting.CountryId == 2)
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divPlaceOfSupply">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Place Of Supply <span class="danger">*</span></label>
+                                                <div class="input-group divPlaceOfSupply_ctrl">
+                                                    <select disabled class="form-control select2" id="ddlPlaceOfSupply" onchange="fetchUpdatedItems()">
+                                                        <option value="0">Select</option>
+                                                        @foreach (var item in ViewBag.PlacesOfSupply)
+                                                        {
+                                                            if (ViewBag.SalesQuotation.PlaceOfSupplyId == item.StateId)
+                                                            {
+                                                                <option value="@item.StateId" selected>@item.State</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.StateId">@item.State</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <small class="text-red font-weight-bold errorText" id="divPlaceOfSupply"></small>
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Sales Quotation Date <span class="danger">*</span></label>
+                                            <div class="input-group date" id="_SalesQuotationDate" data-target-input="nearest">
+                                                <input id="txtSalesQuotationDate" value="@ViewBag.SalesQuotation.SalesQuotationDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])" type="text" class="form-control datetimepicker-input divSalesQuotationDate_ctrl" data-target="#_SalesQuotationDate" />
+                                                <div class="input-group-append" data-target="#_SalesQuotationDate" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                            @*<input type="datetime-local" class="form-control" id="txtSalesQuotationDate" value="@ViewBag.SalesQuotation.SalesQuotationDate.ToString("yyyy-MM-ddTHH:mm")">*@
+                                            <small class="text-red font-weight-bold errorText" id="divSalesQuotationDate"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group divStatus_ctrl">
+                                            <label>Status </label>
+                                            <select class="form-control" id="ddlStatus" disabled>
+                                                @{
+                                                    if (ViewBag.SalesQuotation.Status == "Draft")
+                                                    {
+                                                        <option value="Draft" selected>Draft</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="Draft">Draft</option>
+                                                    }
+                                                    if (ViewBag.SalesQuotation.Status == "Sent")
+                                                    {
+                                                        <option value="Sent" selected>Sent</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="Sent">Sent</option>
+                                                    }
+                                                    if (ViewBag.SalesQuotation.Status == "Accepted")
+                                                    {
+                                                        <option value="Accepted" selected>Accepted</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="Accepted">Accepted</option>
+                                                    }
+                                                    if (ViewBag.SalesQuotation.Status == "Declined")
+                                                    {
+                                                        <option value="Declined" selected>Declined</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="Declined">Declined</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divStatus"></small>
+                                        </div>
+                                    </div>
+                                    @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <div class="form-group">
+                                                <label>Pay Term <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Payments to be paid for purchases/sales within the given time period.<br/><small class='text-muted'>All upcoming or due payments will be displayed in dashboard - Payment Due section</small>"></i></label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="txtPayTermNo" value="@ViewBag.SalesQuotation.PayTermNo">
+                                                    <select class="form-control" style="width: 0;" id="ddlPayTerm">
+                                                        @if (ViewBag.SalesQuotation.PayTerm == 0)
+                                                        {
+                                                            <option value="0" selected="selected">Select</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="0">Select</option>
+                                                        }
+                                                        @if (ViewBag.SalesQuotation.PayTerm == 1)
+                                                        {
+                                                            <option value="1" selected>Days</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="1">Days</option>
+                                                        }
+                                                        @if (ViewBag.SalesQuotation.PayTerm == 2)
+                                                        {
+                                                            <option value="2" selected>Months</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="2">Months</option>
+                                                        }
+                                                        @if (ViewBag.SalesQuotation.PayTerm == 3)
+                                                        {
+                                                            <option value="3" selected>Years</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="3">Years</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>*@
+                                    @if (ViewBag.ItemSetting.EnableSellingPriceGroup == true)
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <div class="form-group">
+                                                <div class="input-group">
+                                                    <label>Selling Price Group</label>
+                                                    <select disabled class="form-control select2" style="width: 100%;" id="ddlSellingPriceGroup" onchange="changeSellingPriceGroup()">
+                                                        <option value="0">Default Selling Price</option>
+                                                        @foreach (var item in ViewBag.SellingPriceGroups)
+                                                        {
+                                                            if (ViewBag.SalesQuotation.SellingPriceGroupId == item.SellingPriceGroupId)
+                                                            {
+                                                                <option value="@item.SellingPriceGroupId" selected>@item.SellingPriceGroup</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.SellingPriceGroupId">@item.SellingPriceGroup</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    @*@if (ViewBag.SaleSetting.AllowOnlinePayment == true || ViewBag.SalesQuotation.OnlinePaymentSettingsId != 0)
+                                        {
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                <div class="form-group">
+                                                    <label>Online Payment Service</label>
+                                                    <div class="input-group">
+                                                        <select class="form-control" id="ddlOnlinePaymentSettings" style="width:100%">
+                                                            <option value="0">Disable online payment</option>
+                                                            @foreach (var item in ViewBag.OnlinePaymentSettings)
+                                                            {
+                                                                if (ViewBag.SalesQuotation.OnlinePaymentSettingsId == item.OnlinePaymentSettingsId)
+                                                                {
+                                                                    <option selected value="@item.OnlinePaymentSettingsId">@(item.OnlinePaymentService == 1 ? "Paypal" : "Razorpay")</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@item.OnlinePaymentSettingsId">@(item.OnlinePaymentService == 1 ? "Paypal" : "Razorpay")</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }*@
+                                    @*@if (ViewBag.SaleSetting.EnableSms)
+                                        {
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                <div class="form-group">
+                                                    <label>Send SMS </label>
+                                                    <div class="input-group">
+                                                        <select class="form-control" style="width: 100%;" id="ddlSmsSettings">
+                                                            <option value="0">Dont Send</option>
+                                                            @foreach (var item in ViewBag.SmsSettings)
+                                                            {
+                                                                if (ViewBag.SalesQuotation.SmsSettingsId == item.SmsSettingsId)
+                                                                {
+                                                                    <option selected value="@item.SmsSettingsId">@item.SaveAs</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@item.SmsSettingsId">@item.SaveAs</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (ViewBag.SaleSetting.EnableEmail)
+                                        {
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                <div class="form-group">
+                                                    <label>Send Email </label>
+                                                    <div class="input-group">
+                                                        <select class="form-control" style="width: 100%;" id="ddlEmailSettings">
+                                                            <option value="0">Dont Send</option>
+                                                            @foreach (var item in ViewBag.EmailSettings)
+                                                            {
+                                                                if (ViewBag.SalesQuotation.EmailSettingsId == item.EmailSettingsId)
+                                                                {
+                                                                    <option selected value="@item.EmailSettingsId">@item.SaveAs</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@item.EmailSettingsId">@item.SaveAs</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (ViewBag.SaleSetting.EnableWhatsapp)
+                                        {
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                <div class="form-group">
+                                                    <label>Send Whatsapp </label>
+                                                    <div class="input-group">
+                                                        <select class="form-control" style="width: 100%;" id="ddlWhatsappSettings">
+                                                            <option value="0">Dont Send</option>
+                                                            @foreach (var item in ViewBag.WhatsappSettings)
+                                                            {
+                                                                if (ViewBag.SalesQuotation.WhatsappSettingsId == item.WhatsappSettingsId)
+                                                                {
+                                                                    <option selected value="@item.WhatsappSettingsId">@item.SaveAs</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@item.WhatsappSettingsId">@item.SaveAs</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }*@
+
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.SalesQuotation.ExchangeRate == 1 ? "hidden":"") divCurrencyExchange">
+                                        <div class="form-group">
+                                            <label>Exchange Rate</label>
+                                            <div class="input-group">
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn bg-gray">1 <span class="lblCurrencySymbol">@ViewBag.SalesQuotation.CurrencySymbol</span> = </a>
+                                                </span>
+                                                <input type="number" class="form-control" id="txtExchangeRate" placeholder="Conversion Rate"
+                                                       onkeypress="return onlyDecimalKey(event)" onchange="updateCurrencyExchange()" value="@ViewBag.SalesQuotation.ExchangeRate">
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn bg-gray"><span class="lblDefaultCurrencySymbol">@ViewBag.SalesQuotation.DefaultCurrencySymbol</span> </a>
+                                                </span>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divExchangeRate"></small>
+                                        </div>
+                                    </div>
+
+                                    @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" style="display:@(ViewBag.BusinessSetting.CountryId == 2 ? "" : "none")">
+                                            <div class="form-group">
+                                                <div class="checkbox icheck-turquoise">
+                                                    @if (ViewBag.SalesQuotation.IsReverseCharge == 1)
+                                                    {
+                                                        <input type="checkbox" id="chkIsReverseCharge" checked onchange="toggleReverseCharge()">
+                                                    }
+                                                    else
+                                                    {
+                                                        <input type="checkbox" id="chkIsReverseCharge" onchange="toggleReverseCharge()">
+                                                    }
+                                                    <label for="chkIsReverseCharge" class="mt-2">
+                                                        This transaction is applicable for reverse charge
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>*@
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divPayTaxForExport"
+                                         style="display:@((ViewBag.SalesQuotation.GstTreatment == "Export of Goods / Services (Zero-Rated Supply)" || ViewBag.SalesQuotation.GstTreatment == "Supply to SEZ Unit (Zero-Rated Supply)" || ViewBag.SalesQuotation.GstTreatment == "Supply by SEZ Developer")? "" : "none")">
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                @if (ViewBag.SalesQuotation.PayTaxForExport == 1)
+                                                {
+                                                    <input type="checkbox" id="chkPayTaxForExport" onchange="togglePayTaxForExport()" checked />
+                                                }
+                                                else
+                                                {
+                                                    <input type="checkbox" id="chkPayTaxForExport" onchange="togglePayTaxForExport()" />
+                                                }
+                                                <label for="chkPayTaxForExport" class="mt-2">
+                                                    I will pay tax on this export since I do not possess a Letter of Undertaking or Bond
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divTaxCollectedFromCustomer" style="display:@(ViewBag.SalesQuotation.PayTaxForExport == 1 ? "" : "none")">
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                @if (ViewBag.SalesQuotation.TaxCollectedFromCustomer == 1)
+                                                {
+                                                    <input type="checkbox" id="chkTaxCollectedFromCustomer" checked />
+                                                }
+                                                else
+                                                {
+                                                    <input type="checkbox" id="chkTaxCollectedFromCustomer" />
+                                                }
+                                                <label for="chkTaxCollectedFromCustomer" class="mt-2">
+                                                    The buyer is responsible for paying the taxes
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Attach Document</label>
+                                            <div class="custom-file">
+                                                <input type="file" id="AttachDocument" class="custom-file-input" accept='image/*' onchange="getAttachDocumentBase64()">
+                                                <label class="custom-file-label" for="Logo">Choose file</label>
+                                            </div>
+                                            <img id="blahAttachDocument" src="@ViewBag.SalesQuotation.AttachDocument" alt="" height="60" style="padding-top:10px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+
+                        </div>
+
+                        <div class="card card-outline">
+                            <div class="card-header bg-info">
+                                <h3 class="card-title">Search Items</h3>
+                            </div>
+                            <!-- form start -->
+
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-12 mb-3">
+                                        <div class="input-group ">
+                                            @*<div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                </div>*@<div class="input-group-prepend">
+                                                <span class="btn btn-primary" onclick="openSaltSearchModal()"><i class="fas fa-search"></i>Salt</span>
+                                            </div>
+                                            <input type="text" class="form-control divtags_ctrl" placeholder="Sku Code/ Item Name" id="txttags">
+                                            @*@if (ViewBag.ItemsPermission.IsAdd == true)
+                                            {*@
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#ItemModal"><i class="fas fa-plus"></i> Item </a>
+                                                </span>
+                                            @*}*@
+
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divtags"></small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12 table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Item</th>
+                                                    @*<th class="@(ViewBag.ItemSetting.EnableLotNo == true ?"":"hidden")">Lot No</th>*@
+                                                    @*<th>Unit</th>*@
+                                                    @*<th>Avl Qty</th>*@
+                                                    <th>Qty</th>
+                                                    <th class="@(ViewBag.SaleSetting.EnableFreeQuantity == true ?"":"hidden")">Free Qty</th>
+                                                    <th>Unit Cost</th>
+                                                    <th>Discount</th>
+                                                    @*<th>Unit Price (Before Tax)</th>*@
+                                                    @*<th>Subtotal (Before Tax)</th>*@
+                                                    <th class="@(ViewBag.BusinessSetting.IsBusinessRegistered == 1
+                                                            && ViewBag.BusinessSetting.BusinessRegistrationType == "Composition" ? "hidden":"")">Tax</th>
+                                                    @*<th>Net Cost</th>*@
+                                                    <th>Line Total</th>
+                                                    @*<th class="@(ViewBag.ItemSetting.EnableWarranty == true ?"":"hidden")">Warranty</th>*@
+                                                    <th>
+                                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteFullCombo(@ViewBag.SalesQuotation.SalesQuotationId)">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                        <input type="hidden" id="hdnSalePriceIsMinSellingPrice" value="@(ViewBag.SaleSetting.SalePriceIsMinSellingPrice.ToString())" />
+                                                        <input type="hidden" id="hdnEnableLotNo" value="@(ViewBag.ItemSetting.EnableLotNo.ToString())" />
+                                                        <input type="hidden" id="hdnEnableItemExpiry" value="@(ViewBag.ItemSetting.EnableItemExpiry.ToString())" />
+                                                        <input type="hidden" id="hdnOnItemExpiry" value="@(ViewBag.ItemSetting.OnItemExpiry)" />
+                                                        <input type="hidden" id="hdnEnableFreeQuantity" value="@ViewBag.SaleSetting.EnableFreeQuantity.ToString()" />
+                                                        <input type="hidden" id="hdnEnableWarranty" value="@ViewBag.ItemSetting.EnableWarranty.ToString()" />
+                                                        <input type="hidden" id="hdnEnableRoundOff" value="@ViewBag.SaleSetting.EnableRoundOff.ToString()" />
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="divCombo">
+                                                @{
+                                                    var count = 100000000;
+                                                    foreach (var item in ViewBag.SalesQuotation.SalesQuotationDetails)
+                                                    {
+                                                        <tr id="divCombo@(count)">
+                                                            <td style="min-width: 100px; white-space: nowrap;">
+                                                                <input type="text" hidden class="form-control" id="txtItemId@(count)" value="@item.ItemId">
+                                                                <input type="text" hidden class="form-control" id="txtItemDetailsId@(count)" value="@item.ItemDetailsId">
+                                                                <input type="text" hidden class="form-control" id="txtSkuCode@(count)" value="@item.SKU">
+                                                                <input type="text" hidden class="form-control" id="txtSalesQuotationDetailsId@(count)" value="@item.SalesQuotationDetailsId">
+                                                                @if (item.ItemName.Length > 15)
+                                                                {
+                                                                    <span><b>Name:</b> @item.ItemName.Substring(0, 15)...</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span><b>Name:</b> @item.ItemName</span>
+                                                                }
+
+                                                                @if (item.VariationName != null)
+                                                                {
+                                                                    <br /><span> <b>Variation:</b> @item.VariationName</span>
+                                                                }
+                                                                <br /><span><b>SKU:</b> @item.SKU</span>
+                                                                <textarea style="display:@(item.EnableImei == true ? "block":"none")" type="text" class="form-control" id="txtOtherInfo@(count)" placeholder="IMEI, Serial number or other informations">@item.OtherInfo</textarea>
+                                                                @*<div class="form-group" style="display:@(ViewBag.BusinessSetting.CountryId == 2 ? "" : "none")">
+                                                                        <label style="margin-bottom:0;margin-top:0.5rem;">HSN Code <span class="danger">*</span></label>
+                                                                        <div class="input-group">
+                                                                            <select class="form-control select2" style="min-width: 160px;" id="ddlItemCode@(count)">
+                                                                                <option value="0">Select</option>
+                                                                                @foreach (var tax in ViewBag.ItemCodes)
+                                                                                {
+                                                                                    if (item.ItemType == "Product")
+                                                                                    {
+                                                                                        if (tax.ItemCodeType == "HSN")
+                                                                                        {
+                                                                                            if (item.ItemCodeId == tax.ItemCodeId)
+                                                                                            {
+                                                                                                <option selected value="@tax.ItemCodeId">@tax.Code</option>
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <option value="@tax.ItemCodeId">@tax.Code</option>
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        if (tax.ItemCodeType == "SAC")
+                                                                                        {
+                                                                                            if (item.ItemCodeId == tax.ItemCodeId)
+                                                                                            {
+                                                                                                <option selected value="@tax.ItemCodeId">@tax.Code</option>
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <option value="@tax.ItemCodeId">@tax.Code</option>
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>*@
+                                                                @*<div class="form-group" style="display:@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden")">
+                                                                        @if (item.LotId != 0)
+                                                                            {
+                                                                        <label style="margin-bottom:0;margin-top:0.5rem;">Lot No <span class="danger">*</span></label>
+                                                                        <div class="input-group">
+                                                                            <select class="form-control" id="ddlLot@(count)" onchange="fetchLotDetails(@(count))" style="min-width:100px">
+                                                                                <option selected value="@item.LotId-@item.LotType">Lot No: @item.LotNo</option>
+                                                                            </select>
+                                                                        </div>
+                                                                            }
+                                                                    </div>*@
+                                                                @*<div class="form-group" style="display:@(ViewBag.ItemSetting.EnableWarranty == true ? "" : "none")">
+                                                                    <label style="margin-bottom:0;margin-top:0.5rem;">Warranty <span class="danger">*</span></label>
+                                                                    <div class="input-group">
+                                                                        <select class="form-control" id="ddlWarranty@(count)">
+                                                                            <option value="0">None</option>
+                                                                            @foreach (var warranty in ViewBag.Warrantys)
+                                                                            {
+                                                                                if (item.WarrantyId == warranty.WarrantyId)
+                                                                                {
+                                                                                    <option selected value="@warranty.WarrantyId">@warranty.Warranty</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@warranty.WarrantyId">@warranty.Warranty</option>
+                                                                                }
+                                                                            }
+                                                                        </select>
+                                                                    </div>
+                                                                </div>*@
+                                                            </td>
+                                                            @*<td class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden")" style="min-width:120px;">
+                                                                @if (item.LotId != 0)
+                                                                {
+                                                                    <select style="display:none" class="form-control" id="ddlLot@(count)" onchange="fetchLotDetails(@(count))">
+                                                                        <option selected value="@item.LotId-@item.LotType">@item.LotNo</option>
+                                                                    </select>
+                                                                    <span><b>Lot No:</b> @item.LotNo</span>
+                                                                    if (item.LotManufacturingDate != null)
+                                                                    {
+                                                                        <br /> <span><b>Mfg Date:</b> @item.LotManufacturingDate.ToString(Request.Cookies["ItemSetting"].Value.Split('&')[0].Split('=')[1])</span>
+                                                                    }
+                                                                    if (item.LotExpiryDate != null)
+                                                                    {
+                                                                        <br /> <span><b>Exp Date:</b> @item.LotExpiryDate.ToString(Request.Cookies["ItemSetting"].Value.Split('&')[0].Split('=')[1])</span>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span style="text-align:center;display:block">-</span>
+                                                                }
+                                                            </td>*@
+                                                            @*<td style="min-width:100px">
+                                                                    <div class="input-group">
+                                                                        <span style="margin-left:auto;margin-right:auto;display:@(item.UnitId == 0 ? "block" : "none")">-</span>
+                                                                        <select class="form-control @(item.UnitId != 0 ? "" : "hidden")" id="ddlUnit@(count)" onchange="toggleUnit(@(count))">
+                                                                            @{
+                                                                                    if (item.QuaternaryUnitId != 0)
+                                                                                    {
+                                                                                        if (item.PriceAddedFor == 1)
+                                                                                        {
+                                                                                <option selected value="@(item.UnitId)-1-1">@item.UnitShortName </option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                <option value="@(item.UnitId)-1-1">@item.UnitShortName </option>
+                                                                                        }
+                                                                                        if (item.PriceAddedFor == 2)
+                                                                                        {
+                                                                                <option value="@(item.SecondaryUnitId)-2-2" selected>@item.SecondaryUnitShortName</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                <option value="@(item.SecondaryUnitId)-2-2">@item.SecondaryUnitShortName</option>
+                                                                                        }
+                                                                                        if (item.PriceAddedFor == 3)
+                                                                                        {
+                                                                                <option value="@(item.TertiaryUnitId)-3-3" selected>@item.TertiaryUnitShortName</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                <option value="@(item.TertiaryUnitId)-3-3">@item.TertiaryUnitShortName</option>
+                                                                                        }
+                                                                                        if (item.PriceAddedFor == 4)
+                                                                                        {
+                                                                                <option value="@(item.QuaternaryUnitId)-4-4" selected>@item.QuaternaryUnitShortName</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                <option value="@(item.QuaternaryUnitId)-4-4">@item.QuaternaryUnitShortName</option>
+                                                                                        }
+                                                                                    }
+                                                                                    else if (item.TertiaryUnitId != 0)
+                                                                                    {
+                                                                                        if (item.PriceAddedFor == 2)
+                                                                                        {
+                                                                                <option selected value="@(item.UnitId)-2-1">@item.UnitShortName </option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                <option value="@(item.UnitId)-2-1">@item.UnitShortName </option>
+                                                                                        }
+                                                                                        if (item.PriceAddedFor == 3)
+                                                                                        {
+                                                                                <option value="@(item.SecondaryUnitId)-3-2" selected>@item.SecondaryUnitShortName</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                <option value="@(item.SecondaryUnitId)-3-2">@item.SecondaryUnitShortName</option>
+                                                                                        }
+                                                                                        if (item.PriceAddedFor == 4)
+                                                                                        {
+                                                                                <option value="@(item.TertiaryUnitId)-4-3" selected>@item.TertiaryUnitShortName</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                <option value="@(item.TertiaryUnitId)-4-3">@item.TertiaryUnitShortName</option>
+                                                                                        }
+                                                                                    }
+                                                                                    else if (item.SecondaryUnitId != 0)
+                                                                                    {
+                                                                                        if (item.PriceAddedFor == 3)
+                                                                                        {
+                                                                                <option selected value="@(item.UnitId)-3-1">@item.UnitShortName </option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                <option value="@(item.UnitId)-3-1">@item.UnitShortName </option>
+                                                                                        }
+                                                                                        if (item.PriceAddedFor == 4)
+                                                                                        {
+                                                                                <option value="@(item.SecondaryUnitId)-4-2" selected>@item.SecondaryUnitShortName</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                <option value="@(item.SecondaryUnitId)-4-2">@item.SecondaryUnitShortName</option>
+                                                                                        }
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                <option selected value="@(item.UnitId)-4-1">@item.UnitShortName </option>
+                                                                                    }
+                                                                            }
+                                                                        </select>
+                                                                        <input type="text" hidden class="form-control" id="hdnPriceAddedFor@(count)" value="@item.PriceAddedFor">
+                                                                        <input type="text" hidden class="form-control" id="hdnUToSValue@(count)" value="@item.UToSValue">
+                                                                        <input type="text" hidden class="form-control" id="hdnSToTValue@(count)" value="@item.SToTValue">
+                                                                        <input type="text" hidden class="form-control" id="hdnTToQValue@(count)" value="@item.TToQValue">
+                                                                        <input type="hidden" class="form-control" id="hdnAllowDecimal@(count)" value="@(item.AllowDecimal.ToString())" />
+                                                                        <input type="hidden" class="form-control" id="hdnSecondaryUnitAllowDecimal@(count)" value="@item.SecondaryUnitAllowDecimal.ToString()" />
+                                                                        <input type="hidden" class="form-control" id="hdnTertiaryUnitAllowDecimal@(count)" value="@item.TertiaryUnitAllowDecimal.ToString()">
+                                                                        <input type="hidden" class="form-control" id="hdnQuaternaryUnitAllowDecimal@(count)" value="@item.QuaternaryUnitAllowDecimal.ToString()">
+                                                                        <input type="text" hidden class="form-control" id="hdnIsManageStock@(count)" value="@item.IsManageStock.ToString()">
+                                                                    </div>
+                                                                </td>*@
+                                                            @*<td class="divIsDebit">
+                                                                    <span style="text-align:center;display:@(item.IsManageStock == false ? "block" : "none")">-</span>
+                                                                    <input style="min-width: 100px;" type="number" disabled class="form-control @(item.IsManageStock == true ? "" : "hidden")" value="@item.QuantityRemaining" id="txtStockQuantity@(count)">
+                                                                    <input type="text" hidden class="form-control" id="hdnQuantityRemaining@(count)" value="@item.QuantityRemaining">
+                                                                </td>*@
+                                                            <td>
+                                                                <div class="input-group" style="min-width:150px">
+                                                                    <input type="number" class="form-control divQuantity@(count)_ctrl" value="@(String.Format("{0:0.##}",item.Quantity))" id="txtQuantity@(count)" onchange="updateQuantity(@count)">
+                                                                    <select disabled style="min-width:80px" class="form-control @(item.UnitId != 0 ? "" : "hidden")" id="ddlUnit@(count)" onchange="toggleUnit(@(count))">
+                                                                        @{
+                                                                            if (item.QuaternaryUnitId != 0)
+                                                                            {
+                                                                                if (item.PriceAddedFor == 1)
+                                                                                {
+                                                                                    <option selected value="@(item.UnitId)-1-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.UnitId)-1-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 2)
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-2-2" selected>@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-2-2">@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 3)
+                                                                                {
+                                                                                    <option value="@(item.TertiaryUnitId)-3-3" selected>@item.TertiaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.TertiaryUnitId)-3-3">@item.TertiaryUnitShortName</option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 4)
+                                                                                {
+                                                                                    <option value="@(item.QuaternaryUnitId)-4-4" selected>@item.QuaternaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.QuaternaryUnitId)-4-4">@item.QuaternaryUnitShortName</option>
+                                                                                }
+                                                                            }
+                                                                            else if (item.TertiaryUnitId != 0)
+                                                                            {
+                                                                                @*<option value="0" hidden>@item.UnitShortName</option>*@
+                                                                                if (item.PriceAddedFor == 2)
+                                                                                {
+                                                                                    <option selected value="@(item.UnitId)-2-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.UnitId)-2-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 3)
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-3-2" selected>@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-3-2">@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 4)
+                                                                                {
+                                                                                    <option value="@(item.TertiaryUnitId)-4-3" selected>@item.TertiaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.TertiaryUnitId)-4-3">@item.TertiaryUnitShortName</option>
+                                                                                }
+                                                                            }
+                                                                            else if (item.SecondaryUnitId != 0)
+                                                                            {
+                                                                                @*<option value="0" hidden>@item.UnitShortName</option>
+                                                                                    <option value="0" hidden>@item.UnitShortName</option>*@
+                                                                                if (item.PriceAddedFor == 3)
+                                                                                {
+                                                                                    <option selected value="@(item.UnitId)-3-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.UnitId)-3-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 4)
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-4-2" selected>@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-4-2">@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                @*<option value="0" hidden>@item.UnitShortName</option>
+                                                                                    <option value="0" hidden>@item.UnitShortName</option>
+                                                                                    <option value="0" hidden>@item.UnitShortName</option>*@
+                                                                                <option selected value="@(item.UnitId)-4-1">@item.UnitShortName </option>
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                    <input type="text" hidden class="form-control" id="hdnPriceAddedFor@(count)" value="@item.PriceAddedFor">
+                                                                    <input type="text" hidden class="form-control" id="hdnUToSValue@(count)" value="@item.UToSValue">
+                                                                    <input type="text" hidden class="form-control" id="hdnSToTValue@(count)" value="@item.SToTValue">
+                                                                    <input type="text" hidden class="form-control" id="hdnTToQValue@(count)" value="@item.TToQValue">
+                                                                    @*<input type="text" hidden class="form-control" id="hdnUnitCost@(count)" value="@item.UnitCost">*@
+                                                                    <input type="hidden" class="form-control" id="hdnAllowDecimal@(count)" value="@(item.AllowDecimal.ToString())" />
+                                                                    <input type="hidden" class="form-control" id="hdnSecondaryUnitAllowDecimal@(count)" value="@item.SecondaryUnitAllowDecimal.ToString()" />
+                                                                    <input type="hidden" class="form-control" id="hdnTertiaryUnitAllowDecimal@(count)" value="@item.TertiaryUnitAllowDecimal.ToString()">
+                                                                    <input type="hidden" class="form-control" id="hdnQuaternaryUnitAllowDecimal@(count)" value="@item.QuaternaryUnitAllowDecimal.ToString()">
+                                                                    <input type="text" hidden class="form-control" id="hdnIsManageStock@(count)" value="@item.IsManageStock.ToString()">
+                                                                </div>
+                                                                @*<div class="input-group">
+                                                                        <input type="number" class="form-control divQuantity@(count)_ctrl" value="@(String.Format("{0:0.##}",item.Quantity))" id="txtQuantity@(count)" onchange="updateQuantity(@count)">
+                                                                    </div>*@
+                                                                <small class="text-red font-weight-bold errorText" id="divQuantity@(count)"></small>
+                                                                @*@if (item.IsManageStock == true)
+                                                                {
+                                                                    <small class="text-success font-weight-bold" id="txtAvailableQty@(count)">Available Qty: @item.QuantityRemaining</small>
+                                                                }*@
+                                                                <input type="text" hidden class="form-control" id="hdnQuantityRemaining@(count)" value="@item.QuantityRemaining">
+                                                                <input type="text" hidden class="form-control" id="txtStockQuantity@(count)" value="@item.QuantityRemaining">
+                                                            </td>
+                                                            <td style="min-width:100px" class="@(ViewBag.SaleSetting.EnableFreeQuantity == true ?"":"hidden")">
+                                                                <div class="input-group">
+                                                                    <input type="number" class="form-control" value="@(String.Format("{0:0.##}",item.FreeQuantity))" id="txtFreeQuantity@(count)" onchange="updateQuantity(@count)">
+                                                                </div>
+                                                            </td>
+                                                            <td style="min-width:120px">
+                                                                <input type="number" @(ViewBag.SaleSetting.SalePriceIsMinSellingPrice == false ? "" : "disabled") class="form-control divUnitCost@(count)_ctrl" id="txtUnitCost@(count)" value="@(String.Format("{0:0.##}",item.UnitCost))" onchange="ChangeQtyAmount(@count)">
+                                                                <input type="hidden" id="hdnUnitCost@(count)" value="@(item.UnitCost)">
+                                                            </td>
+                                                            <td>
+                                                                <div class="input-group" style="min-width:150px">
+                                                                    <input @(ViewBag.SaleSetting.SalePriceIsMinSellingPrice == false ? "" : "disabled") type="number" class="form-control" id="txtDiscount@(count)" onchange="ChangeQtyAmount(@count)" value="@(String.Format("{0:0.##}",item.Discount))">
+                                                                    <select @(ViewBag.SaleSetting.SalePriceIsMinSellingPrice == false ? "" : "disabled") class="form-control" style="min-width: 100px;" id="ddlDiscountType@(count)" onchange="ChangeQtyAmount(@count)">
+                                                                        @if (item.DiscountType == "Fixed")
+                                                                        {
+                                                                            <option selected value="Fixed">Fixed</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="Fixed">Fixed</option>
+                                                                        }
+                                                                        @if (item.DiscountType == "Percentage")
+                                                                        {
+                                                                            <option selected value="Percentage">Percentage</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="Percentage">Percentage</option>
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                                <input type="text" hidden class="form-control" id="hdnExtraDiscounts@(count)" value="@item.ExtraDiscount">
+                                                            </td>
+                                                            <td style="min-width:100px;display:none">
+                                                                <input type="number" @(ViewBag.SaleSetting.SalePriceIsMinSellingPrice == false ? "" : "disabled") class="form-control" value="@(String.Format("{0:0.##}",item.PriceExcTax))" id="txtPurchaseExcTax@(count)" onchange="ChangePriceBefTax(@count)" />
+                                                            </td>
+                                                            <td style="min-width:100px;display:none">
+                                                                <input type="number" disabled class="form-control" value="@(String.Format("{0:0.##}",item.AmountExcTax))" id="txtAmountExcTax@(count)" />
+                                                            </td>
+                                                            <td class="@(ViewBag.BusinessSetting.IsBusinessRegistered == 1
+                                                            && ViewBag.BusinessSetting.BusinessRegistrationType == "Composition" ? "hidden":"")">
+                                                                <div class="input-group" style="min-width:160px">
+                                                                    @*<input type="text" disabled class="form-control" id="txtTax@(count)" value="@item.Tax (@item.TaxPercent)%">*@
+                                                                    <select class="form-control select2 ddlTax" style="min-width: 80px;" id="ddlTax@(count)" onchange="ChangePurAmount(@count)">
+                                                                        @*<option value="0">None</option>*@
+                                                                        @foreach (var tax in ViewBag.Taxs)
+                                                                        {
+                                                                            if (tax.Tax != "Taxable")
+                                                                            {
+                                                                                if (ViewBag.BusinessSetting.CountryId == 2)
+                                                                                {
+                                                                                    if (ViewBag.SalesQuotation.BranchStateId == ViewBag.SalesQuotation.PlaceOfSupplyId)
+                                                                                    {
+                                                                                        if (tax.TaxTypeId != 3)
+                                                                                        {
+                                                                                            if (item.TaxId == tax.TaxId)
+                                                                                            {
+                                                                                                <option selected value="@tax.TaxId-@tax.TaxPercent">@tax.Tax</option>
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <option value="@tax.TaxId-@tax.TaxPercent">@tax.Tax</option>
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        if (tax.CanDelete == false || tax.TaxTypeId == 3 || tax.TaxTypeId == 5)
+                                                                                        {
+                                                                                            if (item.TaxId == tax.TaxId)
+                                                                                            {
+                                                                                                <option selected value="@tax.TaxId-@tax.TaxPercent">@tax.Tax</option>
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <option value="@tax.TaxId-@tax.TaxPercent">@tax.Tax</option>
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    if (item.TaxId == tax.TaxId)
+                                                                                    {
+                                                                                        <option selected value="@tax.TaxId-@tax.TaxPercent">@tax.Tax</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@tax.TaxId-@tax.TaxPercent">@tax.Tax</option>
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                    <input type="number" style="min-width:80px" disabled class="form-control" id="txtTotalTaxAmount@(count)" value="@(item.TotalTaxAmount)">
+                                                                    <input hidden type="number" style="min-width:80px" class="form-control" id="txtTaxAmount@(count)" value="@(item.PriceIncTax - item.PriceExcTax)">
+                                                                    <input type="text" hidden class="form-control" id="txtTaxId@(count)" value="@item.TaxId">
+                                                                    <div id="divTaxExemption@(count)" class="form-group" style="display:@(item.TaxExemptionId != 0 ? "" : "none")">
+                                                                        <label style="margin-bottom:0;margin-top:0.5rem;">Exemption Reason <span class="danger">*</span></label>
+                                                                        <div class="input-group">
+                                                                            <select class="form-control select2 ddlTax" id="ddlTax@(count)" onchange="ChangePurAmount(@count)">
+                                                                                <option value="0">None</option>
+                                                                                @foreach (var tax in ViewBag.TaxExemptions)
+                                                                                {
+                                                                                    if (item.TaxExemptionId == tax.TaxExemptionId)
+                                                                                    {
+                                                                                        <option selected value="@tax.TaxExemptionId">@tax.Reason</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@tax.TaxExemptionId">@tax.Reason</option>
+                                                                                    }
+                                                                                }
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                @*<small class="text-bold"><a href="javascript:void(0)" onclick="openTaxModal(@count)"><i class="fas fa-plus"></i> Add New</a></small>*@
+                                                            </td>
+                                                            <td style="display:none">
+                                                                <input type="number" class="form-control" id="txtPurchaseIncTax@(count)" value="@item.PriceIncTax" onchange="updateNetCost(@count)">
+                                                                <input type="hidden" value="@(String.Format("{0:0.##}",item.PriceIncTax))" id="hdnPurchaseIncTax@(count)" />
+                                                            </td>
+                                                            <td style="min-width:120px">
+                                                                <input type="number" disabled class="form-control" id="txtAmountIncTax@(count)" value="@(String.Format("{0:0.##}",item.AmountIncTax))">
+                                                                <input type="hidden" id="hdnAmountIncTax@(count)" value="@item.AmountIncTax">
+                                                            </td>
+                                                            @*<td style="min-width:120px" class="@(ViewBag.ItemSetting.EnableWarranty == true ? "" : "hidden")">
+                                                                    <div class="input-group">
+                                                                        <select class="form-control" id="ddlWarranty@(count)">
+                                                                            <option value="0">None</option>
+                                                                            @foreach (var warranty in ViewBag.Warrantys)
+                                                                                {
+                                                                                    if (item.WarrantyId == warranty.WarrantyId)
+                                                                                    {
+                                                                            <option selected value="@warranty.WarrantyId">@warranty.Warranty</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                            <option value="@warranty.WarrantyId">@warranty.Warranty</option>
+                                                                                    }
+                                                                                }
+                                                                        </select>
+                                                                    </div>
+                                                                </td>*@
+                                                            <td>
+                                                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteCombo(@count,@item.SalesQuotationDetailsId)">
+                                                                    <i class="fas fa-times">
+                                                                    </i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        count++;
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="row">
+                                            <div class="col-sm-6 mt-2">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label">Discount on All</label>
+                                                    <div class="input-group col-sm-7">
+                                                        <input type="number" min="0" class="form-control" id="txtDiscAll" placeholder="" onchange="updateExtraDiscounts()" value="@(String.Format("{0:0.##}", ViewBag.SalesQuotation.Discount))">
+                                                        <select class="form-control" id="ddlDiscAll" onchange="updateExtraDiscounts()">
+                                                            @{
+                                                                if (ViewBag.SalesQuotation.DiscountType == "Fixed")
+                                                                {
+                                                                    <option value="Fixed" selected>Fixed</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="Fixed">Fixed</option>
+                                                                }
+                                                                if (ViewBag.SalesQuotation.DiscountType == "Percentage")
+                                                                {
+                                                                    <option value="Percentage" selected>Percentage</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="Percentage">Percentage</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 mt-2 hidden">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label">Tax</label>
+                                                    <div class="input-group col-sm-7">
+                                                        <select class="form-control select2 ddlTax" id="ddlTax" onchange="discallcalc()">
+                                                            <option value="0">None</option>
+                                                            @foreach (var item in ViewBag.Taxs)
+                                                            {
+                                                                if (ViewBag.SalesQuotation.TaxId == item.TaxId)
+                                                                {
+                                                                    <option value="@item.TaxId-@item.TaxPercent.ToString("0")" selected>@item.Tax</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@item.TaxId-@item.TaxPercent.ToString("0")">@item.Tax</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                        @if (ViewBag.TaxListPermission.IsAdd == true)
+                                                        {
+                                                            <span class="input-group-append">
+                                                                <a href="javascript:void(0)" class="btn btn-info" onclick="openTaxModal(0)">+ </a>
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="divAdditionalCharges" class="@(ViewBag.BusinessSetting.IsBusinessRegistered == 1
+&& ViewBag.BusinessRegistrationType == "Composition" ? "hidden" : "")">
+                                            @{
+                                                var additionalChargeCount = 0;
+                                                foreach (var item in ViewBag.SalesQuotation.SalesQuotationAdditionalCharges)
+                                                {
+                                                    <div class="row additional-charges-row">
+                                                        <div class="col-sm-6">
+                                                            <div class="form-group row">
+                                                                <label for="inputEmail3" class="col-sm-5 col-form-label">@item.Name</label>
+                                                                <div class="input-group col-sm-7">
+                                                                    <input value="@item.AmountExcTax" type="number" class="form-control" id="txtAdditionalChargesAmountExcTax@(additionalChargeCount)" placeholder="" onchange="updateAdditionalChargesCalculation(@additionalChargeCount)">
+                                                                    <input value="@item.AmountIncTax" type="hidden" id="txtAdditionalChargesAmountIncTax@(additionalChargeCount)">
+                                                                    <input value="@item.AdditionalChargeId" type="hidden" id="txtAdditionalChargeId@(additionalChargeCount)">
+                                                                    <input value="@item.SalesQuotationAdditionalChargesId" type="hidden" id="txtSalesQuotationAdditionalChargesId@(additionalChargeCount)">
+                                                                    <select class="form-control select2" id="ddlAdditionalChargesTax@(additionalChargeCount)" onchange="toggleExemptionDropdownAC(@additionalChargeCount)">
+                                                                        @foreach (var tax in ViewBag.Taxs)
+                                                                        {
+                                                                            if (tax.Tax != "Taxable")
+                                                                            {
+                                                                                if (ViewBag.BusinessSetting.CountryId == 2)
+                                                                                {
+                                                                                    if (ViewBag.SalesQuotation.BranchStateId == ViewBag.SalesQuotation.PlaceOfSupplyId)
+                                                                                    {
+                                                                                        if (tax.TaxTypeId != 3)
+                                                                                        {
+                                                                                            if (item.TaxId == tax.TaxId)
+                                                                                            {
+                                                                                                <option selected value="@tax.TaxId-@tax.TaxPercent">@tax.Tax</option>
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <option value="@tax.TaxId-@tax.TaxPercent">@tax.Tax</option>
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        if (tax.CanDelete == false || tax.TaxTypeId == 3 || tax.TaxTypeId == 5)
+                                                                                        {
+                                                                                            if (item.TaxId == tax.TaxId)
+                                                                                            {
+                                                                                                <option selected value="@tax.TaxId-@tax.TaxPercent">@tax.Tax</option>
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <option value="@tax.TaxId-@tax.TaxPercent">@tax.Tax</option>
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    if (item.TaxId == tax.TaxId)
+                                                                                    {
+                                                                                        <option selected value="@tax.TaxId-@tax.TaxPercent">@tax.Tax</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@tax.TaxId-@tax.TaxPercent">@tax.Tax</option>
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                    <div id="divTaxExemptionAC@(additionalChargeCount)" style="display:@(item.TaxExemptionId == 0 ? "none":""); margin-top:5px; align-items:center;">
+                                                                        <span class="small text-muted text-bold">Exemption Reason:</span>
+                                                                        <span id="exemptionReasonLabel@(additionalChargeCount)" class="small">@item.TaxExemptionReason</span>
+                                                                        <a href="javascript:void(0)" onclick="openExemptionModal(@(additionalChargeCount))" style="margin-left:6px; vertical-align:middle;" title="Edit Exemption">
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </a>
+                                                                        <input type="hidden" id="exemptionReasonId@(additionalChargeCount)" value="@(item.TaxExemptionId)">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    additionalChargeCount++;
+                                                }
+                                            }
+
+                                        </div>
+                                        @if (ViewBag.SaleSetting.EnableSpecialDiscount == true)
+                                        {
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <div class="form-group row">
+                                                        <label for="inputEmail3" class="col-sm-5 col-form-label"> Special Discount </label>
+                                                        <div class="col-sm-7">
+                                                            <input class="form-control" id="txtSpecialDiscount" onchange="discallcalc()" value="@ViewBag.SalesQuotation.SpecialDiscount" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (ViewBag.SaleSetting.EnableNotes == true)
+                                        {
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group row">
+                                                        <label for="inputEmail3" class="col-sm-5 col-form-label">Notes</label>
+                                                        <div class="col-sm-12">
+                                                            <textarea rows="2" class="form-control" id="txtNotes" placeholder="">@ViewBag.SalesQuotation.Notes</textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (ViewBag.SaleSetting.EnableTerms == true)
+                                        {
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group row">
+                                                        <label for="inputEmail3" class="col-sm-5 col-form-label">Terms & Conditions</label>
+                                                        <div class="col-sm-12">
+                                                            <textarea rows="2" class="form-control" id="txtTerms" placeholder="">@ViewBag.SalesQuotation.Terms</textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="row">
+                                            <div class="col-12" style="display:none;">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Total Quantities :</label>
+                                                    <input type="number" class="form-control" id="hdndivTotalAmount" hidden value="@ViewBag.SalesQuotation.Subtotal">
+                                                    <label for="inputEmail3" class="col-form-label" id="divTotalQty">
+                                                        @(String.Format("{0:0.##}", ViewBag.SalesQuotation.TotalQuantity))
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Gross Amount :</label>
+                                                    <input type="number" class="form-control" id="hdndivTotalAmount" hidden value="@ViewBag.SalesQuotation.Subtotal">
+                                                    <label for="inputEmail3" class="col-form-label" id="divTotalAmount">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @ViewBag.SalesQuotation.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesQuotation.Subtotal))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}", ViewBag.SalesQuotation.Subtotal))@ViewBag.SalesQuotation.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            @*<div class="col-12">
+                                                    <div class="row">
+                                                        <label for="inputEmail3" class="col-sm-8 col-form-label text-right">Other Charges(+) :</label>
+                                                        <input type="email" class="form-control" id="hdndivOtherCharges" hidden value="@ViewBag.SalesQuotation.OtherCharges">
+                                                        <label for="inputEmail3" class="col-sm-4 col-form-label text-left" id="divOtherCharges">
+                                                            @{
+                                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                {
+                                                                    @ViewBag.SalesQuotation.CurrencySymbol@ViewBag.SalesQuotation.OtherCharges
+                                                                }
+                                                                else
+                                                                {
+                                                                    @ViewBag.SalesQuotation.OtherCharges@ViewBag.SalesQuotation.CurrencySymbol
+                                                                }
+                                                            }
+                                                        </label>
+
+                                                    </div>
+                                                </div>*@
+                                            <div class="col-12">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Discount(-) :</label>
+                                                    <input type="number" class="form-control" id="hdndivDiscount" hidden value="@ViewBag.SalesQuotation.TotalDiscount">
+
+                                                    <label for="inputEmail3" class="col-form-label" id="divDiscount">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @ViewBag.SalesQuotation.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesQuotation.TotalDiscount))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}", ViewBag.SalesQuotation.TotalDiscount))@ViewBag.SalesQuotation.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </label>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-12 no_reversecharge" id="divTaxSummary" style="display:@(ViewBag.SalesQuotation.IsReverseCharge==1 ? "none":"")">
+                                                @{
+                                                    foreach (var item in ViewBag.TaxBreakups)
+                                                    {
+                                                        <div class="text-right">
+                                                            <label for="inputEmail3" class="col-form-label">@item.Tax :</label>
+                                                            <label for="inputEmail3" class="col-form-label" id="divTax">
+                                                                @{
+                                                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                    {
+                                                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.TaxAmount))
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @(String.Format("{0:0.##}", item.TaxAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                    }
+                                                                }
+                                                            </label>
+                                                        </div>
+                                                    }
+                                                }
+                                            </div>
+                                            @if (ViewBag.SaleSetting.EnableSpecialDiscount == true)
+                                            {
+                                                <div class="col-12">
+                                                    <div class="text-right">
+                                                        <label for="inputEmail3" class="col-form-label">Special Discount(-) :</label>
+                                                        <label for="inputEmail3" class="col-form-label" id="divSpecialDiscount">
+                                                            @{
+                                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                {
+                                                                    @ViewBag.SalesQuotation.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesQuotation.SpecialDiscount))
+                                                                }
+                                                                else
+                                                                {
+                                                                    @(String.Format("{0:0.##}", ViewBag.SalesQuotation.SpecialDiscount))@ViewBag.SalesQuotation.CurrencySymbol
+                                                                }
+                                                            }
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            }
+                                            <div class="col-12 no_reversecharge" style="display:@(ViewBag.SalesQuotation.IsReverseCharge==1 ? "none":"") ">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Net Amount :</label>
+                                                    <label for="inputEmail3" class="col-form-label" id="divNetAmount">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @ViewBag.SalesQuotation.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesQuotation.NetAmount))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}", ViewBag.SalesQuotation.NetAmount))@ViewBag.SalesQuotation.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            @if (ViewBag.SaleSetting.EnableRoundOff == true)
+                                            {
+                                                <div class="col-12 no_reversecharge" style="display:@(ViewBag.SalesQuotation.IsReverseCharge==1 ? "none":"") ">
+                                                    <div class="text-right">
+                                                        <label for="inputEmail3" class="col-form-label">Round Off :</label>
+                                                        <label for="inputEmail3" class="col-form-label" id="divRoundOff">
+                                                            @{
+                                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                {
+                                                                    @ViewBag.SalesQuotation.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesQuotation.RoundOff))
+                                                                }
+                                                                else
+                                                                {
+                                                                    @(String.Format("{0:0.##}", ViewBag.SalesQuotation.RoundOff))@ViewBag.SalesQuotation.CurrencySymbol
+                                                                }
+                                                            }
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            }
+                                            <div class="col-12 no_reversecharge" style="display:@(ViewBag.SalesQuotation.IsReverseCharge==1 ? "none":"") ">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label"> Total :</label>
+                                                    <label for="inputEmail3" class="col-form-label" id="divGrandTotal">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @ViewBag.SalesQuotation.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesQuotation.TaxableAmount))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}", ViewBag.SalesQuotation.TaxableAmount))@ViewBag.SalesQuotation.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 reversecharge" style="display:@(ViewBag.SalesQuotation.IsReverseCharge==1 ? "":"none") ">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label">Net Amount :</label>
+                                                    <label for="inputEmail3" class="col-form-label" id="divNetAmount_reversecharge">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @ViewBag.SalesQuotation.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesQuotation.NetAmountReverseCharge))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}", ViewBag.SalesQuotation.NetAmountReverseCharge))@ViewBag.SalesQuotation.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            @if (ViewBag.SaleSetting.EnableRoundOff == true)
+                                            {
+                                                <div class="col-12 reversecharge" style="display:@(ViewBag.SalesQuotation.IsReverseCharge==1 ? "":"none") ">
+                                                    <div class="text-right">
+                                                        <label for="inputEmail3" class="col-form-label">Round Off :</label>
+                                                        <label for="inputEmail3" class="col-form-label" id="divRoundOff_reversecharge">
+                                                            @{
+                                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                {
+                                                                    @ViewBag.SalesQuotation.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesQuotation.RoundOffReverseCharge))
+                                                                }
+                                                                else
+                                                                {
+                                                                    @(String.Format("{0:0.##}", ViewBag.SalesQuotation.RoundOffReverseCharge))@ViewBag.SalesQuotation.CurrencySymbol
+                                                                }
+                                                            }
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            }
+                                            <div class="col-12 reversecharge" style="display:@(ViewBag.SalesQuotation.IsReverseCharge==1 ? "":"none") ">
+                                                <div class="text-right">
+                                                    <label for="inputEmail3" class="col-form-label"> Total :</label>
+                                                    <label for="inputEmail3" class="col-form-label" id="divGrandTotal_reversecharge">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @ViewBag.SalesQuotation.CurrencySymbol@(String.Format("{0:0.##}", ViewBag.SalesQuotation.GrandTotalReverseCharge))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}", ViewBag.SalesQuotation.GrandTotalReverseCharge))@ViewBag.SalesQuotation.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <input type="hidden" value="@ViewBag.BusinessSetting.CountryId" id="hdnCountryId" />
+                        <input type="hidden" id="hdnIsBusinessRegistered" value="@(ViewBag.BusinessSetting.IsBusinessRegistered)" />
+                        <input type="hidden" id="hdnBusinessRegistrationType" value="@(ViewBag.BusinessSetting.BusinessRegistrationType)" />
+                        <input type="number" class="form-control" id="hdndivTax" hidden value="@ViewBag.SalesQuotation.TaxAmount">
+                        <input type="number" class="form-control" id="hdndivTotalTax" hidden value="@ViewBag.SalesQuotation.TotalTaxAmount">
+                        <button id="btnUpdate" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                        <button id="btnUpdate_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div id="modalContainer">
+    <!-- Modal will load here -->
+</div>
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+      rel="stylesheet">
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="~/Content/JQuery/Customer/Sales/SalesQuotation.js"></script>
+<script>
+    setTimeout(function () {
+        var SalesQuotationDetails = @Html.Raw(Json.Encode(ViewBag.SalesQuotation.SalesQuotationDetails));
+            $.each(SalesQuotationDetails, function (index, value) {
+                skuCodes.push(value.SKU);
+            });
+    }, 2000);
+</script>
+<script>
+    setTimeout(function () {
+        $.ajax({
+            url: '/SalesQuotation/LoadModals',
+            datatype: "json",
+            data: {},
+            type: "post",
+            success: function (data) {
+                $("#modalContainer").html(data);
+
+                $('#tblData').DataTable({
+                    lengthChange: false,
+                    searching: false,
+                    autoWidth: false,
+                    responsive: true,
+                    paging: false,
+                    bInfo: false
+                });
+
+                $('.errorText').hide();
+
+                $('textarea#txtDescription').summernote({
+                    placeholder: '',
+                    tabsize: 2,
+                    height: 100,
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'italic', 'underline', 'clear']],
+                        // ['font', ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', 'clear']],
+                        //['fontname', ['fontname']],
+                        // ['fontsize', ['fontsize']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['height', ['height']],
+                        ['table', ['table']],
+                        ['insert', ['link', 'picture', 'hr']],
+                        //['view', ['fullscreen', 'codeview']],
+                        ['help', ['help']]
+                    ],
+                });
+
+                $('.select2').select2();
+
+                init();
+            },
+            error: function (xhr) {
+                $("#divLoading").hide();
+            }
+        });
+
+    }, 2000);
+</script>

@@ -1,0 +1,514 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Supplier Payment List";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Supplier Payment List @(ViewBag.SupplierName != null ? "By "+ViewBag.SupplierName : "")</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Supplier Payment  List</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                @if (ViewBag.SupplierPaymentPermission.IsAdd)
+                {
+                    <div class="btn-group float-sm-right">
+                        <button type="button" class="btn btn-primary">Add New</button>
+                        <button type="button" class="btn btn-primary dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <div class="dropdown-menu" role="menu">
+                            <a class="dropdown-item" href="/Supplier/PaymentAdd"> Bill Payment </a>
+                            <a class="dropdown-item" href="/supplier/AdvancePaymentAdd">Advance Payment</a>
+                        </div>
+                    </div>
+                }
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+            <div class="col-sm-12">
+                <span id="divAsof" class="text-gray"></span>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                @*<div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                        <h5><i class="fas fa-info"></i> Note:</h5>
+                        This page has been enhanced for printing. Click the print button at the bottom of the invoice to test.
+                    </div>*@
+                <div class="card  card-primary card-outline collapsed-card">
+                    <div class="card-header" data-card-widget="collapse" title="Collapse">
+                        <h3 class="card-title">Filter</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.Branchs.Count >1 ? "":"hidden")">
+                                <div class="form-group">
+                                    <label>Business Location</label>
+                                    <select class="form-control select2" id="ddlBranch" style="width:100%">
+                                        <option value="0">All</option>
+                                        @foreach (var item in ViewBag.Branchs)
+                                        {
+                                            <option value="@item.BranchId">@item.Branch</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 ">
+                                <div class="form-group">
+                                    <label>Supplier Name</label>
+                                    <div class="input-group">
+                                        <select class="form-control select2" style="width: 100%;" id="ddlSupplier">
+                                            <option value="">All</option>
+                                            @foreach (var item in ViewBag.Users)
+                                            {
+                                                if (ViewBag.SupplierId == item.UserId)
+                                                {
+                                                    <option value="@item.UserId" selected>
+                                                        @item.Name
+                                                        @if (item.MobileNo != null && item.MobileNo != "")
+                                                        {
+                                                            <span>- @item.MobileNo</span>
+                                                        }
+                                                    </option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.UserId">
+                                                        @item.Name
+                                                        @if (item.MobileNo != null && item.MobileNo != "")
+                                                        {
+                                                            <span>- @item.MobileNo</span>
+                                                        }
+                                                    </option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Date Range:</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="far fa-calendar-alt"></i>
+                                            </span>
+                                        </div>
+                                        <input type="text" class="form-control float-right" id="txtDateRange" value="@(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) +" - "+ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]))">
+                                    </div>
+                                </div>
+                            </div>
+                            @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group" id="divFAccount">
+                                        <label>From Account<span class="danger">*</span></label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlFAccount">
+                                                <option value="0">All</option>
+                                                @{
+                                                    if (ViewBag.AccountSubTypes != null)
+                                                    {
+                                                        foreach (var item in ViewBag.AccountSubTypes)
+                                                        {
+                                                            if (item.Accounts.Count > 0)
+                                                            {
+                                                                if (item.Type == "Cash" || item.Type == "Bank" || item.Type == "Credit Card")
+                                                                {
+                                                                    <optgroup label="@item.DisplayAs">
+                                                                        @foreach (var inner in item.Accounts)
+                                                                        {
+                                                                            <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                        }
+                                                                    </optgroup>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>*@
+                            @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group" id="divTAccount">
+                                        <label>To Account<span class="danger">*</span></label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlTAccount">
+                                                <option value="0">All</option>
+                                                @{
+                                                    if (ViewBag.AccountSubTypes != null)
+                                                    {
+                                                        foreach (var item in ViewBag.AccountSubTypes)
+                                                        {
+                                                            if (item.Accounts.Count > 0)
+                                                            {
+                                                                if (item.Type == "Cash" || item.Type == "Bank" || item.Type == "Credit Card")
+                                                                {
+                                                                    <optgroup label="@item.DisplayAs">
+                                                                        @foreach (var inner in item.Accounts)
+                                                                        {
+                                                                            <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                        }
+                                                                    </optgroup>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>*@
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary float-right mt-2" onclick="fetchList(1)">Search</button>
+                        <button type="submit" class="btn btn-warning float-right mt-2 mr-2" onclick="window.location.reload()">Refresh</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                @*<div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                        <h5><i class="fas fa-info"></i> Note:</h5>
+                        This page has been enhanced for printing. Click the print button at the bottom of the invoice to test.
+                    </div>*@
+                <!-- /.card -->
+                <div class="card  card-primary card-outline">
+                    <div class="card-header">
+                        <h5>
+                            <span class="success" id="divTotalCount">
+                                Total : 0
+                            </span>
+                            @*|
+                                <span class="primary" id="divActiveCount">
+                                    Active : 0
+                                </span>
+                                |
+                                <span class="danger" id="divInactiveCount">In-Active : 0</span>*@
+                        </h5>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                            <div class="dataTables_length noPrint" id="tblUserRole_length">
+                                <label>
+                                    Show
+                                    <select name="tblUserRole_length" aria-controls="tblUserRole" class="custom-select custom-select-sm form-control form-control-sm"
+                                            onchange="fetchList(1)" id="txtPageSize">
+                                        @{
+                                            if (ViewBag.PageSize == 10)
+                                            {
+                                                <option value="10" selected>10</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="10">10</option>
+                                            }
+                                            if (ViewBag.PageSize == 25)
+                                            {
+                                                <option value="25" selected>25</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="25">25</option>
+                                            }
+                                            if (ViewBag.PageSize == 50)
+                                            {
+                                                <option value="50" selected>50</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="50">50</option>
+                                            }
+                                            if (ViewBag.PageSize == 100)
+                                            {
+                                                <option value="100" selected>100</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="100">100</option>
+                                            }
+                                            if (ViewBag.PageSize == 500)
+                                            {
+                                                <option value="500" selected>500</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="500">500</option>
+                                            }
+                                        }
+                                    </select> entries
+                                </label>
+                            </div>
+                            @if (ViewBag.SupplierPaymentPermission.IsExport)
+                            {
+                                <div class="dt-buttons btn-group flex-wrap noPrint">
+                                    <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+                                    <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+                                    <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+                                    <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+                                </div>
+                            }
+                            <div id="tblUserRole_filter" class="dataTables_filter noPrint invisible"><label>Search:<input type="text" class="form-control form-control-sm" placeholder="" aria-controls="tblUserRole" id="txtSearch" onkeyup="fetchList(1)"></label></div>
+                            <div class="row mt-1">
+                                <div class="col-sm-12 table-responsive">
+                                    <table id="tblData" class="table table-bordered table-striped">
+                                        @Html.Partial("PartialPayment")
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade bd-example-modal-lg" id="refundModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Refunds</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- left column -->
+                            <div class="col-md-12">
+                                <!-- jquery validation -->
+                                <div class="card card-primary card-outline">
+                                    <div class="card-body" id="divRefunds">
+                                        @if (ViewBag.OpenRefundModal == true)
+                                        {
+                                            Html.Partial("PartialRefunds");
+                                        }
+                                    </div>
+
+                                </div>
+                                <!-- /.card -->
+                            </div>
+                            <!--/.col (left) -->
+
+                        </div>
+                        <!-- /.row -->
+                    </div><!-- /.container-fluid -->
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary hidden refundAdd" onclick="insertRefund()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="RefundViewModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" id="divRefundView">
+            @Html.Partial("PartialRefundView")
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="UnpaidInvoicesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Apply Credits from Advance Payment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- left column -->
+                            <div class="col-md-12">
+                                <!-- jquery validation -->
+                                <div class="card card-primary card-outline">
+                                    <div class="card-body" id="divUnpaidInvoices">
+                                        @if (ViewBag.OpenRefundModal == true)
+                                        {
+                                            Html.Partial("PartialUnpaidInvoices");
+                                        }
+                                    </div>
+
+                                </div>
+                                <!-- /.card -->
+                            </div>
+                            <!--/.col (left) -->
+
+                        </div>
+                        <!-- /.row -->
+                    </div><!-- /.container-fluid -->
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="ApplyCreditsToInvoices()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ViewModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" id="divView">
+            @Html.Partial("PartialPaymentView")
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="InvoiceCopyModal">
+    <div class="modal-dialog modal-l">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="lblInvoiceNo"> </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="input-group" id="divInvoiceInputs">
+                                <input disabled type="text" class="form-control" id="lblInvoiceUrl" placeholder="" style="width:80%">
+                                <button type="button" class="btn btn-secondary" onclick="copyCode()" style="width:20%">COPY</button>
+                            </div>
+                            <small class="text-red font-weight-bold">Link to view the invoice without login.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between" id="divInvoiceButtons">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="PrintInvoice()" id="btnInvoiceView">View</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="NotificationModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Send Notification </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12" id="divNotification">
+                        @*@Html.Partial("PartialNotificationModule");*@
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="SendNotifications()">Send</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is a bank account called?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    A checking account is a deposit account held at a financial institution that allows withdrawals and deposits. Also called demand accounts or transactional accounts, checking accounts are very liquid and can be accessed using checks, automated teller machines, and electronic debits, among other methods.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is bank account an asset or liability?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Is a bank account an asset or liability? A bank account may be an asset or a liability to the bank. For example, if the account incurs fees paid to the bank, it would be an asset, but if it is a savings account that accrues interest, then it would be a liability since the bank would owe this interest
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script src="~/Content/JQuery/Customer/Purchase/SupplierPayment.js"></script>
+
+

@@ -1,0 +1,74 @@
+﻿
+
+
+@{
+    decimal TotalTaxableAmount = 0, TotalTaxAmount = 0;
+    <thead id="thead">
+        <tr>
+            @*<th>Sln</th>*@
+            <th>Tax Name</th>
+            <th>Tax Percentage</th>
+            <th>Taxable Amount (@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1])</th>
+            <th>Tax Amount (@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1])</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.Taxs)
+        {
+            <tr>
+                <td>@item.Tax</td>
+                <td>@item.TaxPercent</td>
+                <td>
+
+                    <a href="/taxreports/TaxSummaryDetails?Tax=@(item.Tax)&TaxId=@(item.TaxId)&BranchId=@ViewBag.BranchId&FromDate=@ViewBag.FromDate.ToString("MM-dd-yyyy")&ToDate=@ViewBag.ToDate.ToString("MM-dd-yyyy")">
+                        @*@{
+                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                {
+                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.TaxableAmount))
+                                }
+                                else
+                                {
+                                    @(String.Format("{0:0.##}", item.TaxableAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                }
+                            }*@
+                        @(String.Format("{0:0.##}",item.TaxableAmount))
+                    </a>
+                </td>
+                <td>
+                    <a href="/taxreports/TaxSummaryDetails?Tax=@(item.Tax)&TaxId=@(item.TaxId)&BranchId=@ViewBag.BranchId&FromDate=@ViewBag.FromDate.ToString("MM-dd-yyyy")&ToDate=@ViewBag.ToDate.ToString("MM-dd-yyyy")">
+                        @*@{
+                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                {
+                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.TaxAmount))
+                                }
+                                else
+                                {
+                                    @(String.Format("{0:0.##}", item.TaxAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                }
+                            }*@
+                        @(String.Format("{0:0.##}",item.TaxAmount))
+                    </a>
+                </td>
+            </tr>
+            TotalTaxableAmount = (TotalTaxableAmount + item.TaxableAmount);
+            TotalTaxAmount = (TotalTaxAmount + item.TaxAmount);
+        }
+    </tbody>
+    <tbody class="table-body">
+        <tr>
+            <td colspan="3">Total</td>
+            @*<td>
+                @(String.Format("{0:0.##}",TotalTaxableAmount))
+            </td>*@
+            <td>
+                @(String.Format("{0:0.##}",TotalTaxAmount))
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+     $('#divAsof').text('Showing Results: (' + @Html.Raw(Json.Encode(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    @*$('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));*@
+</script>

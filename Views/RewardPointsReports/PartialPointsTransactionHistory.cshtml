@@ -1,0 +1,96 @@
+
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th>Sln</th>
+            <th>Date</th>
+            <th>Customer Name</th>
+            <th>Invoice No</th>
+            <th>Transaction Type</th>
+            <th>Points</th>
+            <th>Order Amount</th>
+            <th>Expiry Date</th>
+            <th>Status</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @if (ViewBag.Transactions != null)
+        {
+            foreach (var item in ViewBag.Transactions)
+            {
+                <tr>
+                    <td>@(ViewBag.PageSize * (ViewBag.CurrentPageIndex - 1) + count)</td>
+                    <td>@item.TransactionDate.ToString("dd-MM-yyyy HH:mm")</td>
+                    <td>@item.CustomerName</td>
+                    <td>@(item.InvoiceNo ?? "-")</td>
+                    <td>
+                        @if (item.TransactionType == "Earn")
+                        {
+                            <span class="badge badge-success">Earn</span>
+                        }
+                        else if (item.TransactionType == "Redeem")
+                        {
+                            <span class="badge badge-warning">Redeem</span>
+                        }
+                        else if (item.TransactionType == "Expire")
+                        {
+                            <span class="badge badge-danger">Expire</span>
+                        }
+                        else if (item.TransactionType == "Return Reversal" || item.TransactionType == "Return Restore")
+                        {
+                            <span class="badge badge-info">@item.TransactionType</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">@item.TransactionType</span>
+                        }
+                    </td>
+                    <td>
+                        @if (item.TransactionType == "Earn" || item.TransactionType == "Return Restore")
+                        {
+                            <span class="text-success">+@String.Format("{0:0.##}", item.Points)</span>
+                        }
+                        else
+                        {
+                            <span class="text-danger">-@String.Format("{0:0.##}", item.Points)</span>
+                        }
+                    </td>
+                    <td>
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@String.Format("{0:0.##}", item.OrderAmount)
+                            }
+                            else
+                            {
+                                @String.Format("{0:0.##}", item.OrderAmount)@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </td>
+                    <td>@(item.ExpiryDate != null ? ((DateTime)item.ExpiryDate).ToString("dd-MM-yyyy") : "-")</td>
+                    <td>
+                        @if (item.IsExpired)
+                        {
+                            <span class="badge badge-danger">Expired</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-success">Active</span>
+                        }
+                    </td>
+                    <td>@(item.Notes ?? "-")</td>
+                </tr>
+                count++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="10" class="text-center">No data available</td>
+            </tr>
+        }
+    </tbody>
+}
+

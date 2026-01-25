@@ -1,0 +1,631 @@
+﻿
+
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | " + ViewBag.Transaction.TransactionNo;
+    //Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+    Layout = null;
+}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" href="favicon.jpeg" type="image/x-icon">
+<link rel="stylesheet" href="~/Content/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="~/Content/assets/css/adminlte.min.css">
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<style>
+    @@media print {
+        .noPrint {
+            display: none;
+        }
+    }
+</style>
+@*<section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Invoice </h1>
+                    <div class="float-left">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="/Subscription/MyTransactions">My Billings</a></li>
+                            <li class="breadcrumb-item active">Invoice</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>*@
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="printableArea">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5>
+                                        <img src="@(ViewBag.Transaction.From.BusinessLogo)" height="60" />
+                                        @*<i class="fas fa-globe"></i> AdminLTE, Inc.*@
+                                        <small class="float-right" style="line-height:24px">
+                                            <b>Date: </b>@ViewBag.Transaction.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])<br>
+                                            <b>Invoice#: </b>@ViewBag.Transaction.TransactionNo<br>
+                                            <b>Status : </b>@(ViewBag.Transaction.Status == 1?"Unpaid":"Paid")<br>
+                                        </small>
+                                    </h5>
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                            <!-- info row -->
+                            <div class="row invoice-info">
+                                <div class="col-sm-6 invoice-col">
+                                    <i>From</i>
+                                    <address>
+                                        <strong>@(ViewBag.Transaction.From.BusinessName)</strong><br>
+                                        @(ViewBag.Transaction.From.Address)<br />@ViewBag.Transaction.From.City, @ViewBag.Transaction.From.State,
+                                        @ViewBag.Transaction.From.Country, @ViewBag.Transaction.From.Zipcode <br />
+                                        @*City:Belgaum<br>*@
+                                        Phone: @(ViewBag.Transaction.From.Mobile),@(ViewBag.Transaction.From.AltMobileNo)<br />
+                                        Email: @(ViewBag.Transaction.From.Email)<br />
+                                    </address>
+                                </div>
+                                <!-- /.col -->
+                                <div class="col-sm-6 invoice-col">
+                                    <i>To<br></i>
+                                    <address>
+                                        <strong>@ViewBag.Transaction.BusinessSetting.BusinessName</strong><br>
+                                        @ViewBag.Transaction.Branch.Address<br>@ViewBag.Transaction.Branch.City, @ViewBag.Transaction.Branch.State,
+                                        @ViewBag.Transaction.Branch.Country, @ViewBag.Transaction.Branch.Zipcode <br />
+                                        Phone: @ViewBag.Transaction.Branch.Mobile<br />
+                                        Email: @ViewBag.Transaction.Branch.Email <br>
+                                    </address>
+                                </div>
+                                <!-- /.col -->
+                                @*@if (ViewBag.Sale.IsShippingAddressDifferent == true)
+                                    {
+                                        <div class="col-sm-4 invoice-col">
+                                            <i>Customer Shipping Address<br></i>
+                                            <address>
+                                                <strong>@ViewBag.Sale.User.Addresses[0].Name</strong><br>
+                                                @ViewBag.Sale.User.Addresses[0].Address<br>
+                                                Phone: @ViewBag.Sale.User.Addresses[0].MobileNo<br />
+                                                Email: @ViewBag.Sale.User.Addresses[0].EmailId <br>
+                                            </address>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-sm-4 invoice-col">
+                                            <i>Customer Shipping Address<br></i>
+                                            <address>
+                                                <strong>@ViewBag.Sale.User.Addresses[1].Name</strong><br>
+                                                @ViewBag.Sale.User.Addresses[1].Address<br>
+                                                Phone: @ViewBag.Sale.User.Addresses[1].MobileNo<br />
+                                                Email: @ViewBag.Sale.User.Addresses[1].EmailId <br>
+                                            </address>
+                                        </div>
+                                    }*@
+
+                                @*<div class="col-sm-4 invoice-col">
+                                        <b>Invoice#: </b>@ViewBag.Sale.InvoiceNo<br>
+                                        <b>Status :</b>@ViewBag.Sale.Status<br>
+                                    </div>*@
+                                <!-- /.col -->
+                            </div>
+                            <!-- /.row -->
+                            <!-- Table row -->
+                            <div class="row">
+                                <div class="col-xs-12 table-responsive">
+                                    <table class="table table-striped records_table table-bordered">
+                                        <thead class="bg-gray-active">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Description</th>
+                                                <th>MRP</th>
+                                                @*<th>Unit Price</th>*@
+                                                <th>Quantity</th>
+                                                <th>Total Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                var count = 1;
+                                                foreach (var item in ViewBag.Transaction.TransactionDetails)
+                                                {
+                                                    <tr>
+                                                        <td>@count</td>
+                                                        <td>@item.Title</td>
+                                                        <td class="text-left">
+                                                            @{
+                                                                if (ViewBag.Transaction.CurrencySymbolPlacement == 1)
+                                                                {
+                                                                    @ViewBag.Transaction.CurrencySymbol@item.MRP
+                                                                }
+                                                                else
+                                                                {
+                                                                    @item.MRP@ViewBag.Transaction.CurrencySymbol
+                                                                }
+                                                            }
+                                                        </td>
+                                                        @*<td class="text-left">
+                                                                @{
+                                                                    if (ViewBag.Transaction.CurrencySymbolPlacement == 1)
+                                                                    {
+                                                                        @ViewBag.Transaction.CurrencySymbol@item.UnitCost
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @item.UnitCost@ViewBag.Transaction.CurrencySymbol
+                                                                    }
+                                                                }
+                                                            </td>*@
+                                                        <td class="text-left">
+                                                            @if (item.Title == "Base Plan")
+                                                            {
+                                                                <span> @ViewBag.Transaction.Months Month(s)</span>
+                                                            }
+                                                            else if (item.PricingType == 1)
+                                                            {
+                                                                if (item.IsCheckbox == true)
+                                                                {
+                                                                    <span> @ViewBag.Transaction.Months Month(s)</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>@item.Quantity x @ViewBag.Transaction.Months Month(s)</span>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <span> @item.Quantity @(item.PricingPer)s</span>
+                                                            }
+                                                        </td>
+                                                        <td class="text-left">
+                                                            @{
+                                                                if (ViewBag.Transaction.CurrencySymbolPlacement == 1)
+                                                                {
+                                                                    @ViewBag.Transaction.CurrencySymbol@item.SubTotal
+                                                                }
+                                                                else
+                                                                {
+                                                                    @item.SubTotal@ViewBag.Transaction.CurrencySymbol
+                                                                }
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                    count++;
+                                                }
+                                            }
+
+
+                                        </tbody>
+                                        @*<tfoot class="text-right text-bold bg-gray">
+                                                <tr>
+                                                    <td colspan="2" class="text-center">Total</td>
+                                                    <td>₹ @ViewBag.TotalUnitPrice</td>
+                                                    <td class="text-left">@(String.Format("{0:0.##}",ViewBag.TotalQuantity))</td>
+                                                    <td>₹ @ViewBag.TotalAmount</td>
+                                                </tr>
+                                            </tfoot>*@
+                                    </table>
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                            <!-- /.row -->
+
+                            <div class="row">
+                                <div class="col-md-6">
+
+                                    @*<div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="sales_note" class="col-sm-4 control-label" style="font-size: 17px;">Note</label>
+                                                    <div class="col-sm-8">
+                                                        <label class="control-label  " style="font-size: 17px;">: </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>*@
+                                    @if (ViewBag.Transaction.Status == 2)
+                                    {
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <h4 class="lead">Payments Information : </h4><table class="table table-hover table-bordered" style="width:100%" id="">
+                                                        <thead>
+                                                            <tr class=" ">
+                                                                <th>Date</th>
+                                                                <th>Payment Method</th>
+                                                                <th>Amount</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr id="payment_row_100">
+                                                                <td>@ViewBag.Transaction.PaidOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                                                                <td>@ViewBag.Transaction.PaymentGatewayType</td>
+                                                                <td class="text-left">
+                                                                    @{
+                                                                        if (ViewBag.Transaction.CurrencySymbolPlacement == 1)
+                                                                        {
+                                                                            @ViewBag.Transaction.CurrencySymbol@ViewBag.Transaction.PayableCost
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            @ViewBag.Transaction.PayableCost@ViewBag.Transaction.CurrencySymbol
+                                                                        }
+                                                                    }
+                                                                </td>
+                                                            </tr>
+                                                            @*<tr class="text-right text-bold"><td colspan="4">Total</td><td>31707.50</td></tr>*@
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                </div>
+                                <div class="col-3">
+
+                                </div>
+                                <div class="col-3">
+                                    @*<p class="lead">Amount Due 2/22/2014</p>*@
+
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <tbody>
+
+                                                @*@if (ViewBag.Transaction.Discount != 0)
+                                                    {*@
+                                                <tr>
+                                                    <th style="width: 60%; padding: 0.35rem; border-top: none;">Subtotal:</th>
+                                                    <td class="text-right" style="padding: 0.35rem; border-top: none;">
+                                                        @{
+                                                            if (ViewBag.Transaction.CurrencySymbolPlacement == 1)
+                                                            {
+                                                                @ViewBag.Transaction.CurrencySymbol@ViewBag.Transaction.SubTotal
+                                                            }
+                                                            else
+                                                            {
+                                                                @ViewBag.Transaction.SubTotal@ViewBag.Transaction.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </td>
+                                                </tr>
+                                                @if (ViewBag.Transaction.CouponDiscount != 0 || ViewBag.Transaction.YearlyPlanDiscount != 0)
+                                                {
+                                                    <tr>
+                                                        <th style="width: 60%; padding: 0.35rem; border-top: none;">Discount:</th>
+                                                        <td class="text-right" style="padding: 0.35rem; border-top: none;">
+                                                            @{
+                                                                if (ViewBag.Transaction.CurrencySymbolPlacement == 1)
+                                                                {
+                                                                    @ViewBag.Transaction.CurrencySymbol@(ViewBag.Transaction.CouponDiscount+ViewBag.Transaction.YearlyPlanDiscount)
+                                                                }
+                                                                else
+                                                                {
+                                                                    @(ViewBag.Transaction.CouponDiscount+ViewBag.Transaction.YearlyPlanDiscount)@ViewBag.Transaction.CurrencySymbol
+                                                                }
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+                                                @if (ViewBag.Transaction.SpecialDiscount != 0)
+                                                {
+                                                    <tr>
+                                                        <th style="width: 60%; padding: 0.35rem; border-top: none;">Special Discount:</th>
+                                                        <td class="text-right" style="padding: 0.35rem; border-top: none;">
+                                                            @{
+                                                                if (ViewBag.Transaction.CurrencySymbolPlacement == 1)
+                                                                {
+                                                                    @ViewBag.Transaction.CurrencySymbol@ViewBag.Transaction.SpecialDiscount
+                                                                }
+                                                                else
+                                                                {
+                                                                    @ViewBag.Transaction.SpecialDiscount@ViewBag.Transaction.CurrencySymbol
+                                                                }
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+                                                @*}*@
+                                                <tr>
+                                                    <th style="width: 60%; padding: 0.35rem; border-top: none;">Total:</th>
+                                                    <td class="text-right" style="padding: 0.35rem; border-top: none;">
+                                                        @{
+                                                            if (ViewBag.Transaction.CurrencySymbolPlacement == 1)
+                                                            {
+                                                                @ViewBag.Transaction.CurrencySymbol@ViewBag.Transaction.PayableCost
+                                                            }
+                                                            else
+                                                            {
+                                                                @ViewBag.Transaction.PayableCost@ViewBag.Transaction.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                            <!-- /.row -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p class="text-muted well well-sm shadow-none text-center" style="margin-top: 10px;">
+                                        This is computer generated invoice no signature required.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer noPrint">
+                        @*<a href="javascript:void(0)" class="btn btn-primary float-right ml-2">
+                                <i class="fa fa-file-pdf"></i>
+                                Go Back
+                            </a>*@
+                        @*@if (ViewBag.Transaction.Status == 2)
+                            {*@
+                        @*<a href="javacript:void(0)" onclick="printInvoice()" class="btn btn-warning float-right ml-2">
+                                <i class="fa fa-print"></i>
+                                Print
+                            </a>
+                            <a href="javascript:void(0)" onclick="exportInvoiceToPdf()" class="btn btn-primary float-right ml-2 d-none d-md-block">
+                                <i class="fa fa-file-pdf"></i>
+                                PDF
+                            </a>*@
+                        @*}
+                            else
+                            {*@
+                        @if (ViewBag.Transaction.Status != 2)
+                        {
+                            if (ViewBag.UpgradePlanPermission.IsAdd)
+                            {
+                                foreach (var item in ViewBag.OnlinePaymentSettings)
+                                {
+                                    if (item.OnlinePaymentService == 1)
+                                    {
+                                        <div id="divPaypal" style="float: right; margin-left: 10px;">
+                                            @*<div class="" id="paypal-button-container"></div>*@
+                                        </div>
+                                    }
+                                    else if (item.OnlinePaymentService == 2)
+                                    {
+                                        @*<button id="btnRazorPay" type="submit" class="btn btn-primary hidden float-right" onclick="InitRazorPayPrice()">Pay Now</button>*@
+                                        <a id="btnRazorPay" href="javascript:void(0)" onclick="InitPrice(window.location.href.split('=')[1])" class="btn btn-primary float-right hidden ml-2">
+                                            Pay Now
+                                        </a>
+                                    }
+                                }
+                            }
+                        }
+
+                        <!--<div id="divPaypal" style="float: right; margin-left: 10px;">-->
+                        @*<div class="" id="paypal-button-container"></div>*@
+                        <!--</div>
+                        if (ViewBag.UpgradePlanPermission.IsAdd)
+                        {
+                            <a id="btnRazorPay" href="javascript:void(0)" onclick="InitPrice(window.location.href.split('=')[1])" class="btn btn-primary float-right hidden ml-2">
+                                Pay Now
+                            </a>
+                        }-->
+                        @*}*@
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.22/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+@foreach (var item in ViewBag.OnlinePaymentSettings)
+{
+    if (item.OnlinePaymentService == 1)
+    {
+        <script src="https://www.paypal.com/sdk/js?client-id=@(item.PaypalClientId)&currency=@(item.PaypalCurrencyCode)"></script>
+    }
+}
+@*<script src="~/Content/JQuery/UpgradePlan.js"></script>*@
+
+<script>
+    var _TransactionNo = '';
+    var RazorpayKey='',RazorpayCurrencyCode='',BusinessName='',BusinessLogo='';
+
+    $(document).ready(function () {
+        var Transaction = @Html.Raw(Json.Encode(ViewBag.Transaction));
+
+        var isDefault = false;
+
+        if (Transaction.MainCountryId == Transaction.CountryId) {
+            isDefault = true;
+        }
+
+        if (Transaction.OnlinePaymentSettings != null) {
+            $.each(Transaction.OnlinePaymentSettings, function (index, value) {
+                if (isDefault == true) {
+                    if (value.IsDefault == true) {
+                        if (value.OnlinePaymentService == 1) {
+                            InititatePaypal(Transaction.PayableCost);
+                            $('#btnRazorPay').hide();
+                        }
+                        else if (value.OnlinePaymentService == 2) {
+                            $('#paypal-button-container').remove();
+                            //InitiateRazorPay(Transaction, value.RazorpayKey, value.RazorpayCurrencyCode);
+                            $('#btnRazorPay').show();
+                            RazorpayKey=value.RazorpayKey,RazorpayCurrencyCode=value.RazorpayCurrencyCode,BusinessName=Transaction.From.BusinessName,BusinessLogo=Transaction.From.BusinessLogo;
+                        }
+                    }
+                }
+                else {
+                    if (value.IsDefault == false) {
+                        if (value.OnlinePaymentService == 1) {
+                            InititatePaypal(Transaction.PayableCost);
+                            $('#btnRazorPay').hide();
+                        }
+                        else if (value.OnlinePaymentService == 2) {
+                            $('#paypal-button-container').remove();
+                            //InitiateRazorPay(Transaction, value.RazorpayKey, value.RazorpayCurrencyCode);
+                            $('#btnRazorPay').show();
+                            RazorpayKey=value.RazorpayKey,RazorpayCurrencyCode=value.RazorpayCurrencyCode,BusinessName=Transaction.From.BusinessName,BusinessLogo=Transaction.From.BusinessLogo;
+                        }
+                    }
+                }
+            });
+        }
+
+    function InititatePaypal(PayableCost) {
+        $('#paypal-button-container').remove();
+        $('#divPaypal').append('<div class="" id="paypal-button-container" ></div>');
+
+        paypal.Buttons({
+            style: {
+                layout: 'horizontal',
+                color: 'blue',
+                shape: 'rect',
+                label: 'pay',
+                size: 'responsive',
+                height: 37,
+            },
+            // Set up the transaction
+            createOrder: function (data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: PayableCost
+                        }
+                    }]
+                });
+            },
+
+            // Finalize the transaction
+            onApprove: function (data, actions) {
+                return actions.order.capture().then(function (orderData) {
+                    // Successful capture! For demo purposes:
+                    var transaction = orderData.purchase_units[0].payments.captures[0];
+                    LiveTransactionId = transaction.id;
+                    PaymentSuccess(transaction.id, 'Paypal');
+                });
+            }
+
+        }).render('#paypal-button-container');
+    }
+    });
+
+    function InitiateRazorPay(item) {
+        var options = {
+            "key": RazorpayKey,
+            "amount": item.PayableCost * 100,
+            "currency": RazorpayCurrencyCode,
+            "name": BusinessName,
+            "image":BusinessLogo,
+            //"order_id": "order_9A33XWu170gUtm", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+            "handler": function (response) {
+                PaymentSuccess(response.razorpay_payment_id, 'Razor Pay');
+            },
+            "prefill": {
+                "name": item.Name,
+                "email": item.EmailId,
+                "contact": item.MobileNo
+            },
+            "notes": {
+                "address": ""
+            },
+            "theme": {
+                "color": "#F37254"
+            }
+        };
+        var rzp1 = new Razorpay(options);
+        rzp1.open();
+    }
+
+    function InitPrice(TransactionNo) {
+        _TransactionNo = TransactionNo;
+        var det = {
+            TransactionNo: TransactionNo
+        };
+        $("#divLoading").show();
+        $.ajax({
+            url: '/subscription/InitPaymentGateway',
+            datatype: "json",
+            data: det,
+            type: "post",
+            success: function (data) {
+                if (data.Status == 0) {
+                    if (EnableSound == 'True') {document.getElementById('error').play();}
+                    toastr.error(data.Message);
+                }
+                else {
+                    TransactionId = data.Data.Transaction.TransactionId;
+                    InitiateRazorPay(data.Data.Transaction);
+                }
+                $("#divLoading").hide();
+            },
+            error: function (xhr) {
+                $("#divLoading").hide();
+            }
+        });
+    }
+
+    function PaymentSuccess(LiveTransactionId, PaymentGatewayType) {
+        var det = {
+            TransactionNo: _TransactionNo,
+            LiveTransactionId: LiveTransactionId,
+            PaymentGatewayType: PaymentGatewayType,
+            PaymentMethodType: ''
+        };
+        $("#divLoading").show();
+        $.ajax({
+            url: '/subscription/PaymentSuccess',
+            datatype: "json",
+            data: det,
+            type: "post",
+            success: function (data) {
+                if (data.Status == 0) {
+                    if (EnableSound == 'True') {document.getElementById('error').play();}
+                    toastr.error(data.Message);
+                }
+                else {
+                    window.location.href = "/subscription/success?invoiceid=" + data.Data.Transaction.TransactionNo;
+                }
+                $("#divLoading").hide();
+            },
+            error: function (xhr) {
+                $("#divLoading").hide();
+            }
+        });
+    }
+</script>
+
+<script>
+    function printInvoice() {
+        window.print();
+    }
+
+    function exportInvoiceToPdf() {
+        $('.hidden').show();
+        $('.hide').hide();
+        $('.responsive-table').css('height', '100%');
+        html2canvas($('.printableArea')[0], {
+            onrendered: function (canvas) {
+                var data = canvas.toDataURL();
+                var docDefinition = {
+                    content: [{
+                        image: data,
+                        width: 500
+                    }]
+                };
+
+                pdfMake.createPdf(docDefinition).download("Invoice.pdf");
+                $('.responsive-table').css('height', '400px');
+                $('.hide').show();
+                $('.hidden').hide();
+            }
+        });
+    }
+</script>

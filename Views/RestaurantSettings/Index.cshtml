@@ -1,0 +1,123 @@
+@using System.Collections.Generic
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Restaurant Settings";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Restaurant Settings</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item active">Restaurant Settings</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/settings/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h5>
+                            <span class="success" id="divTotalCount">
+                                Total : 0
+                            </span>
+                            |
+                            <span class="primary" id="divActiveCount">
+                                Active : 0
+                            </span>
+                            |
+                            <span class="danger" id="divInactiveCount">In-Active : 0</span>
+                        </h5>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                            <div class="dataTables_length noPrint" id="tblUserRole_length">
+                                <label>
+                                    Show
+                                    <select name="tblUserRole_length" aria-controls="tblUserRole" class="custom-select custom-select-sm form-control form-control-sm"
+                                            onchange="fetchList(1)" id="txtPageSize">
+                                        @{
+                                            var pageSize = ViewBag.PageSize != null ? ViewBag.PageSize : 25;
+                                            if (pageSize == 10)
+                                            {
+                                                <option value="10" selected>10</option>
+                                                    }
+                                                    else
+                                                    {
+                                                <option value="10">10</option>
+                                                    }
+                                            if (pageSize == 25)
+                                                    {
+                                                <option value="25" selected>25</option>
+                                                    }
+                                                    else
+                                                    {
+                                                <option value="25">25</option>
+                                                    }
+                                            if (pageSize == 50)
+                                                    {
+                                                <option value="50" selected>50</option>
+                                                    }
+                                                    else
+                                                    {
+                                                <option value="50">50</option>
+                                                    }
+                                            if (pageSize == 100)
+                                                    {
+                                                <option value="100" selected>100</option>
+                                                    }
+                                                    else
+                                                    {
+                                                <option value="100">100</option>
+                                                    }
+                                            if (pageSize == 500)
+                                                    {
+                                                <option value="500" selected>500</option>
+                                                    }
+                                                    else
+                                                    {
+                                                <option value="500">500</option>
+                                            }
+                                        }
+                                    </select> entries
+                                </label>
+                            </div>
+                            <div class="dt-buttons btn-group flex-wrap noPrint">
+                                <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+                                <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+                                <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+                                <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+                            </div>
+                            <div id="tblUserRole_filter" class="dataTables_filter noPrint"><label>Search:<input type="text" class="form-control form-control-sm" placeholder="" aria-controls="tblUserRole" id="txtSearch" onkeyup="fetchList(1)"></label></div>
+                            <div class="row mt-1">
+                                <div class="col-sm-12 table-responsive">
+                                    <table id="tblData" class="table table-bordered table-striped">
+                                        @Html.Partial("PartialRestaurantSettings")
+                            </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <script src="~/Content/JQuery/Customer/Settings/RestaurantSettings.js"></script>
+
+

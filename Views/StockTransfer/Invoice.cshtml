@@ -1,0 +1,677 @@
+﻿
+@{
+    Layout = null;
+}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stock Transfer | @ViewBag.StockTransfer.ReferenceNo</title>
+<link rel="shortcut icon" href="favicon.jpeg" type="image/x-icon">
+<link rel="stylesheet" href="~/Content/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="~/Content/assets/css/adminlte.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<style>
+    @@media print {
+        .noPrint {
+            display: none !important;
+        }
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.5;
+        color: #1f2937;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+        font-size: 14px;
+    }
+
+    .invoice-container {
+        max-width: 900px;
+        margin: 10px auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+    }
+
+    .header-section {
+        background: white;
+        color: #1f2937;
+        padding: 24px 32px;
+        position: relative;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        position: relative;
+    }
+
+    .logo-container img {
+        height: 48px;
+        border-radius: 6px;
+    }
+
+    .header-text {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .header-text h1 {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+        color: #1f2937;
+    }
+
+    .header-text p {
+        font-size: 14px;
+        margin: 0;
+        color: #6b7280;
+    }
+
+    .invoice-content {
+        padding: 24px 32px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .info-card {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 6px;
+        border-left: 3px solid #3b82f6;
+    }
+
+    .info-card h4 {
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0 0 12px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-card address {
+        margin: 0;
+        font-style: normal;
+        line-height: 1.6;
+        font-size: 13px;
+    }
+
+    .info-card strong {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .info-card i {
+        color: #6b7280;
+        width: 16px;
+        text-align: center;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 24px;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        padding: 20px;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .detail-label {
+        font-size: 11px;
+        color: #6b7280;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        font-weight: 400;
+        color: #111827;
+    }
+
+    .table-header {
+        background: #f8fafc;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .table-header h4 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .records_table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+        font-size: 13px;
+    }
+
+    .records_table thead th {
+        background: #f9fafb;
+        color: #4b5563;
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .records_table tbody td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+    }
+
+    .records_table tbody tr:hover {
+        background-color: #f9fafb;
+    }
+
+    .records_table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .content-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .summary-section {
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+
+    .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .summary-table th,
+    .summary-table td {
+        padding: 10px 16px;
+        text-align: left;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .summary-table th {
+        font-weight: 600;
+        color: #4b5563;
+        background: #f9fafb;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .summary-table .total-row {
+        background: #eff6ff;
+        font-weight: 700;
+        color: #1e40af;
+    }
+
+    .footer-note {
+        background: #f8fafc;
+        padding: 16px 20px;
+        border-radius: 6px;
+        text-align: center;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 24px;
+    }
+
+    .footer-note p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 13px;
+        font-style: italic;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        padding: 20px 0;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 13px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-warning {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    @@media print {
+        @@page {
+            margin: 0;
+        }
+
+        body {
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .invoice-container {
+            box-shadow: none !important;
+            margin: 0 auto !important;
+            border-radius: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        .header-section {
+            background: white !important;
+            color: #1f2937 !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .info-card,
+        .footer-note {
+            background: #f8fafc !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .records_table thead th,
+        .summary-table th {
+            background: #f9fafb !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .summary-table .total-row {
+            background: #eff6ff !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .invoice-container {
+            margin: 5px;
+            border-radius: 6px;
+        }
+
+        .invoice-content {
+            padding: 16px;
+        }
+
+        .header-section {
+            padding: 20px 16px;
+        }
+
+        .header-content {
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .content-row {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            width: 100%;
+            max-width: 200px;
+            justify-content: center;
+        }
+    }
+</style>
+
+<section class="content">
+    <div class="invoice-container">
+        <div class="header-section">
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="@ViewBag.BusinessSetting.BusinessLogo" alt="Business Logo" />
+                </div>
+                <div class="header-text">
+                    <h1>Stock Transfer</h1>
+                    <p>@ViewBag.BusinessSetting.BusinessName</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="invoice-content">
+            <div class="info-grid">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h4><i class="fas fa-building"></i> From Location</h4>
+                    </div>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="detail-value">@ViewBag.StockTransfer.FromBranchDetails.Branch</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-value">@ViewBag.StockTransfer.FromBranchDetails.Address</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-value">
+                                @ViewBag.StockTransfer.FromBranchDetails.Mobile
+                                @if (ViewBag.StockTransfer.FromBranchDetails.AltMobileNo != null)
+                                {
+                                    <span>, @ViewBag.StockTransfer.FromBranchDetails.AltMobileNo</span>
+                                }
+                            </span>
+                        </div>
+                        @if (ViewBag.StockTransfer.FromBranchDetails.Email != null)
+                        {
+                            <div class="detail-item">
+                                <span class="detail-value">@ViewBag.StockTransfer.FromBranchDetails.Email</span>
+                            </div>
+                        }
+                        @if (ViewBag.StockTransfer.FromBranchDetails.Tax != null)
+                        {
+                            <div class="detail-item">
+                                <span class="detail-value">@($"{ViewBag.StockTransfer.FromBranchDetails.Tax}: {ViewBag.StockTransfer.FromBranchDetails.TaxNo}")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h4><i class="fas fa-truck"></i> To Location</h4>
+                    </div>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="detail-value">@ViewBag.StockTransfer.ToBranchDetails.Branch</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-value">@ViewBag.StockTransfer.ToBranchDetails.Address</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-value">
+                                @ViewBag.StockTransfer.ToBranchDetails.Mobile
+                                @if (ViewBag.StockTransfer.ToBranchDetails.AltMobileNo != null)
+                                {
+                                    <span>, @ViewBag.StockTransfer.ToBranchDetails.AltMobileNo</span>
+                                }
+                            </span>
+                        </div>
+                        @if (ViewBag.StockTransfer.ToBranchDetails.Email != null)
+                        {
+                            <div class="detail-item">
+                                <span class="detail-value">@ViewBag.StockTransfer.ToBranchDetails.Email</span>
+                            </div>
+                        }
+                        @if (ViewBag.StockTransfer.ToBranchDetails.Tax != null)
+                        {
+                            <div class="detail-item">
+                                <span class="detail-value">@($"{ViewBag.StockTransfer.ToBranchDetails.Tax}: {ViewBag.StockTransfer.ToBranchDetails.TaxNo}")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <h4><i class="fas fa-info-circle"></i> Transfer Information</h4>
+                </div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Transfer Date</span>
+                        <span class="detail-value">@ViewBag.StockTransfer.Date.ToString(ViewBag.BusinessSetting.DateFormat + " " + ViewBag.BusinessSetting.TimeFormat)</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Reference #</span>
+                        <span class="detail-value">@ViewBag.StockTransfer.ReferenceNo</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-value">@(ViewBag.StockTransfer.Status == 1 ? "Pending" : ViewBag.StockTransfer.Status == 2 ? "In Transit" : "Completed")</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <h4><i class="fas fa-list"></i> Transfer Items</h4>
+                </div>
+                <table class="records_table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th></th>
+                            <th>Item</th>
+                            <th>SKU</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var count = 1;
+                            foreach (var item in ViewBag.StockTransfer.StockTransferDetails)
+                            {
+                                                <tr>
+                                                    <td>@count</td>
+                                                    <td>
+                                                        @if (item.ProductImage != null && item.ProductImage != "")
+                                                        {
+                                                            <img src="@item.ProductImage" width="40" />
+                                                        }
+                                                    </td>
+                                                    <td>@item.ItemName</td>
+                                                    <td>@item.SKU</td>
+                                                    <td>@(String.Format("{0:0.##}", @item.Quantity))</td>
+                                                    <td>
+                                                        @{
+                                                            if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                                            {
+                                                                @ViewBag.BusinessSetting.CurrencySymbol@item.UnitCost
+                                                            }
+                                                            else
+                                                            {
+                                                                @item.UnitCost@ViewBag.BusinessSetting.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @{
+                                                            if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                                            {
+                                                                @ViewBag.BusinessSetting.CurrencySymbol@item.Amount
+                                                            }
+                                                            else
+                                                            {
+                                                                @item.Amount@ViewBag.BusinessSetting.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </td>
+                                                </tr>
+                                count++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="content-row">
+                <div class="item-desc">
+                    @if (ViewBag.StockTransfer.Notes != null && ViewBag.StockTransfer.Notes != "")
+                    {
+                        <p><i class="fas fa-sticky-note"></i> <strong>Reason:</strong> @ViewBag.StockTransfer.Notes</p>
+                    }
+                </div>
+
+                <div class="summary-section">
+                    <div class="table-header">
+                        <h4><i class="fas fa-calculator"></i> Transfer Summary</h4>
+                    </div>
+                    <table class="summary-table">
+                        <tbody>
+                            <tr>
+                                <th>Total Quantities:</th>
+                                <td>@(String.Format("{0:0.##}", ViewBag.StockTransfer.TotalQuantity))</td>
+                            </tr>
+                            <tr>
+                                <th>Net Total:</th>
+                                <td>
+                                    @if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                    {
+                                        @ViewBag.BusinessSetting.CurrencySymbol@ViewBag.StockTransfer.Subtotal
+                                    }
+                                    else
+                                    {
+                                        @ViewBag.StockTransfer.Subtotal@ViewBag.BusinessSetting.CurrencySymbol
+                                    }
+                                </td>
+                            </tr>
+                            <tr class="total-row">
+                                <th>Total:</th>
+                                <td>
+                                    @if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                    {
+                                        @ViewBag.BusinessSetting.CurrencySymbol@ViewBag.StockTransfer.TotalAmount
+                                    }
+                                    else
+                                    {
+                                        @ViewBag.StockTransfer.TotalAmount@ViewBag.BusinessSetting.CurrencySymbol
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="footer-note">
+                <p><i class="fas fa-info-circle"></i> This is a computer generated stock transfer document. No signature is required.</p>
+            </div>
+
+            <div class="action-buttons noPrint">
+                <a href="javascript:void(0)" onclick="printInvoice()" class="btn btn-warning">
+                    <i class="fa fa-print"></i>
+                    Print Transfer
+                </a>
+                <a href="javascript:void(0)" onclick="exportInvoiceToPdf()" class="btn btn-secondary">
+                    <i class="fa fa-file-pdf"></i>
+                    Export PDF
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.22/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    function printInvoice() {
+        window.print();
+    }
+
+    function exportInvoiceToPdf() {
+        $('.noPrint').hide();
+        $('.responsive-table').css('height', '100%');
+        html2canvas($('.invoice-container')[0], {
+            backgroundColor: null,
+            useCORS: true,
+            scale: 2
+        }).then(function (canvas) {
+            var data = canvas.toDataURL();
+            var docDefinition = {
+                content: [{
+                    image: data,
+                    width: 500
+                }]
+            };
+
+            pdfMake.createPdf(docDefinition).download("Stock Transfer.pdf");
+            $('.responsive-table').css('height', '400px');
+            $('.noPrint').show();
+        });
+    }
+</script>

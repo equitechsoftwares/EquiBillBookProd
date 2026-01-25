@@ -1,0 +1,369 @@
+﻿@*@using EquiBillBook.Models;*@
+<!-- Brand Logo -->
+<a href="/Dashboard" class="brand-link">
+    <!-- Icon - always visible -->
+    <div class="brand-icon">
+        @{
+            if (ViewBag.WhitelabelType == 2)
+            {
+                <span class="brand-initials font-weight-bold">@ViewBag.BusinessSetting.BusinessName.Substring(0, Math.Min(2, ViewBag.BusinessSetting.BusinessName.Length))</span>
+            }
+            else
+            {
+                <img src="@(Request.Cookies["data"] != null && Request.Cookies["data"]["WhitelabelBusinessIcon"] != null ? Request.Cookies["data"]["WhitelabelBusinessIcon"] : "")" alt="" />
+            }
+        }
+    </div>
+    <!-- Brand text - shows on expanded or hover -->
+    @{
+        if (ViewBag.WhitelabelType == 2)
+        {
+            <span class="brand-text font-weight-bold">@ViewBag.BusinessSetting.BusinessName</span>
+        }
+        else
+        {
+            <span class="brand-text font-weight-bold">@(Request.Cookies["data"] != null && Request.Cookies["data"]["WhitelabelBusinessName"] != null ? Request.Cookies["data"]["WhitelabelBusinessName"] : "")</span>
+        }
+    }
+</a>
+<!-- Sidebar -->
+<div class="sidebar">
+    <!-- Sidebar user panel (optional) -->
+    @* <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+            <img src="@ViewBag.User.ProfilePic" class="img-circle elevation-2" alt="">
+        </div>
+        <div class="info">
+            <a href="/organizationsettings/profileupdate" class="d-block">@ViewBag.User.Name </a>
+        </div>
+    </div> *@
+    <!-- Sidebar Menu -->
+    <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+            <!-- Add icons to the links using the .nav-icon class
+    with font-awesome or any other icon font library -->
+            @{
+                foreach (var item in ViewBag.Menus)
+                {
+                    var url = Url.Action().ToLower().TrimStart('/').Split('?')[0];
+
+                    if (item.Menu == "Reports")
+                    {
+                        if (((IEnumerable<dynamic>)item.InnerMenus).Any(a => a.IsView))
+                        {
+                            var _class = item.Class != null ? item.Class.Replace("\n", "").Replace("\r", "").Split(',') : "".Split(',');
+                            <li class="nav-item">
+                                <a href="/reports/index" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url.Split('/')[0]) ? "active" : "")">
+                                    <i class="@item.Icon"></i>
+                                    <p>
+                                        @item.Title
+                                    </p>
+                                </a>
+                            </li>
+                        }
+                    }
+                    else if (item.Menu == "Settings")
+                    {
+                        if (((IEnumerable<dynamic>)item.InnerMenus).Any(a => a.IsView)){
+                            var _class = item.Class != null ? item.Class.Replace("\n", "").Replace("\r", "").Split(',') : "".Split(',');
+                        <li class="nav-item">
+                            <a href="/settings/index" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url.Split('/')[0]) ? "active" : "")">
+                                <i class="@item.Icon"></i>
+                                <p>
+                                    @item.Title
+                                </p>
+                            </a>
+                        </li>
+                            }
+                    }
+                    @*else if (item.Menu == "Items" && ViewBag.ItemSetting.EnablePrintLabel == false && ViewBag.ItemSetting.EnableStockAdjustment == false
+                    && ViewBag.ItemSetting.EnableStockTransfer == false)
+                {
+                    var _class = item.Class != null ? item.Class.Replace("\n", "").Replace("\r", "").Split(',') : "".Split(',');
+                    <li class="nav-item">
+                        <a href="/@item.InnerMenus[0].Url" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url.Split('/')[0]) ? "active" : "")">
+                            <i class="@item.Icon"></i>
+                            <p>
+                                @item.Title
+                            </p>
+                        </a>
+                    </li>
+                }*@
+                    else if (!item.HasChildren)
+                    {
+                        if (item.IsView)
+                        {
+                            var _class = item.Class != null ? item.Class.Replace("\n", "").Replace("\r", "").Split(',') : "".Split(',');
+                            <li class="nav-item">
+                                <a href="/@(item.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                    <i class="@item.Icon"></i>
+                                    <p>
+                                        @item.Title
+                                    </p>
+                                </a>
+                            </li>
+                }
+            }
+            else if (item.HasChildren)
+            {
+                if (item.IsView)
+                {
+                    var _class = item.Class != null ? item.Class.Replace("\n", "").Replace("\r", "").Split(',') : "".Split(',');
+
+                    //// Special handling for Restaurant menu - check if any branch has features enabled
+                    //if (item.Menu == "Restaurant")
+                    //{
+                    //    if (ViewBag.RestaurantSetting == null || ViewBag.RestaurantSetting.ShowRestaurantMenu != true)
+                    //    {
+                    //        continue; // Skip showing restaurant menu if no features enabled
+                    //    }
+                    //}
+
+                            <li class="nav-item @(item.Menu) @(((IList<dynamic>)_class).Select(a => a).Contains(url.Split('/')[0]) ? "menu-open" : "")">
+                                @if (item.Menu == "Restaurant")
+                                {
+                                    <a href="/restaurantdashboard/index" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url.Split('/')[0]) ? "active" : "")">
+                                        <i class="@item.Icon"></i>
+                                        <p>
+                                            @item.Title
+                                            @*<i class="right fas fa-angle-left"></i>*@
+                                        </p>
+                                    </a>
+
+                                    continue;
+                                }
+                                else
+                                {
+                                    <a href="#" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url.Split('/')[0]) ? "active" : "")">
+                                        <i class="@item.Icon"></i>
+                                        <p>
+                                            @item.Title
+                                            <i class="right fas fa-angle-left"></i>
+                                        </p>
+                                    </a>
+                                }
+                                <ul class="nav nav-treeview">
+                                    @foreach (var inner in item.InnerMenus)
+                                    {
+                                        if (inner.IsView)
+                                        {
+                                            _class = inner.Class != null ? inner.Class.Replace("\n", "").Replace("\r", "").Split(',') : "".Split(',');
+                                            if (item.Menu == "Items")
+                                            {
+                                                if (inner.Menu == "Print Label")
+                                                {
+                                                    if (ViewBag.ItemSetting.EnablePrintLabel == true)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                                <i class="@inner.Icon"></i>
+                                                                <p>@inner.Title</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                                else if (inner.Menu == "Stock Adjust")
+                                                {
+                                                    if (ViewBag.ItemSetting.EnableStockAdjustment == true)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                                <i class="@inner.Icon"></i>
+                                                                <p>@inner.Title</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                                else if (inner.Menu == "Stock Transfer")
+                                                {
+                                                    if (ViewBag.ItemSetting.EnableStockTransfer == true)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                                <i class="@inner.Icon"></i>
+                                                                <p>@inner.Title</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <li class="nav-item">
+                                                        <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                            <i class="@inner.Icon"></i>
+                                                            <p>@inner.Title</p>
+                                                        </a>
+                                                    </li>
+                                                }
+                                            }
+                                            else if (item.Menu == "Purchase")
+                                            {
+                                                if (inner.Menu == "Purchase Quotation")
+                                                {
+                                                    if (ViewBag.PurchaseSetting.EnablePurchaseQuotation == true)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                                <i class="@inner.Icon"></i>
+                                                                <p>@inner.Title</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                                else if (inner.Menu == "Purchase Order")
+                                                {
+                                                    if (ViewBag.PurchaseSetting.EnablePurchaseOrder == true)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                                <i class="@inner.Icon"></i>
+                                                                <p>@inner.Title</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <li class="nav-item">
+                                                        <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                            <i class="@inner.Icon"></i>
+                                                            <p>@inner.Title</p>
+                                                        </a>
+                                                    </li>
+                                                }
+                                            }
+                                            else if (item.Menu == "Sales")
+                                            {
+                                                if (inner.Menu == "Recurring Sales")
+                                                {
+                                                    if (ViewBag.SaleSetting.EnableRecurringSales == true)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                                <i class="@inner.Icon"></i>
+                                                                <p>@inner.Title</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                                else if (inner.Menu == "Sales Quotation")
+                                                {
+                                                    if (ViewBag.SaleSetting.EnableSalesQuotation == true)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                                <i class="@inner.Icon"></i>
+                                                                <p>@inner.Title</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                                else if (inner.Menu == "Sales Order")
+                                                {
+                                                    if (ViewBag.SaleSetting.EnableSalesOrder == true)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                                <i class="@inner.Icon"></i>
+                                                                <p>@inner.Title</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                                else if (inner.Menu == "Delivery Challan")
+                                                {
+                                                    if (ViewBag.SaleSetting.EnableDeliveryChallan == true)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                                <i class="@inner.Icon"></i>
+                                                                <p>@inner.Title</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                                else if (inner.Menu == "Sales Proforma")
+                                                {
+                                                    if (ViewBag.SaleSetting.EnableSalesProforma == true)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                                <i class="@inner.Icon"></i>
+                                                                <p>@inner.Title</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                                else if (inner.Menu == "POS")
+                                                {
+                                                    if (ViewBag.SaleSetting.EnablePos == true)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                                <i class="@inner.Icon"></i>
+                                                                <p>@inner.Title</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                                else if (inner.Menu == "Payment Link")
+                                                {
+                                                    if (ViewBag.SaleSetting.AllowOnlinePayment == true)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                                <i class="@inner.Icon"></i>
+                                                                <p>@inner.Title</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <li class="nav-item">
+                                                        <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                            <i class="@inner.Icon"></i>
+                                                            <p>@inner.Title</p>
+                                                        </a>
+                                                    </li>
+                                                }
+                                            }                                            
+                                            else
+                                            {
+                                                <li class="nav-item">
+                                                    <a href="/@(inner.Url)" class="nav-link @(((IList<dynamic>)_class).Select(a => a).Contains(url) ? "active" : "")">
+                                                        <i class="@inner.Icon"></i>
+                                                        <p>@inner.Title </p>
+                                                    </a>
+                                                </li>
+                                            }
+                                        }
+                                    }
+                                </ul>
+                            </li>
+                        }
+                    }
+                }
+            }
+            <li class="nav-item">
+                <a href="/knowledgebase" target="_blank" class="nav-link">
+                    <i class="nav-icon fas fa-book"></i>
+                    <p>
+                        Knowledge Base
+                    </p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="javascript:void(0)" onclick="logout()" class="nav-link">
+                    <i class="nav-icon fas fa-sign-out-alt"></i>
+                    <p>
+                        Logout
+                    </p>
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+    <!-- /.sidebar-menu -->
+</div>
+<!-- /.sidebar -->

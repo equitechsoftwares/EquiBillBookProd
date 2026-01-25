@@ -1,0 +1,875 @@
+
+@using System;
+@using System.Web;
+@using System.Web.Helpers;
+@using System.Collections.Generic;
+@using System.Linq;
+@using EquiBillBook.Models;
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Catalogue";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+    var catalogue = ViewBag.Catalogue;
+    var availableBranches = ViewBag.Branchs as IEnumerable<ClsBranchVm> ?? Enumerable.Empty<ClsBranchVm>();
+    long selectedBranchId = 0;
+    if (ViewBag.SelectedBranchId != null)
+    {
+        long.TryParse(ViewBag.SelectedBranchId.ToString(), out selectedBranchId);
+    }
+    var availableItems = ViewBag.Items as IEnumerable<ClsItemVm> ?? Enumerable.Empty<ClsItemVm>();
+    var availableCategories = ViewBag.Categories as IEnumerable<ClsCategoryVm> ?? Enumerable.Empty<ClsCategoryVm>();
+    var availableBrands = ViewBag.Brands as IEnumerable<ClsBrandVm> ?? Enumerable.Empty<ClsBrandVm>();
+    var selectedItemPairs = ViewBag.SelectedCatalogueItemPairs as List<string> ?? new List<string>();
+    var selectedCategoryIds = ViewBag.SelectedCategoryIds as List<long> ?? new List<long>();
+    var selectedBrandIds = ViewBag.SelectedBrandIds as List<long> ?? new List<long>();
+    Func<string, string> computeReadableTextColor = color =>
+    {
+        if (string.IsNullOrWhiteSpace(color))
+        {
+            return "#111827";
+        }
+        var hex = color.Trim();
+        if (hex.StartsWith("#", StringComparison.Ordinal))
+        {
+            hex = hex.Substring(1);
+        }
+        if (hex.Length != 6)
+        {
+            return "#111827";
+        }
+        int r, g, b;
+        if (!int.TryParse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out r) ||
+            !int.TryParse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out g) ||
+            !int.TryParse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out b))
+        {
+            return "#111827";
+        }
+        var brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness > 160 ? "#111827" : "#ffffff";
+    };
+    string headerColorValue = catalogue != null ? Convert.ToString(catalogue.HeaderColor) : null;
+    string headerTextColorValue = catalogue != null ? Convert.ToString(catalogue.HeaderTextColor) : null;
+    string resolvedHeaderTextColor = !string.IsNullOrWhiteSpace(headerTextColorValue)
+        ? headerTextColorValue
+        : computeReadableTextColor(headerColorValue);
+}
+
+<style>
+    .form-section {
+        border: 1px solid #dee2e6;
+        border-radius: .5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        background-color: #ffffff;
+        box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
+    }
+
+    .form-section legend {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .form-section .section-subtitle {
+        font-size: .85rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #6c757d;
+        font-weight: 600;
+        margin-top: .75rem;
+        margin-bottom: .5rem;
+    }
+
+</style>
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Catalogue</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/catalogue/index">Catalogue List</a></li>
+                        <li class="breadcrumb-item active">Edit Catalogue</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/catalogue/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-info-circle mr-2"></i>Basic Information</legend>
+                                <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                    <div class="form-group">
+                                        <label>Catalogue Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control divCatalogueName_ctrl" id="txtCatalogueName" placeholder="Enter catalogue name" value="@catalogue.CatalogueName">
+                                        <small class="text-red font-weight-bold errorText" id="divCatalogueName"></small>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                    <div class="form-group">
+                                        <label>Slug <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control divUniqueSlug_ctrl" id="txtSlug" placeholder="Enter unique slug (e.g., my-catalogue)" value="@catalogue.UniqueSlug">
+                                        <small class="text-muted">URL-friendly identifier (lowercase, no spaces)</small>
+                                        <br>
+                                        <small class="text-red font-weight-bold errorText" id="divUniqueSlug"></small>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                    <div class="form-group">
+                                        <label>Tagline</label>
+                                        <input type="text" class="form-control divTagline_ctrl" id="txtTagline" placeholder="Enter catalogue tagline" value="@catalogue.Tagline">
+                                        <small class="text-red font-weight-bold errorText" id="divTagline"></small>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                    <div class="form-group">
+                                        <label>Business Location <span class="text-danger">*</span></label>
+                                        <div class="input-group divBranch_ctrl">
+                                            <select class="form-control select2" style="width: 100%;" id="ddlBranch" data-placeholder="Select business location" data-initial-branch="@selectedBranchId">
+                                                @foreach (var item in availableBranches)
+                                                {
+                                                    var branchId = (long)item.BranchId;
+                                                    <option value="@branchId" @(selectedBranchId == branchId ? "selected" : "")>@item.Branch</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                    <div class="form-group">
+                                        <label>Catalogue Type <span class="text-danger">*</span></label>
+                                        <select class="form-control divCatalogueType_ctrl" id="ddlCatalogueType">
+                                            <option value="">-- Select Type --</option>
+                                            <option value="1" @(catalogue.CatalogueType == 1 ? "selected" : "")>All Items</option>
+                                            <option value="2" @(catalogue.CatalogueType == 2 ? "selected" : "")>Selected Items</option>
+                                            <option value="3" @(catalogue.CatalogueType == 3 ? "selected" : "")>By Category</option>
+                                            <option value="4" @(catalogue.CatalogueType == 4 ? "selected" : "")>By Brand</option>
+                                        </select>
+                                        <small class="text-red font-weight-bold errorText" id="divCatalogueType"></small>
+                                    </div>
+                                </div>
+
+                                @if (ViewBag.ItemSetting.EnableSellingPriceGroup == true)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Selling Price Group </label>
+                                            <div class="input-group" id="p_SellingPriceGroup_Dropdown">
+                                                <select class="form-control select2" style="width: 100%;" id="ddlSellingPriceGroup">
+                                                    <option value="0">Default Selling Price</option>
+                                                    @foreach (var item in ViewBag.SellingPriceGroups)
+                                                    {
+                                                        <option value="@item.SellingPriceGroupId" @(item.SellingPriceGroupId == catalogue.SellingPriceGroupId ? "selected" : "")>@item.SellingPriceGroup</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="form-section" id="catalogueScopeSection">
+                                <legend><i class="fas fa-layer-group mr-2"></i>Catalogue Scope</legend>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="alert alert-light border" id="catalogueScopeInfo">
+                                            <span id="catalogueScopeMessage">All active items will be included in this catalogue.</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-lg-6" id="selectedItemsContainer" style="display:none;">
+                                        <div class="form-group">
+                                            <label>Choose Items <span class="text-danger">*</span></label>
+                                            <select class="form-control select2" style="width: 100%;" id="ddlCatalogueItems" multiple="multiple" data-placeholder="Start typing to search items" data-preselected-items="@string.Join(",", selectedItemPairs)">
+                                                @foreach (var item in availableItems)
+                                                {
+                                                    var displayName = item.ItemName;
+                                                    if (!string.IsNullOrWhiteSpace(item.VariationName))
+                                                    {
+                                                        displayName += " - " + item.VariationName;
+                                                    }
+                                                    if (!string.IsNullOrWhiteSpace(item.SKU))
+                                                    {
+                                                        displayName += " (" + item.SKU + ")";
+                                                    }
+                                                    var optionValue = $"{item.ItemId}|{item.ItemDetailsId}";
+                                                    <option value="@optionValue" @(selectedItemPairs.Contains(optionValue) ? "selected" : "")>@displayName</option>
+                                                }
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divCatalogueItems"></small>
+                                            <small class="text-muted">Select specific items or variants that should appear.</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-lg-6" id="categoryContainer" style="display:none;">
+                                        <div class="form-group">
+                                            <label>Choose Categories <span class="text-danger">*</span></label>
+                                            <select class="form-control select2" style="width: 100%;" id="ddlCatalogueCategories" multiple="multiple" data-placeholder="Select categories">
+                                                @foreach (var category in availableCategories)
+                                                {
+                                                    <option value="@category.CategoryId" @(selectedCategoryIds.Contains(category.CategoryId) ? "selected" : "")>@category.Category</option>
+                                                }
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divCatalogueCategories"></small>
+                                            <small class="text-muted">All active items under the selected categories will be shown.</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-lg-6" id="brandContainer" style="display:none;">
+                                        <div class="form-group">
+                                            <label>Choose Brands <span class="text-danger">*</span></label>
+                                            <select class="form-control select2" style="width: 100%;" id="ddlCatalogueBrands" multiple="multiple" data-placeholder="Select brands">
+                                                @foreach (var brand in availableBrands)
+                                                {
+                                                    <option value="@brand.BrandId" @(selectedBrandIds.Contains(brand.BrandId) ? "selected" : "")>@brand.Brand</option>
+                                                }
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divCatalogueBrands"></small>
+                                            <small class="text-muted">Only items belonging to these brands will be included.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-calendar-alt mr-2"></i>Validity Period</legend>
+                                <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                    <div class="form-group">
+                                        <label>Valid From</label>
+                                        <div class="input-group date" id="_ValidFrom" data-target-input="nearest">
+                                            <input id="txtValidFrom" type="text" class="form-control datetimepicker-input divValidFrom_ctrl" data-target="#_ValidFrom" value="@(catalogue.ValidFrom != null ? ((DateTime)catalogue.ValidFrom).ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) : "")" />
+                                            <div class="input-group-append" data-target="#_ValidFrom" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divValidFrom"></small>
+                                        <small class="text-muted">Start date for catalogue availability</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                    <div class="form-group">
+                                        <label>Valid To</label>
+                                        <div class="input-group date" id="_ValidTo" data-target-input="nearest">
+                                            <input id="txtValidTo" type="text" class="form-control datetimepicker-input divValidTo_ctrl" data-target="#_ValidTo" value="@(catalogue.ValidTo != null ? ((DateTime)catalogue.ValidTo).ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) : "")" />
+                                            <div class="input-group-append" data-target="#_ValidTo" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divValidTo"></small>
+                                        <small class="text-muted">End date for catalogue availability</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch mt-4">
+                                            <input type="checkbox" class="custom-control-input" id="chkNeverExpires" @(catalogue.NeverExpires == true ? "checked" : "")>
+                                            <label class="custom-control-label" for="chkNeverExpires">Never Expires</label>
+                                        </div>
+                                        <small class="text-muted">Catalogue has no expiration date</small>
+                                    </div>
+                                </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-cog mr-2"></i>Display & Visibility</legend>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="section-subtitle">Pricing Information</div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowPrices" @(catalogue.ShowPrices == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowPrices">Show Prices</label>
+                                            </div>
+                                            <small class="text-muted">Display product prices</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowMRP" @(catalogue.ShowMRP == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowMRP">Show MRP</label>
+                                            </div>
+                                            <small class="text-muted">Display maximum retail price</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowDiscount" @(catalogue.ShowDiscount == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowDiscount">Show Discount</label>
+                                            </div>
+                                            <small class="text-muted">Display discount information</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="section-subtitle">Inventory & Product Data</div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowStock" @(catalogue.ShowStock == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowStock">Show Stock</label>
+                                            </div>
+                                            <small class="text-muted">Display stock availability</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowOutOfStock" @(catalogue.ShowOutOfStock == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowOutOfStock">Show Out of Stock</label>
+                                            </div>
+                                            <small class="text-muted">Display out of stock products</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowProductCode" @(catalogue.ShowProductCode == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowProductCode">Show Product Code</label>
+                                            </div>
+                                            <small class="text-muted">Display SKU/Product codes</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowImages" @(catalogue.ShowImages == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowImages">Show Images</label>
+                                            </div>
+                                            <small class="text-muted">Display product images</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="section-subtitle">Business Identity & Contact</div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowBusinessName" @(catalogue.ShowBusinessName == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowBusinessName">Show Business Name</label>
+                                            </div>
+                                            <small class="text-muted">Display business name</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowBusinessLogo" @(catalogue.ShowBusinessLogo == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowBusinessLogo">Show Business Logo</label>
+                                            </div>
+                                            <small class="text-muted">Display business logo</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowAddress" @(catalogue.ShowAddress == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowAddress">Show Address</label>
+                                            </div>
+                                            <small class="text-muted">Display business address</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowContact" @(catalogue.ShowContact == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowContact">Show Contact</label>
+                                            </div>
+                                            <small class="text-muted">Display contact phone</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowWhatsApp" @(catalogue.ShowWhatsApp == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowWhatsApp">Show Whatsapp</label>
+                                            </div>
+                                            <small class="text-muted">Display WhatsApp number</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowEmail" @(catalogue.ShowEmail == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowEmail">Show Email</label>
+                                            </div>
+                                            <small class="text-muted">Display contact email</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowGstin" @(catalogue.ShowGstin == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowGstin">Show GSTIN Number</label>
+                                            </div>
+                                            <small class="text-muted">Display GSTIN/tax registration</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="section-subtitle">Customer Engagement</div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkEnableWhatsAppEnquiry" @(catalogue.EnableWhatsAppEnquiry == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkEnableWhatsAppEnquiry">WhatsApp Support Floating Button</label>
+                                            </div>
+                                            <small class="text-muted">Show floating WhatsApp enquiry button</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkEnableWhatsAppItems" @(catalogue.EnableWhatsAppEnquiryForItems == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkEnableWhatsAppItems">WhatsApp Enquiry For Items</label>
+                                            </div>
+                                            <small class="text-muted">Allow WhatsApp enquiries on individual items</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkEnableAddToCart" @(catalogue.EnableAddToCart == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkEnableAddToCart">Enable Add to Cart</label>
+                                            </div>
+                                            <small class="text-muted">Allow customers to build a quotation cart</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2" id="divAddToCartModeWrapper" style="@(catalogue.EnableAddToCart == true ? "" : "display:none;")">
+                                        <div class="form-group">
+                                            <label>Quotation Handling</label>
+                                            <select class="form-control divAddToCartMode_ctrl" id="ddlAddToCartMode">
+                                                <option value="">-- Select Option --</option>
+                                                <option value="1" @(catalogue.AddToCartQuotationMode == 1 ? "selected" : "")>Create sales quotation in system</option>
+                                                <option value="2" @(catalogue.AddToCartQuotationMode == 2 ? "selected" : "")>Get quotation on WhatsApp</option>
+                                                <option value="3" @(catalogue.AddToCartQuotationMode == 3 ? "selected" : "")>Create quotation in system and WhatsApp</option>
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divAddToCartMode"></small>
+                                            <small class="text-muted">Decide where the quotation should be generated</small>
+                                        </div>
+                                    </div>
+
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div class="form-group">
+                                        <label>Cart Disclaimer</label>
+                                        <textarea class="form-control divCartDisclaimerText_ctrl" id="txtCartDisclaimer" rows="3" maxlength="250">@catalogue.CartDisclaimerText</textarea>
+                                        <small class="text-red font-weight-bold errorText" id="divCartDisclaimerText"></small>
+                                        <small class="text-muted">Shown beneath the cart total in the customer view.</small>
+                                    </div>
+                                </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="section-subtitle">Catalogue Controls</div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkIsActive" @(catalogue.IsActive == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkIsActive">Is Active</label>
+                                            </div>
+                                            <small class="text-muted">Activate catalogue</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkShowInInvoices" @(catalogue.ShowInInvoices == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkShowInInvoices">Show this catalogue in invoices</label>
+                                            </div>
+                                            <small class="text-muted">If there are multiple catalogues for this branch, all others will be hidden but this will show in invoices</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Items Per Page</label>
+                                            <select class="form-control divItemsPerPage_ctrl" id="txtItemsPerPage">
+                                                <option value="10" @(catalogue.ItemsPerPage == 10 ? "selected" : "")>10</option>
+                                                <option value="25" @(catalogue.ItemsPerPage == 25 ? "selected" : "")>25</option>
+                                                <option value="50" @(catalogue.ItemsPerPage == 50 ? "selected" : "")>50</option>
+                                                <option value="100" @(catalogue.ItemsPerPage == 100 ? "selected" : "")>100</option>
+                                                <option value="500" @(catalogue.ItemsPerPage == 500 ? "selected" : "")>500</option>
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divItemsPerPage"></small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Default Sort Order</label>
+                                            <select class="form-control divDefaultSortOrder_ctrl" id="ddlDefaultSortOrder">
+                                                <option value="1" @(catalogue.DefaultSortOrder == 1 ? "selected" : "")>Popularity</option>
+                                                <option value="2" @(catalogue.DefaultSortOrder == 2 ? "selected" : "")>Price: Low to High</option>
+                                                <option value="3" @(catalogue.DefaultSortOrder == 3 ? "selected" : "")>Price: High to Low</option>
+                                                <option value="4" @(catalogue.DefaultSortOrder == 4 ? "selected" : "")>Newest First</option>
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divDefaultSortOrder"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-palette mr-2"></i>Theme & Appearance</legend>
+                                <div class="row">
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Theme</label>
+                                            @{
+                                                var selectedThemeValue = System.Convert.ToString(catalogue.Theme);
+                                            }
+                                            <select class="form-control divTheme_ctrl" id="ddlTheme">
+                                                <option value="">-- Select Theme --</option>
+                                                <option value="default" @(
+                                                    System.String.Equals(selectedThemeValue, "default", System.StringComparison.OrdinalIgnoreCase) ||
+                                                    System.String.Equals(selectedThemeValue, "0", System.StringComparison.OrdinalIgnoreCase)
+                                                        ? "selected"
+                                                        : string.Empty)>Default</option>
+                                                <option value="modern" @(
+                                                    System.String.Equals(selectedThemeValue, "modern", System.StringComparison.OrdinalIgnoreCase) ||
+                                                    System.String.Equals(selectedThemeValue, "modern cards", System.StringComparison.OrdinalIgnoreCase) ||
+                                                    System.String.Equals(selectedThemeValue, "2", System.StringComparison.OrdinalIgnoreCase)
+                                                        ? "selected"
+                                                        : string.Empty)>Modern</option>
+                                                <option value="classic" @(
+                                                    System.String.Equals(selectedThemeValue, "classic", System.StringComparison.OrdinalIgnoreCase) ||
+                                                    System.String.Equals(selectedThemeValue, "classic grid", System.StringComparison.OrdinalIgnoreCase) ||
+                                                    System.String.Equals(selectedThemeValue, "1", System.StringComparison.OrdinalIgnoreCase)
+                                                        ? "selected"
+                                                        : string.Empty)>Classic</option>
+                                                <option value="minimal" @(
+                                                    System.String.Equals(selectedThemeValue, "minimal", System.StringComparison.OrdinalIgnoreCase) ||
+                                                    System.String.Equals(selectedThemeValue, "compact list", System.StringComparison.OrdinalIgnoreCase) ||
+                                                    System.String.Equals(selectedThemeValue, "3", System.StringComparison.OrdinalIgnoreCase)
+                                                        ? "selected"
+                                                        : string.Empty)>Minimal</option>
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divTheme"></small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkFixedHeader" @(catalogue.IsHeaderFixed == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkFixedHeader">Fixed Header</label>
+                                            </div>
+                                            <small class="text-muted">Keep header visible while scrolling</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Header Color</label>
+                                            <input type="color" class="form-control divHeaderColor_ctrl" id="txtHeaderColor" value="@(catalogue.HeaderColor ?? "#007bff")">
+                                            <small class="text-red font-weight-bold errorText" id="divHeaderColor"></small>
+                                        </div>
+                                    </div>
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                    <div class="form-group">
+                        <label>Header Text Color</label>
+                        <input type="color" class="form-control divHeaderTextColor_ctrl" id="txtHeaderTextColor" value="@resolvedHeaderTextColor">
+                        <small class="text-red font-weight-bold errorText" id="divHeaderTextColor"></small>
+                    </div>
+                </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Top Info Bar Background</label>
+                                            <input type="color" class="form-control divTopBarColor_ctrl" id="txtTopBarColor" value="@(catalogue.TopBarColor ?? "#f8fafc")">
+                                            <small class="text-red font-weight-bold errorText" id="divTopBarColor"></small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Top Info Bar Text</label>
+                                            <input type="color" class="form-control divTopBarTextColor_ctrl" id="txtTopBarTextColor" value="@(catalogue.TopBarTextColor ?? "#6b7280")">
+                                            <small class="text-red font-weight-bold errorText" id="divTopBarTextColor"></small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Body Background</label>
+                                            <input type="color" class="form-control divBodyBackgroundColor_ctrl" id="txtBodyBackgroundColor" value="@(catalogue.BodyBackgroundColor ?? "#ffffff")">
+                                            <small class="text-red font-weight-bold errorText" id="divBodyBackgroundColor"></small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Body Text</label>
+                                            <input type="color" class="form-control divBodyTextColor_ctrl" id="txtBodyTextColor" value="@(catalogue.BodyTextColor ?? "#111827")">
+                                            <small class="text-red font-weight-bold errorText" id="divBodyTextColor"></small>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Link & Icon Accent Color</label>
+                                            <input type="color" class="form-control divLinkIconAccentColor_ctrl" id="txtLinkIconAccentColor" value="@(catalogue.LinkIconAccentColor ?? "#e11d2e")">
+                                            <small class="text-red font-weight-bold errorText" id="divLinkIconAccentColor"></small>
+                                            <small class="text-muted">Controls header links, quick actions, and other interactive highlights</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Add to Cart Button Color</label>
+                                            <input type="color" class="form-control divAddToCartButtonColor_ctrl" id="txtAddToCartButtonColor" value="@(catalogue.AddToCartButtonColor ?? catalogue.LinkIconAccentColor ?? "#e11d2e")">
+                                            <small class="text-red font-weight-bold errorText" id="divAddToCartButtonColor"></small>
+                                            <small class="text-muted">Applies to Add to Cart, Buy Now, and other primary call-to-action buttons</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>WhatsApp Support Button Color</label>
+                                            <input type="color" class="form-control divWhatsappSupportButtonColor_ctrl" id="txtWhatsappSupportButtonColor" value="@(catalogue.WhatsappSupportButtonColor ?? "#25d366")">
+                                            <small class="text-red font-weight-bold errorText" id="divWhatsappSupportButtonColor"></small>
+                                            <small class="text-muted">Used for WhatsApp support and other secondary action buttons</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Filter & Badge Color</label>
+                                            <input type="color" class="form-control divFilterBadgeColor_ctrl" id="txtFilterBadgeColor" value="@(catalogue.FilterBadgeColor ?? "#0ea5e9")">
+                                            <small class="text-red font-weight-bold errorText" id="divFilterBadgeColor"></small>
+                                            <small class="text-muted">Sets the color for filter chips, tags, and informational badges</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-lock mr-2"></i>Advanced Features</legend>
+                                <div class="row">
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="chkIsPasswordProtected" @(catalogue.IsPasswordProtected == true ? "checked" : "")>
+                                                <label class="custom-control-label" for="chkIsPasswordProtected">Password Protected</label>
+                                            </div>
+                                            <small class="text-muted">Require password to view</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="form-group">
+                                            <label>Access Password</label>
+                                            <input type="password" class="form-control divPassword_ctrl" id="txtPassword" placeholder="Enter password" value="@catalogue.Password">
+                                            <small class="text-red font-weight-bold errorText" id="divPassword"></small>
+                                            <small class="text-muted">Password for private access</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-search mr-2"></i>SEO Settings</legend>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Meta Title</label>
+                                            <input type="text" class="form-control divMetaTitle_ctrl" id="txtMetaTitle" placeholder="Enter meta title for SEO" value="@catalogue.MetaTitle">
+                                            <small class="text-red font-weight-bold errorText" id="divMetaTitle"></small>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Meta Description</label>
+                                            <textarea class="form-control divMetaDescription_ctrl" id="txtMetaDescription" rows="3" placeholder="Enter meta description for SEO">@catalogue.MetaDescription</textarea>
+                                            <small class="text-red font-weight-bold errorText" id="divMetaDescription"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-chart-line mr-2"></i>Analytics</legend>
+                                <div class="row">
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label>Google Analytics Measurement ID</label>
+                                            <input type="text" class="form-control divGoogleAnalyticsId_ctrl" id="txtGoogleAnalyticsId" placeholder="e.g. G-XXXXXXXXXX" value="@catalogue.GoogleAnalyticsId">
+                                            <small class="text-red font-weight-bold errorText" id="divGoogleAnalyticsId"></small>
+                                            <small class="text-muted">Optional. Add tracking to your public catalogue.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-star mr-2"></i>Google Review</legend>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Google Review URL</label>
+                                            <input type="url" class="form-control divGoogleReviewUrl_ctrl" id="txtGoogleReviewUrl" placeholder="https://search.google.com/local/writereview?placeid=..." value="@catalogue.GoogleReviewUrl">
+                                            <small class="text-red font-weight-bold errorText" id="divGoogleReviewUrl"></small>
+                                            <small class="text-muted">Optional. Add a button to allow customers to write Google reviews. Get your review URL from your Google Business Profile.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-share-alt mr-2"></i>Social Media Links</legend>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <small class="text-muted">Add your social media profiles to display on the public catalogue. All fields are optional.</small>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label><i class="fab fa-facebook text-primary mr-1"></i>Facebook URL</label>
+                                            <input type="url" class="form-control divFacebookUrl_ctrl" id="txtFacebookUrl" placeholder="https://www.facebook.com/yourpage" value="@catalogue.FacebookUrl">
+                                            <small class="text-red font-weight-bold errorText" id="divFacebookUrl"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label><i class="fab fa-instagram text-danger mr-1"></i>Instagram URL</label>
+                                            <input type="url" class="form-control divInstagramUrl_ctrl" id="txtInstagramUrl" placeholder="https://www.instagram.com/yourprofile" value="@catalogue.InstagramUrl">
+                                            <small class="text-red font-weight-bold errorText" id="divInstagramUrl"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label><i class="fab fa-twitter text-info mr-1"></i>Twitter/X URL</label>
+                                            <input type="url" class="form-control divTwitterUrl_ctrl" id="txtTwitterUrl" placeholder="https://twitter.com/yourhandle" value="@catalogue.TwitterUrl">
+                                            <small class="text-red font-weight-bold errorText" id="divTwitterUrl"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label><i class="fab fa-linkedin text-primary mr-1"></i>LinkedIn URL</label>
+                                            <input type="url" class="form-control divLinkedInUrl_ctrl" id="txtLinkedInUrl" placeholder="https://www.linkedin.com/company/yourcompany" value="@catalogue.LinkedInUrl">
+                                            <small class="text-red font-weight-bold errorText" id="divLinkedInUrl"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label><i class="fab fa-youtube text-danger mr-1"></i>YouTube URL</label>
+                                            <input type="url" class="form-control divYouTubeUrl_ctrl" id="txtYouTubeUrl" placeholder="https://www.youtube.com/yourchannel" value="@catalogue.YouTubeUrl">
+                                            <small class="text-red font-weight-bold errorText" id="divYouTubeUrl"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label><i class="fab fa-tiktok mr-1"></i>TikTok URL</label>
+                                            <input type="url" class="form-control divTikTokUrl_ctrl" id="txtTikTokUrl" placeholder="https://www.tiktok.com/yourhandle" value="@catalogue.TikTokUrl">
+                                            <small class="text-red font-weight-bold errorText" id="divTikTokUrl"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label><i class="fab fa-pinterest text-danger mr-1"></i>Pinterest URL</label>
+                                            <input type="url" class="form-control divPinterestUrl_ctrl" id="txtPinterestUrl" placeholder="https://www.pinterest.com/yourprofile" value="@catalogue.PinterestUrl">
+                                            <small class="text-red font-weight-bold errorText" id="divPinterestUrl"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnUpdate" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                            <button id="btnUpdate_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<script src="~/Content/JQuery/Customer/Catalogue/Catalogue.js"></script>
+
+<script>
+   
+    function copyPublicUrl() {
+        var url = window.location.origin + '/c/@catalogue.UniqueSlug';
+        
+        // Create temporary input element
+        var tempInput = document.createElement('input');
+        tempInput.value = url;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        
+        // Show success message
+        toastr.success('Public URL copied to clipboard: ' + url);
+    }
+</script>
+

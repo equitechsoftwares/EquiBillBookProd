@@ -1,0 +1,863 @@
+@using System;
+@using System.Collections.Generic;
+@using System.Web;
+@{
+    if (ViewBag.Catalogue != null)
+    {
+        <div class="modal-header">
+            <h4 class="modal-title">Catalogue Details</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+            <div class="modal-body">
+                <div class="card card-primary card-outline">
+                    <div class="card-body">
+                        <style>
+                            .form-section {
+                                border: 1px solid #dee2e6;
+                                border-radius: .5rem;
+                                padding: 1.25rem;
+                                margin-bottom: 1.75rem;
+                                background-color: #ffffff;
+                                box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .05);
+                            }
+
+                            .form-section legend {
+                                font-size: 1.05rem;
+                                font-weight: 600;
+                                margin-bottom: 1rem;
+                            }
+
+                            .form-section .section-subtitle {
+                                font-size: .8rem;
+                                text-transform: uppercase;
+                                letter-spacing: .08em;
+                                color: #6c757d;
+                                font-weight: 600;
+                                margin-top: .75rem;
+                                margin-bottom: .5rem;
+                            }
+                        </style>
+
+                        <fieldset class="form-section">
+                            <legend><i class="fas fa-info-circle mr-2"></i>Overview</legend>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Catalogue Name</label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.Catalogue.CatalogueName</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Unique Slug</label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.Catalogue.UniqueSlug</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 @(ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                    <div class="form-group">
+                                        <label>Business Location</label>
+                                        <div class="input-group">
+                                            @{
+                                                long selectedBranchId = 0;
+                                                if (ViewBag.SelectedBranchId != null)
+                                                {
+                                                    long.TryParse(ViewBag.SelectedBranchId.ToString(), out selectedBranchId);
+                                                }
+                                                foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    long branchId = 0;
+                                                    try
+                                                    {
+                                                        branchId = Convert.ToInt64(item.BranchId);
+                                                    }
+                                                    catch
+                                                    {
+                                                        branchId = 0;
+                                                    }
+
+                                                    if (branchId > 0 && branchId == selectedBranchId)
+                                                    {
+                                                        <span>@item.Branch</span>
+                                                    }
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Catalogue Type</label>
+                                        <div class="input-group">
+                                            <span>
+                                                @{
+                                                    var catalogueType = "";
+                                                    switch (ViewBag.Catalogue.CatalogueType)
+                                                    {
+                                                        case 1:
+                                                            catalogueType = "All Items";
+                                                            break;
+                                                        case 2:
+                                                            catalogueType = "Selected Items";
+                                                            break;
+                                                        case 3:
+                                                            catalogueType = "By Category";
+                                                            break;
+                                                        case 4:
+                                                            catalogueType = "By Brand";
+                                                            break;
+                                                    }
+                                                    @catalogueType
+                                                }
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(ViewBag.Catalogue.Tagline))
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Tagline</label>
+                                            <div class="input-group">
+                                                <span>@ViewBag.Catalogue.Tagline</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (ViewBag.Catalogue.SellingPriceGroupId > 0)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Selling Price Group</label>
+                                            <div class="input-group">
+                                                @foreach (var item in ViewBag.SellingPriceGroups)
+                                                {
+                                                    if (ViewBag.Catalogue.SellingPriceGroupId == item.SellingPriceGroupId)
+                                                    {
+                                                        <span>@item.SellingPriceGroup</span>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="form-section">
+                            <legend><i class="fas fa-calendar-alt mr-2"></i>Availability & Status</legend>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Valid From</label>
+                                        <div class="input-group">
+                                            <span>
+                                                @(ViewBag.Catalogue.ValidFrom != null ? ((DateTime)ViewBag.Catalogue.ValidFrom).ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) : "N/A")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Valid To</label>
+                                        <div class="input-group">
+                                            <span>
+                                                @(ViewBag.Catalogue.NeverExpires == true ? "Never Expires" : ViewBag.Catalogue.ValidTo != null ? ((DateTime)ViewBag.Catalogue.ValidTo).ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) : "N/A")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <div class="input-group">
+                                            @if (ViewBag.Catalogue.IsActive)
+                                            {
+                                                <span class="badge badge-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger">Inactive</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @if (ViewBag.Catalogue.IsActive)
+                                {
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Catalogue URL</label>
+                                            <div class="input-group">
+                                                <a href="/c/@ViewBag.Catalogue.UniqueSlug" target="_blank">
+                                                    @(Request.Url.Scheme + "://" + Request.Url.Authority + "/c/" + ViewBag.Catalogue.UniqueSlug)
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="form-section">
+                            <legend><i class="fas fa-cog mr-2"></i>Display & Visibility</legend>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="section-subtitle">Pricing Information</div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show Prices</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowPrices ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowPrices ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show MRP</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowMRP ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowMRP ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show Discount</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowDiscount ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowDiscount ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="section-subtitle">Inventory & Product Data</div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show Stock</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowStock ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowStock ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show Out of Stock Items</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowOutOfStock ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowOutOfStock ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show Product Code</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowProductCode ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowProductCode ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show Images</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowImages ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowImages ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="section-subtitle">Business Identity & Contact</div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show Business Logo</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowBusinessLogo ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowBusinessLogo ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show Business Name</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowBusinessName ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowBusinessName ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show Address</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowAddress ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowAddress ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show Contact</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowContact ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowContact ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show WhatsApp</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowWhatsApp ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowWhatsApp ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show Email</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowEmail ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowEmail ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show GSTIN Number</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowGstin ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowGstin ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="section-subtitle">Customer Engagement</div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>WhatsApp Support Button</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.EnableWhatsAppEnquiry ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.EnableWhatsAppEnquiry ? "Enabled" : "Disabled")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>WhatsApp Enquiry For Items</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.EnableWhatsAppEnquiryForItems ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.EnableWhatsAppEnquiryForItems ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Enable Add to Cart</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.EnableAddToCart ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.EnableAddToCart ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @if (ViewBag.Catalogue.EnableAddToCart)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Quotation Handling</label>
+                                            <div class="input-group">
+                                                <span>
+                                                    @{
+                                                        var addToCartMode = System.Convert.ToInt32(ViewBag.Catalogue.AddToCartQuotationMode ?? 0);
+                                                        var addToCartText = "Not configured";
+                                                        switch (addToCartMode)
+                                                        {
+                                                            case 1:
+                                                                addToCartText = "Create sales quotation in system";
+                                                                break;
+                                                            case 2:
+                                                                addToCartText = "Get quotation on WhatsApp";
+                                                                break;
+                                                            case 3:
+                                                                addToCartText = "Create quotation in system and WhatsApp";
+                                                                break;
+                                                        }
+                                                        @addToCartText
+                                                    }
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="section-subtitle">Catalogue Controls</div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Items Per Page</label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.Catalogue.ItemsPerPage</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Default Sort Order</label>
+                                        <div class="input-group">
+                                            <span>
+                                                @{
+                                                    var sortOrder = "";
+                                                    switch (ViewBag.Catalogue.DefaultSortOrder)
+                                                    {
+                                                        case 1:
+                                                            sortOrder = "Popularity";
+                                                            break;
+                                                        case 2:
+                                                            sortOrder = "Price: Low to High";
+                                                            break;
+                                                        case 3:
+                                                            sortOrder = "Price: High to Low";
+                                                            break;
+                                                        case 4:
+                                                            sortOrder = "Newest First";
+                                                            break;
+                                                        default:
+                                                            sortOrder = "Default";
+                                                            break;
+                                                    }
+                                                    @sortOrder
+                                                }
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Show in Invoices</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.ShowInInvoices ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.ShowInInvoices ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                        @if (ViewBag.Catalogue.ShowInInvoices)
+                                        {
+                                            <small class="text-muted">This catalogue will be shown on invoices for this branch</small>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="form-section">
+                            <legend><i class="fas fa-palette mr-2"></i>Theme & Appearance</legend>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Theme</label>
+                                        <div class="input-group">
+                                            <span>
+                                                @{
+                                                    var rawThemeValue = System.Convert.ToString(ViewBag.Catalogue.Theme);
+                                                    var normalizedTheme = string.IsNullOrWhiteSpace(rawThemeValue)
+                                                        ? "default"
+                                                        : rawThemeValue.Trim().ToLowerInvariant();
+                                                    string themeLabel;
+                                                    switch (normalizedTheme)
+                                                    {
+                                                        case "1":
+                                                        case "classic":
+                                                        case "classic grid":
+                                                            themeLabel = "Classic Grid";
+                                                            break;
+                                                        case "2":
+                                                        case "modern":
+                                                        case "modern cards":
+                                                            themeLabel = "Modern Cards";
+                                                            break;
+                                                        case "3":
+                                                        case "minimal":
+                                                        case "compact list":
+                                                            themeLabel = "Minimal";
+                                                            break;
+                                                        default:
+                                                            themeLabel = "Default";
+                                                            break;
+                                                    }
+                                                    @themeLabel
+                                                }
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(ViewBag.Catalogue.HeaderColor))
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Header Color</label>
+                                            <div class="input-group">
+                                                <span style="display: inline-block; width: 30px; height: 20px; background-color: @ViewBag.Catalogue.HeaderColor; border: 1px solid #ccc; margin-right: 5px;"></span>
+                                                <span>@ViewBag.Catalogue.HeaderColor</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(ViewBag.Catalogue.HeaderTextColor))
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Header Text Color</label>
+                                            <div class="input-group">
+                                                <span style="display: inline-block; width: 30px; height: 20px; background-color: @ViewBag.Catalogue.HeaderTextColor; border: 1px solid #ccc; margin-right: 5px;"></span>
+                                                <span>@ViewBag.Catalogue.HeaderTextColor</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(ViewBag.Catalogue.TopBarColor))
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Top Info Bar Background</label>
+                                            <div class="input-group">
+                                                <span style="display: inline-block; width: 30px; height: 20px; background-color: @ViewBag.Catalogue.TopBarColor; border: 1px solid #ccc; margin-right: 5px;"></span>
+                                                <span>@ViewBag.Catalogue.TopBarColor</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(ViewBag.Catalogue.TopBarTextColor))
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Top Info Bar Text</label>
+                                            <div class="input-group">
+                                                <span style="display: inline-block; width: 30px; height: 20px; background-color: @ViewBag.Catalogue.TopBarTextColor; border: 1px solid #ccc; margin-right: 5px;"></span>
+                                                <span>@ViewBag.Catalogue.TopBarTextColor</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(ViewBag.Catalogue.BodyBackgroundColor))
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Body Background</label>
+                                            <div class="input-group">
+                                                <span style="display: inline-block; width: 30px; height: 20px; background-color: @ViewBag.Catalogue.BodyBackgroundColor; border: 1px solid #ccc; margin-right: 5px;"></span>
+                                                <span>@ViewBag.Catalogue.BodyBackgroundColor</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(ViewBag.Catalogue.BodyTextColor))
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Body Text</label>
+                                            <div class="input-group">
+                                                <span style="display: inline-block; width: 30px; height: 20px; background-color: @ViewBag.Catalogue.BodyTextColor; border: 1px solid #ccc; margin-right: 5px;"></span>
+                                                <span>@ViewBag.Catalogue.BodyTextColor</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(ViewBag.Catalogue.LinkIconAccentColor))
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Link & Icon Accent Color</label>
+                                            <div class="input-group">
+                                                <span style="display: inline-block; width: 30px; height: 20px; background-color: @ViewBag.Catalogue.LinkIconAccentColor; border: 1px solid #ccc; margin-right: 5px;"></span>
+                                                <span>@ViewBag.Catalogue.LinkIconAccentColor</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(ViewBag.Catalogue.AddToCartButtonColor))
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Add to Cart Button Color</label>
+                                            <div class="input-group">
+                                                <span style="display: inline-block; width: 30px; height: 20px; background-color: @ViewBag.Catalogue.AddToCartButtonColor; border: 1px solid #ccc; margin-right: 5px;"></span>
+                                                <span>@ViewBag.Catalogue.AddToCartButtonColor</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(ViewBag.Catalogue.WhatsappSupportButtonColor))
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>WhatsApp Support Button Color</label>
+                                            <div class="input-group">
+                                                <span style="display: inline-block; width: 30px; height: 20px; background-color: @ViewBag.Catalogue.WhatsappSupportButtonColor; border: 1px solid #ccc; margin-right: 5px;"></span>
+                                                <span>@ViewBag.Catalogue.WhatsappSupportButtonColor</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(ViewBag.Catalogue.FilterBadgeColor))
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Filter & Badge Color</label>
+                                            <div class="input-group">
+                                                <span style="display: inline-block; width: 30px; height: 20px; background-color: @ViewBag.Catalogue.FilterBadgeColor; border: 1px solid #ccc; margin-right: 5px;"></span>
+                                                <span>@ViewBag.Catalogue.FilterBadgeColor</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Fixed Header</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.IsHeaderFixed ? "badge-success" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.IsHeaderFixed ? "Enabled" : "Disabled")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="form-section">
+                            <legend><i class="fas fa-lock mr-2"></i>Advanced Features</legend>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Password Protected</label>
+                                        <div class="input-group">
+                                            <span class="badge @(ViewBag.Catalogue.IsPasswordProtected ? "badge-warning" : "badge-secondary")">
+                                                @(ViewBag.Catalogue.IsPasswordProtected ? "Yes" : "No")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        @if (!string.IsNullOrEmpty(ViewBag.Catalogue.MetaTitle) || !string.IsNullOrEmpty(ViewBag.Catalogue.MetaDescription))
+                        {
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-search mr-2"></i>SEO Settings</legend>
+                                <div class="row">
+                                    @if (!string.IsNullOrEmpty(ViewBag.Catalogue.MetaTitle))
+                                    {
+                                        <div class="col-12 col-sm-6">
+                                            <div class="form-group">
+                                                <label>Meta Title</label>
+                                                <div class="input-group">
+                                                    <span>@ViewBag.Catalogue.MetaTitle</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(ViewBag.Catalogue.MetaDescription))
+                                    {
+                                        <div class="col-12 col-sm-6">
+                                            <div class="form-group">
+                                                <label>Meta Description</label>
+                                                <div class="input-group">
+                                                    <span>@ViewBag.Catalogue.MetaDescription</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </fieldset>
+                        }
+
+                        <fieldset class="form-section">
+                            <legend><i class="fas fa-chart-line mr-2"></i>Analytics</legend>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Google Analytics Measurement ID</label>
+                                        <div class="input-group">
+                                            <span>@(!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.GoogleAnalyticsId)) ? ViewBag.Catalogue.GoogleAnalyticsId : "Not configured")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        @{
+                            bool hasSocialMedia = !string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.FacebookUrl)) ||
+                                                  !string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.InstagramUrl)) ||
+                                                  !string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.TwitterUrl)) ||
+                                                  !string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.LinkedInUrl)) ||
+                                                  !string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.YouTubeUrl)) ||
+                                                  !string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.TikTokUrl)) ||
+                                                  !string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.PinterestUrl));
+                        }
+                        @if (hasSocialMedia)
+                        {
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-share-alt mr-2"></i>Social Media Links</legend>
+                                <div class="row">
+                                    @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.FacebookUrl)))
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                            <div class="form-group">
+                                                <label><i class="fab fa-facebook text-primary mr-1"></i>Facebook</label>
+                                                <div class="input-group">
+                                                    <a href="@ViewBag.Catalogue.FacebookUrl" target="_blank" rel="noopener">@ViewBag.Catalogue.FacebookUrl</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.InstagramUrl)))
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                            <div class="form-group">
+                                                <label><i class="fab fa-instagram text-danger mr-1"></i>Instagram</label>
+                                                <div class="input-group">
+                                                    <a href="@ViewBag.Catalogue.InstagramUrl" target="_blank" rel="noopener">@ViewBag.Catalogue.InstagramUrl</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.TwitterUrl)))
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                            <div class="form-group">
+                                                <label><i class="fab fa-twitter text-info mr-1"></i>Twitter/X</label>
+                                                <div class="input-group">
+                                                    <a href="@ViewBag.Catalogue.TwitterUrl" target="_blank" rel="noopener">@ViewBag.Catalogue.TwitterUrl</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.LinkedInUrl)))
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                            <div class="form-group">
+                                                <label><i class="fab fa-linkedin text-primary mr-1"></i>LinkedIn</label>
+                                                <div class="input-group">
+                                                    <a href="@ViewBag.Catalogue.LinkedInUrl" target="_blank" rel="noopener">@ViewBag.Catalogue.LinkedInUrl</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.YouTubeUrl)))
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                            <div class="form-group">
+                                                <label><i class="fab fa-youtube text-danger mr-1"></i>YouTube</label>
+                                                <div class="input-group">
+                                                    <a href="@ViewBag.Catalogue.YouTubeUrl" target="_blank" rel="noopener">@ViewBag.Catalogue.YouTubeUrl</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.TikTokUrl)))
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                            <div class="form-group">
+                                                <label><i class="fab fa-tiktok mr-1"></i>TikTok</label>
+                                                <div class="input-group">
+                                                    <a href="@ViewBag.Catalogue.TikTokUrl" target="_blank" rel="noopener">@ViewBag.Catalogue.TikTokUrl</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.Catalogue.PinterestUrl)))
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                            <div class="form-group">
+                                                <label><i class="fab fa-pinterest text-danger mr-1"></i>Pinterest</label>
+                                                <div class="input-group">
+                                                    <a href="@ViewBag.Catalogue.PinterestUrl" target="_blank" rel="noopener">@ViewBag.Catalogue.PinterestUrl</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </fieldset>
+                        }
+                    </div>
+            </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+        </div>
+    }
+}
+

@@ -1,0 +1,242 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Expense Details By User";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Expenses For @ViewBag.UserName</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/reports/index">Reports</a></li>
+                        <li class="breadcrumb-item active">Expense Details By User</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/expensereports/expensesummarybyuser" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+            <div class="col-sm-12">
+                <span id="divAsof" class="text-gray"></span>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 noPrint">
+                @*<div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                        <h5><i class="fas fa-info"></i> Note:</h5>
+                        This page has been enhanced for printing. Click the print button at the bottom of the invoice to test.
+                    </div>*@
+                <div class="card  card-primary card-outline collapsed-card">
+                    <div class="card-header" data-card-widget="collapse" title="Collapse">
+                        <h3 class="card-title">Filter</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            @if (ViewBag.Branchs.Count > 1)
+                            {
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.Branchs.Count > 1 ?"":"hidden")">
+                                    <div class="form-group">
+                                        <label>Business Location</label>
+                                        <select class="form-control select2" style="width: 100%;" id="ddlBranch">
+                                            <option value="0">All</option>
+                                            @foreach (var item in ViewBag.Branchs)
+                                            {
+                                                @*if (ViewBag.BranchId == item.BranchId)
+                                                    {
+                                                        <option value="@item.BranchId" selected>@item.Branch</option>
+                                                    }
+                                                    else
+                                                    {*@
+                                                <option value="@item.BranchId">@item.Branch</option>
+                                                @*}*@
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            }
+                            @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Expense Category</label>
+                                        <select class="form-control select2" style="width: 100%;" id="ddlExpenseCategory">
+                                            <option value="">All</option>
+                                            @foreach (var item in ViewBag.ExpenseCategories)
+                                            {
+                                                <option value="@item.ExpenseCategoryId">@item.ExpenseCategory</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>*@
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Date Range:</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="far fa-calendar-alt"></i>
+                                            </span>
+                                        </div>
+                                        <input type="text" class="form-control float-right" id="txtDateRange" value="@(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) +" - "+ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]))">
+                                    </div>
+                                </div>
+                            </div>
+                            @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>From Date</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                </span>
+                                            </div>
+                                            <input type="date" class="form-control float-right" id="txtFromDate" value="@(ViewBag.FromDate != null?ViewBag.FromDate.ToString("yyyy-MM-dd"):DateTime.Now)">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>To Date</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                </span>
+                                            </div>
+                                            <input type="date" class="form-control float-right" id="txtToDate" value="@(ViewBag.ToDate != null?ViewBag.ToDate.ToString("yyyy-MM-dd"):DateTime.Now)">
+                                        </div>
+                                    </div>
+                                </div>*@
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary float-right mt-2" onclick="fetchList(1)">Search</button>
+                        <button type="submit" class="btn btn-warning float-right mt-2 mr-2" onclick="window.location.reload()">Refresh</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+
+                <!-- /.card -->
+                <div class="card  card-primary card-outline">
+                    @*<div class="card-header">
+                            <h5>
+                                <span class="success" id="divTotalCount">
+                                    Total : 0
+                                </span>
+                                |
+                                <span class="primary" id="divActiveCount">
+                                    Active : 0
+                                </span>
+                                |
+                                <span class="danger" id="divInactiveCount">In-Active : 0</span>
+                            </h5>
+                        </div>*@
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                            <div class="dataTables_length noPrint" id="tblUserRole_length">
+                                    <label>
+                                        Show
+                                        <select name="tblUserRole_length" aria-controls="tblUserRole" class="custom-select custom-select-sm form-control form-control-sm"
+                                                onchange="fetchList(1)" id="txtPageSize">
+                                            @{
+                                                if (ViewBag.PageSize == 10)
+                                                {
+                                                    <option value="10" selected>10</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="10">10</option>
+                                                }
+                                                if (ViewBag.PageSize == 25)
+                                                {
+                                                    <option value="25" selected>25</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="25">25</option>
+                                                }
+                                                if (ViewBag.PageSize == 50)
+                                                {
+                                                    <option value="50" selected>50</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="50">50</option>
+                                                }
+                                                if (ViewBag.PageSize == 100)
+                                                {
+                                                    <option value="100" selected>100</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="100">100</option>
+                                                }
+                                                if (ViewBag.PageSize == 500)
+                                                {
+                                                    <option value="500" selected>500</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="500">500</option>
+                                                }
+                                            }
+                                        </select> entries
+                                    </label>
+                                </div>
+                            @if (ViewBag.MenuPermission.IsExport)
+                            {
+                               <div class="dt-buttons btn-group flex-wrap noPrint">
+                                   <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+                                   <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+                                   <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+                                   <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+                               </div>
+                            }
+                            <div id="tblUserRole_filter" class="dataTables_filter noPrint" style="visibility:hidden"><label>Search:<input type="text" class="form-control form-control-sm" placeholder="" aria-controls="tblUserRole" id="txtSearch" onkeyup="fetchList(1)"></label></div>
+                            <div class="row mt-1">
+                                <div class="col-sm-12 table-responsive">
+                                    <table id="tblData" class="table table-bordered table-striped">
+                                        @Html.Partial("PartialExpenseDetailsByUser")
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade" id="ExpenseViewModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" id="divExpenseView">
+            @*@Html.Partial("PartialExpenseView")
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>*@
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Reports/ExpenseReports/ExpenseDetailsByUser.js"></script>

@@ -1,0 +1,309 @@
+﻿
+@{
+    if (ViewBag.StockAdjustment != null)
+    {
+        <div class="modal-header">
+            <h4 class="modal-title">Stock Adjustment Details</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="card-body">
+                <div class="card card-outline">
+                    @*<div class="card-header">
+                        <h3 class="card-title">
+                            Basic Info
+                        </h3>
+                    </div>*@
+                    <!-- form start -->
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label>Reference No</label>
+                                    <span>@ViewBag.StockAdjustment.ReferenceNo</span>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <!-- text input -->
+                                <div class="form-group">
+                                    <label>Business Location </label>
+                                    @foreach (var item in ViewBag.Branchs)
+                                    {
+                                        if (ViewBag.StockAdjustment.BranchId == item.BranchId)
+                                        {
+                                            <span>@item.Branch</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label> Date</label>
+                                    <span>@ViewBag.StockAdjustment.AdjustmentDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <!-- text input -->
+                                <div class="form-group">
+                                    <label>Adjustment Type </label>
+                                    @{
+                                        if (ViewBag.StockAdjustment.AdjustmentType == "Debit")
+                                        {
+                                            <span>Debit</span>
+                                        }
+                                        else if (ViewBag.StockAdjustment.AdjustmentType == "Credit")
+                                        {
+                                            <span>Credit</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            @*<div class="col-sm-4 divStockDeductionType" style="display:@(ViewBag.StockAdjustment.AdjustmentType == "Credit" ? "hidden":"")">
+                                    <div class="form-group">
+                                        <label>Stock Deduction Type </label>
+                                        @if (ViewBag.StockAdjustment.StockDeductionType == "Normal")
+                                        {
+                                            <span>Normal</span>
+                                        }
+                                        else if (ViewBag.StockAdjustment.StockDeductionType == "Abnormal")
+                                        {
+                                            <span>Abnormal</span>
+                                        }
+                                    </div>
+                                </div>*@
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label>Reason </label>
+                                    @foreach (var item in ViewBag.StockAdjustmentReasons)
+                                    {
+                                        if (ViewBag.StockAdjustment.StockAdjustmentReasonId == item.StockAdjustmentReasonId)
+                                        {
+                                            <span>@item.StockAdjustmentReason</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-sm-4 @(ViewBag.IsAccountsAddon == true ? "" : "hidden")">
+                                <div class="form-group">
+                                    <label>Account </label>
+                                    @{
+                                        if (ViewBag.AccountSubTypes != null)
+                                        {
+                                            foreach (var item in ViewBag.AccountSubTypes)
+                                            {
+                                                if (item.Accounts.Count > 0)
+                                                {
+                                                    if (item.Type != "Accounts Receivable" && item.Type != "Accounts Payable")
+                                                    {
+                                                            foreach (var inner in item.Accounts)
+                                                            {
+                                                                if (inner.Type != "Opening Balance Adjustments" && inner.Type != "Tag Adjustments")
+                                                                {
+                                                                    if (ViewBag.StockAdjustment.AccountId == inner.AccountId)
+                                                                    {
+                                                                        <span>@inner.DisplayAs</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+
+                <div class="card card-outline">
+                    <div class="card-header bg-info">
+                        <h3 class="card-title">Item List</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden")">Lot No</th>
+                                        <th>Choose Unit</th>
+                                        @*<th class="divIsDebit">Available Quantity</th>*@
+                                        <th>Adjusted Quantity</th>
+                                        <th>Unit Cost</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var count = 100000000;
+                                        foreach (var item in ViewBag.StockAdjustment.StockAdjustmentDetails)
+                                        {
+                                            <tr id="divCombo@(count)">
+                                                @*<td>@count </td>*@
+                                                <td style="min-width:150px">
+                                                    @if (item.ItemName.Length > 15)
+                                                    {
+                                                        <span><b>Name:</b> @item.ItemName.Substring(0, 15)...</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span><b>Name:</b> @item.ItemName</span>
+                                                    }
+
+                                                    @if (item.VariationName != null)
+                                                    {
+                                                        <br /><span> <b>Variation:</b> @item.VariationName</span>
+                                                    }
+                                                    <br /><span><b>SKU:</b> @item.SKU</span>
+                                                </td>
+                                                <td class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden")">
+                                                    <span> @item.LotNo</span>
+                                                </td>
+                                                <td style="min-width:100px">
+                                                    <div class="input-group" style="min-width:180px">
+                                                        <span>@item.Unit</span>
+                                                    </div>
+                                                </td>
+                                                @*<td style="min-width:100px" class="divIsDebit">
+                                                    <span>@(String.Format("{0:0.##}", item.QuantityRemaining))</span>
+                                                </td>*@
+                                                <td style="min-width:100px">
+                                                    <div class="input-group" style="min-width:180px">
+                                                        <span>@(String.Format("{0:0.##}", item.Quantity))</span>
+                                                    </div>
+                                                </td>
+                                                <td style="min-width:100px">
+                                                    <span>@(String.Format("{0:0.##}", item.UnitCost))</span>
+                                                </td>
+                                                <td style="min-width:100px">
+                                                    <span>@(String.Format("{0:0.##}", item.Amount))</span>
+                                                </td>
+
+                                            </tr>
+                                            count++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-9">
+                                <div class="row">
+                                    <div class="col-sm-6 mt-2">
+                                        <div class="form-group row">
+                                            <label for="inputEmail3" class="col-sm-7 col-form-label">Total Amount Recovered </label>
+                                            <div class="col-sm-5 col-form-label text-left">
+                                                <span>
+                                                    @{
+                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                        {
+                                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.StockAdjustment.TotalAmountRecovered))
+                                                        }
+                                                        else
+                                                        {
+                                                            @(String.Format("{0:0.##}", ViewBag.StockAdjustment.TotalAmountRecovered))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                        }
+                                                    }
+
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-12">
+                                        <div class="form-group row">
+                                            <label for="inputEmail3" class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 col-form-label">Notes</label>
+                                            <div class="col-sm-12">
+                                                <span> @ViewBag.StockAdjustment.Notes</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="row">
+                                    <div class="col-12" style="display:none;">
+                                        <div class="row">
+                                            <label for="inputEmail3" class="col-8 col-form-label ">Total Quantities :</label>
+                                            <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTotalQty">@(String.Format("{0:0.##}", ViewBag.StockAdjustment.TotalQuantity)) </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <label for="inputEmail3" class="col-8 col-form-label">Total Amount:</label>
+                                            <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTotalAmount">
+                                                @{
+                                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                    {
+                                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.StockAdjustment.TotalAmount))
+                                                    }
+                                                    else
+                                                    {
+                                                        @(String.Format("{0:0.##}", ViewBag.StockAdjustment.TotalAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                    }
+                                                }
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                @if (ViewBag.IsAccountsAddon == true)
+                {
+                    <div class="card card-outline">
+                        <div class="card-header bg-info">
+                            <h3 class="card-title">Journal</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    @{
+                                        <thead id="thead">
+                                            <tr>
+                                                <th>Account Name</th>
+                                                <th>Debit</th>
+                                                <th>Credit</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="table-body">
+                                            @foreach (var item in ViewBag.BankPayments)
+                                            {
+                                                <tr>
+                                                    <td>@item.AccountName</td>
+                                                    <td>@(String.Format("{0:0.##}", item.Debit))</td>
+                                                    <td>@(String.Format("{0:0.##}", item.Credit))</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="1" data-title="Total" class="text-right"></td>
+                                                <td data-title="Due Amount" class="text-bold">@(String.Format("{0:0.##}", ViewBag.TotalDebit))</td>
+                                                <td data-title="Due Amount" class="text-bold">@(String.Format("{0:0.##}", ViewBag.TotalCredit))</td>
+                                            </tr>
+                                        </tbody>
+
+                                    }
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+
+

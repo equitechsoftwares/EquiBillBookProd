@@ -1,0 +1,183 @@
+﻿@{
+    var count = 1;
+    <div class="row mt-1">
+        <div class="col-sm-12 table-responsive">
+            <table id="tblData" class="table table-bordered table-striped">
+
+                <thead>
+                    <tr role="row">
+                        @*<th>Sln</th>*@
+                        <th>Date</th>
+                        <th>Sales Invoice#</th>
+                        <th>Reference No</th>
+                        <th>Customer Name</th>
+                        <th>Customer Mobile No</th>
+                        <th>Status</th>
+                        <th>Total Quantity</th>
+                        @*<th>Total Discount</th>*@
+                        <th>Total Amount</th>
+                        @*@if (ViewBag.Status == "Sent")
+                {*@
+                        <th>Total Paid</th>
+                        <th>Total Due</th>
+                        @*<th>Total Return Due</th>*@
+                        @*<th>Payment Status</th>*@
+                        @*}*@
+                        @*<th>Added By</th>
+                <th>Added On</th>
+                <th>Last Modified By</th>
+                <th>Last Modified On</th>*@
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in ViewBag.Sales)
+                    {
+                        <tr>
+                            @*<td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>*@
+                            <td>@item.SalesDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                            <td>
+                                @item.InvoiceNo
+                                @if (item.SalesType == "Debit Note")
+                                {
+                                    <i tabindex="0" class="fa fa-info-circle text-primary hover-q no-print" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Debit Note"></i>
+                                }
+                                @if (item.IsSalesReturn)
+                                {
+                                    <i tabindex="0" class="fa fa-info-circle text-danger hover-q no-print" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Some quantities are returned from this sale"></i>
+                                }
+                            </td>
+                            <td>
+                                @item.Reference
+                            </td>
+                            <td>@item.CustomerName</td>
+                            <td>@item.CustomerMobileNo</td>
+                            <td style="white-space:nowrap">
+                                @if (item.Status == "Draft")
+                                {
+                                    <span class='p-1 bg-gray' style='cursor:pointer'>  @item.Status</span>
+                                }
+                                else if (item.Status == "Hold")
+                                {
+                                    <span class='p-1 bg-gray' style='cursor:pointer'>  @item.Status</span>
+                                }
+                                else if (item.Status == "Due")
+                                {
+                                    <span class='p-1 bg-warning' style='cursor:pointer'>  @item.Status</span>
+                                }
+                                else if (item.Status == "Partially Paid")
+                                {
+                                    <span class='p-1 bg-primary' style='cursor:pointer'>  @item.Status</span>
+                                }
+                                else if (item.Status == "Overdue")
+                                {
+                                    <span class='p-1 bg-danger' style='cursor:pointer'>  @item.Status</span>
+                                }
+                                else
+                                {
+                                    <span class='p-1 bg-success' style='cursor:pointer'>  @item.Status</span>
+                                }
+                            </td>
+                            <td>
+                                @(String.Format("{0:0.##}", item.PaidQuantity))
+                                @if (item.FreeQuantity != 0)
+                                {
+                                    <span> + @(String.Format("{0:0.##}", item.FreeQuantity))</span>
+                                }
+                            </td>
+                            @*<td>
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.TotalDiscount))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", item.TotalDiscount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </td>*@
+                            <td>
+                                @{
+                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                    {
+                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.GrandTotal))
+                                    }
+                                    else
+                                    {
+                                        @(String.Format("{0:0.##}", item.GrandTotal))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                    }
+                                }
+                            </td>
+                            @*@if (ViewBag.Status == "Sent")
+                    {*@
+                            <td>
+                                @{
+                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                    {
+                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.Paid))
+                                    }
+                                    else
+                                    {
+                                        @(String.Format("{0:0.##}", item.Paid))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @{
+                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                    {
+                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.Due))
+                                    }
+                                    else
+                                    {
+                                        @(String.Format("{0:0.##}", item.Due))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                    }
+                                }
+                            </td>
+                            @*<td>
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.ReturnDue))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", item.ReturnDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </td>*@
+                            @*<td>
+                        @if (item.Status == "Draft")
+                        {
+                            <span class='p-1 bg-info' style='cursor:pointer'>  @item.Status</span>
+                        }
+                        else if (item.Status == "Due")
+                        {
+                            <span class='p-1 bg-warning' style='cursor:pointer'>  @item.Status</span>
+                        }
+                        else if (item.Status == "Partially Paid")
+                        {
+                            <span class='p-1 bg-success' style='cursor:pointer'>  @item.Status</span>
+                        }
+                        else if (item.Status == "Overdue")
+                        {
+                            <span class='p-1 bg-danger' style='cursor:pointer'>  @item.Status</span>
+                        }
+                        else
+                        {
+                            <span class='p-1 bg-blue' style='cursor:pointer'>  @item.Status</span>
+                        }
+                    </td>*@
+                            @*}*@
+                            @*<td>@item.AddedByCode</td>
+                    <td>@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                    <td>@item.ModifiedByCode</td>
+                    <td>@(item.ModifiedOn != null ? item.ModifiedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1]) : "")</td>*@
+                        </tr>
+                        count++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

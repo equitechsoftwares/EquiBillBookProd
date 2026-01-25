@@ -1,0 +1,172 @@
+@model IEnumerable<EquiBillBook.Models.ClsInvoiceTemplateLabelMasterVm>
+@using System.Web
+@using System.Collections.Generic
+
+@{
+    ViewBag.Title = "Template Labels";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var invoiceTemplateMasterId = (long)ViewBag.InvoiceTemplateMasterId;
+    var templateName = ViewBag.TemplateName as string ?? $"Pre-defined Template #{invoiceTemplateMasterId}";
+    var categories = ViewBag.Categories as List<EquiBillBook.Models.ClsInvoiceTemplateLabelCategoryMaster> ?? new List<EquiBillBook.Models.ClsInvoiceTemplateLabelCategoryMaster>();
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Template Labels - @templateName</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/admindashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/admintemplatemaster/index">Template Masters</a></li>
+                        <li class="breadcrumb-item active">Labels</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <a href="@Url.Action("CreateLabel", "AdminTemplateMaster", new { invoiceTemplateMasterId = invoiceTemplateMasterId })"
+                   class="btn btn-primary float-sm-right mr-2">
+                    <i class="fas fa-plus"></i> New Label
+                </a>
+                <a href="@Url.Action("LabelCategories", "AdminTemplateMaster", new { invoiceTemplateMasterId = invoiceTemplateMasterId })"
+                   class="btn btn-info float-sm-right mr-2">
+                    <i class="fas fa-folder"></i> Manage Categories
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        @Html.AntiForgeryToken()
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+
+        @if (Model != null && Model.Any())
+        {
+            var labelsByCategory = Model
+                .GroupBy(l => l.CategoryKey ?? "Uncategorized")
+                .OrderBy(g => 
+                {
+                    var firstLabel = g.First();
+                    var category = categories.FirstOrDefault(c => c.CategoryKey == firstLabel.CategoryKey);
+                    return category != null ? category.SortOrder : int.MaxValue;
+                })
+                .ThenBy(g => g.Key);
+
+            foreach (var categoryGroup in labelsByCategory)
+            {
+                <div class="card card-primary card-outline mb-3">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-folder"></i> @categoryGroup.Key
+                            <span class="badge badge-info ml-2">@categoryGroup.Count() label(s)</span>
+                        </h3>
+                    </div>
+                    <div class="card-body table-responsive p-0">
+                        <table class="table table-bordered table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th class="hide noPrint" style="width:100px;">Actions</th>
+                                    <th>Key</th>
+                                    <th>Text</th>
+                                    <th>Color</th>
+                                    <th>Visible</th>
+                                    <th>Sort</th>
+                                    <th class="hidden">Status</th>
+                                    <th class="hide">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var l in categoryGroup.OrderBy(l => l.SortOrder).ThenBy(l => l.LabelKey))
+                                {
+                                    <tr>
+                                        <td>@l.InvoiceTemplateLabelMasterId</td>
+                                        <td class="hide noPrint">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-info">Action</button>
+                                                <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                                    <span class="sr-only">Toggle Dropdown</span>
+                                                </button>
+                                                <div class="dropdown-menu" role="menu">
+                                                    <a class="dropdown-item" href="@Url.Action("EditLabel", "AdminTemplateMaster", new { id = l.InvoiceTemplateLabelMasterId })"><i class="fas fa-edit"></i> Edit</a>
+                                                    <a class="dropdown-item" href="javascript:void(0)" onclick="DeleteLabel(@l.InvoiceTemplateLabelMasterId,'@Html.Raw(HttpUtility.JavaScriptStringEncode(l.LabelText))')"><i class="far fa-trash-alt"></i> Delete</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@l.LabelKey</td>
+                                        <td>@l.LabelText</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(l.LabelColor))
+                                            {
+                                                <span style="display:inline-block;width:20px;height:20px;border:1px solid #ccc;background-color:@l.LabelColor;border-radius:4px;"></span>
+                                                <span class="ml-1">@l.LabelColor</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>@(l.IsVisibleByDefault ? "Yes" : "No")</td>
+                                        <td>@l.SortOrder</td>
+                                        <td class="hidden">@(l.IsActive == true ? "Active" : "Inactive")</td>
+                                        <td class="hide">
+                                            @if (l.IsActive)
+                                            {
+                                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactiveLabel(@l.InvoiceTemplateLabelMasterId,false)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                                            }
+                                            else
+                                            {
+                                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactiveLabel(@l.InvoiceTemplateLabelMasterId,true)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="card card-primary card-outline">
+                <div class="card-body">
+                    <p class="text-center text-muted">No labels found for this template.</p>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Admin/AdminTemplateMaster.js"></script>
+<script>
+    function DeleteLabel(id, name) {
+        if (confirm('Are you sure you want to delete the label "' + name + '"?')) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '@Url.Action("DeleteLabel", "AdminTemplateMaster")';
+            
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            var tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '__RequestVerificationToken';
+            tokenInput.value = token;
+            form.appendChild(tokenInput);
+            
+            var idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'id';
+            idInput.value = id;
+            form.appendChild(idInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
+

@@ -1,0 +1,1226 @@
+﻿
+
+@{
+    if (ViewBag.Expense != null)
+    {
+        <div class="modal-header">
+            <h4 class="modal-title">Expense Details</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="card card-primary card-outline">
+                <!-- form start -->
+                <div id="quickForm">
+                    @if (ViewBag.Expense.Type == "Expense")
+                    {
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 @(ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Business Location </label>
+                                        <div class="input-group divBranch_ctrl">
+                                            @foreach (var item in ViewBag.Branchs)
+                                            {
+                                                if (ViewBag.Expense.BranchId == item.BranchId)
+                                                {
+                                                    <span>@item.Branch</span>
+                                                }
+                                            }
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Date </label>
+                                        <div class="input-group date" id="_Date" data-target-input="nearest">
+                                            <span>@ViewBag.Expense.Date.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</span>
+                                        </div>
+                                        @*<input type="datetime-local" class="form-control" id="txtDate" value="@ViewBag.Expense.Date.ToString("yyyy-MM-ddTHH:mm")">*@
+                                        <small class="text-red font-weight-bold errorText" id="divDate"></small>
+                                        @*<input type="date" class="form-control" id="txtDate" value="@ViewBag.Expense.Date.ToString("yyyy-MM-dd")">*@
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>User <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Choose the user for which expense is related to. <i>(Optional)</i><br/><small>Example: Salary of an employee.</small>"></i></label>
+                                        <div class="input-group divUser">
+                                            @foreach (var item in ViewBag.Users)
+                                            {
+                                                if (ViewBag.Expense.UserId == item.UserId)
+                                                {
+                                                    <span>
+                                                        @item.Name
+                                                        @if (item.MobileNo != null && item.MobileNo != "")
+                                                        {
+                                                            <span>- @item.MobileNo</span>
+                                                        }
+                                                    </span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Supplier</label>
+                                        <div class="input-group divIncomeFor">
+                                            @foreach (var item in ViewBag.Suppliers)
+                                            {
+                                                if (ViewBag.Expense.SupplierId == item.UserId)
+                                                {
+                                                    <span>@item.Name - @item.MobileNo</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                @if (ViewBag.BusinessSetting.CountryId == 2)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>GST Treatment </label>
+                                            <div class="input-group">
+                                                @if (ViewBag.Expense.GstTreatment == "Taxable Supply (Registered)")
+                                                {
+                                                    <span>Taxable Supply (Registered)</span>
+                                                }
+                                                @if (ViewBag.Expense.GstTreatment == "Composition Taxable Supply")
+                                                {
+                                                    <span>Composition Taxable Supply</span>
+                                                }
+                                                @if (ViewBag.Expense.GstTreatment == "Taxable Supply to Unregistered Person")
+                                                {
+                                                    <span>Taxable Supply to Unregistered Person</span>
+                                                }
+                                                @if (ViewBag.Expense.GstTreatment == "Taxable Supply to Consumer")
+                                                {
+                                                    <span>Taxable Supply to Consumer</span>
+                                                }
+                                                @if (ViewBag.Expense.GstTreatment == "Export of Goods / Services (Zero-Rated Supply)")
+                                                {
+                                                    <span>Export of Goods / Services (Zero-Rated Supply)</span>
+                                                }
+                                                @if (ViewBag.Expense.GstTreatment == "Supply to SEZ Unit (Zero-Rated Supply)")
+                                                {
+                                                    <span>Supply to SEZ Unit (Zero-Rated Supply)</span>
+                                                }
+                                                @if (ViewBag.Expense.GstTreatment == "Deemed Export")
+                                                {
+                                                    <span>Deemed Export</span>
+                                                }
+                                                @if (ViewBag.Expense.GstTreatment == "Non-GST Supply")
+                                                {
+                                                    <span>Non-GST Supply</span>
+                                                }
+                                                @if (ViewBag.Expense.GstTreatment == "Out Of Scope")
+                                                {
+                                                    <span>Out Of Scope</span>
+                                                }
+                                                @if (ViewBag.Expense.GstTreatment == "Supply by SEZ Developer")
+                                                {
+                                                    <span>Supply by SEZ Developer</span>
+                                                }
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divGstTreatment"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3" style="display:none">
+                                        <div class="form-group">
+                                            <label>Business Registration Name </label>
+                                            <div class="input-group divBusinessRegistrationName_ctrl">
+                                                @foreach (var item in ViewBag.BusinessRegistrationNames)
+                                                {
+                                                    if (ViewBag.Expense.BusinessRegistrationNameId == item.BusinessRegistrationNameId)
+                                                    {
+                                                        <span>@item.Name</span>
+                                                    }
+                                                }
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationName"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divGst">
+                                        <div class="form-group">
+                                            <label class="lblBusinessRegistrationName">@ViewBag.BusinessRegistrationNames[0].Name </label>
+                                            <div class="input-group">
+                                                <span>@ViewBag.Expense.BusinessRegistrationNo</span>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationNo"></small>
+                                        </div>
+                                    </div>
+                                    @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divGst">
+                                            <div class="form-group">
+                                                <label>Business Legal Name</label>
+                                                <input type="text" class="form-control" id="txtBusinessLegalName" value="@ViewBag.User.BusinessLegalName">
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divGst">
+                                            <div class="form-group">
+                                                <label>Business Trade Name</label>
+                                                <input type="text" class="form-control" id="txtBusinessTradeName" value="@ViewBag.User.BusinessTradeName">
+                                            </div>
+                                        </div>*@
+                                    @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                            <div class="form-group">
+                                                <label>PAN</label>
+                                                <input type="text" class="form-control" id="txtPanNo" value="@ViewBag.Expense.PanNo">
+                                            </div>
+                                        </div>*@
+                                }
+                                else
+                                {
+                                    if (ViewBag.BusinessRegistrationNames != null && ViewBag.BusinessRegistrationNames.Count > 0)
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                            <br>
+                                            <div class="form-group">
+                                                <div class="checkbox icheck-turquoise">
+                                                    @if (ViewBag.Expense.IsBusinessRegistered == 1)
+                                                    {
+                                                        <input disabled type="checkbox" id="chkIsBusinessRegistered" onchange="toggleBusinessRegistered()" checked>
+                                                    }
+                                                    else
+                                                    {
+                                                        <input disabled type="checkbox" id="chkIsBusinessRegistered" onchange="toggleBusinessRegistered()">
+                                                    }
+                                                    <label for="chkIsBusinessRegistered" class="mt-2">
+                                                        Is Business Registered?
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        if (ViewBag.BusinessRegistrationNames.Count == 1)
+                                        {
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3" style="display:none">
+                                                <div class="form-group">
+                                                    <label>Business Registration Name </label>
+                                                    <div class="input-group divBusinessRegistrationName_ctrl">
+                                                        @foreach (var item in ViewBag.BusinessRegistrationNames)
+                                                        {
+                                                            if (ViewBag.Expense.BusinessRegistrationNameId == item.BusinessRegistrationNameId)
+                                                            {
+                                                                <span>@item.Name</span>
+                                                            }
+                                                        }
+                                                    </div>
+                                                    <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationName"></small>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divBusinessRegistered" style="display:@(ViewBag.Expense.IsBusinessRegistered == 1 ? "":"none")">
+                                                <div class="form-group">
+                                                    <label>@ViewBag.BusinessRegistrationNames[0].Name </label>
+                                                    <div class="input-group">
+                                                        <span>@ViewBag.Expense.BusinessRegistrationNo</span>
+                                                    </div>
+                                                    <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationNo"></small>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divBusinessRegistered" style="display:@(ViewBag.Expense.IsBusinessRegistered == 1 ? "":"none")">
+                                                <div class="form-group">
+                                                    <label>Business Registration Name </label>
+                                                    <div class="input-group divBusinessRegistrationName_ctrl">
+                                                        @foreach (var item in ViewBag.BusinessRegistrationNames)
+                                                        {
+                                                            if (ViewBag.Expense.BusinessRegistrationNameId == item.BusinessRegistrationNameId)
+                                                            {
+                                                                <span>@item.Name</span>
+                                                            }
+                                                        }
+                                                    </div>
+                                                    <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationName"></small>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divBusinessRegistered" style="display:@(ViewBag.Expense.IsBusinessRegistered == 1 ? "":"none")">
+                                                <div class="form-group">
+                                                    <label class="lblBusinessRegistrationName">@ViewBag.BusinessRegistrationNames[0].Name </label>
+                                                    <div class="input-group">
+                                                        <span>@ViewBag.Expense.BusinessRegistrationNo</span>
+                                                    </div>
+                                                    <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationNo"></small>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                                @if (ViewBag.BusinessSetting.CountryId == 2)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divSourceOfSupply" style="display:@(ViewBag.Expense.GstTreatment == "Export of Goods / Services (Zero-Rated Supply)" ? "none":"")">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Source Of Supply </label>
+                                            <div class="input-group divSourceOfSupply_ctrl">
+                                                @foreach (var item in ViewBag.SourcesOfSupply)
+                                                {
+                                                    if (ViewBag.Expense.SourceOfSupplyId == item.StateId)
+                                                    {
+                                                        <span>@item.State</span>
+                                                    }
+                                                }
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divPlaceOfSupply"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divDestinationOfSupply" style="display:@(ViewBag.Expense.GstTreatment == "Out Of Scope" ? "none":"")">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Destination Of Supply </label>
+                                            <div class="input-group divDestinationOfSupply_ctrl">
+                                                @foreach (var item in ViewBag.DestinationsOfSupply)
+                                                {
+                                                    if (ViewBag.Expense.DestinationOfSupplyId == item.StateId)
+                                                    {
+                                                        <span>@item.State</span>
+                                                    }
+                                                }
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divDestinationOfSupply"></small>
+                                        </div>
+                                    </div>
+                                }
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Customer</label>
+                                        <div class="input-group divIncomeFor">
+                                            @foreach (var item in ViewBag.Customers)
+                                            {
+                                                if (ViewBag.Expense.CustomerId == item.UserId)
+                                                {
+                                                    <span>@item.Name - @item.MobileNo</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                @*@if (ViewBag.AccountsPermission.IsView == true)
+                                    {*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Paid Through </label>
+                                        <div class="input-group">
+                                            @{
+                                                if (ViewBag.AccountSubTypes != null)
+                                                {
+                                                    foreach (var item in ViewBag.AccountSubTypes)
+                                                    {
+                                                        if (item.Accounts.Count > 0)
+                                                        {
+                                                            if (item.Type != "Accounts Receivable" && item.Type != "Accounts Payable")
+                                                            {
+                                                                foreach (var inner in item.Accounts)
+                                                                {
+                                                                    if (inner.Type != "Opening Balance Adjustments" && inner.Type != "Tag Adjustments")
+                                                                    {
+                                                                        if (ViewBag.Expense.AccountId == inner.AccountId)
+                                                                        {
+                                                                            <span>@inner.DisplayAs</span>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            @*<option value="0">Select</option>
+                                                @{
+                                                    if (ViewBag.Accounts != null)
+                                                    {
+                                                        foreach (var item in ViewBag.Accounts)
+                                                        {
+                                                            if (ViewBag.Expense.AccountId == item.AccountId)
+                                                            {
+                                                                <option value="@item.AccountId" selected>@item.AccountName - @item.AccountNumber</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.AccountId">@item.AccountName - @item.AccountNumber</option>
+                                                            }
+                                                        }
+                                                    }
+                                                }*@
+                                            @*@if (ViewBag.AccountsPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#AccountModal">+ </a>
+                                                    </span>
+                                                }*@
+
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divAccount"></small>
+                                    </div>
+                                </div>
+                                @*}*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Reference No</label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.Expense.ReferenceNo</span>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divReferenceNo"></small>
+                                    </div>
+                                </div>
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Tax</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlTax">
+                                                    <option value="0" selected>Select </option>
+                                                    @foreach (var item in ViewBag.Taxs)
+                                                    {
+                                                        if (ViewBag.Expense.TaxId == item.TaxId)
+                                                        {
+                                                            <option value="@item.TaxId" selected>@item.Tax@@@(item.TaxPercent)%</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.TaxId">@item.Tax@@@(item.TaxPercent)%</option>
+                                                        }
+                                                    }
+                                                </select>
+                                                @if (ViewBag.TaxListPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#taxModal">+ </a>
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>*@
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Amount </label>
+                                            <input type="number" class="form-control" id="txtAmount" value="@(String.Format("{0:0.##}",ViewBag.Expense.Amount))"
+                                                   onkeypress="return onlyDecimalKey(event)">
+                                            <small class="text-red font-weight-bold errorText" id="divAmount"></small>
+                                        </div>
+                                    </div>*@
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Attach Document</label>
+                                        <div class="input-group">
+                                            <img id="blahAttachDocument" src="@ViewBag.Expense.AttachDocument" alt="" height="60" style="padding-top:10px;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Note</label>
+                                            <textarea class="form-control" id="txtNotes" rows="2">@ViewBag.Expense.Notes</textarea>
+                                        </div>
+                                    </div>*@
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3" style="display:@(ViewBag.BusinessSetting.CountryId == 2 ? "" : "none")">
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.Expense.IsReverseCharge == 1)
+                                            {
+                                                <input disabled type="checkbox" id="chkIsReverseCharge" checked onchange="toggleReverseCharge()">
+                                            }
+                                            else
+                                            {
+                                                <input disabled type="checkbox" id="chkIsReverseCharge" onchange="toggleReverseCharge()">
+                                            }
+                                            <label for="chkIsReverseCharge" class="mt-2">
+                                                This transaction is applicable for reverse charge
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-1">
+                                <div class="col-sm-12 table-responsive ">
+                                    <table id="" class="table table-bordered table-striped">
+                                        <thead id="thead">
+                                            <tr>
+                                                <th>Expense Account</th>
+                                                <th>Item Type</th>
+                                                <th>HSN/ SAC</th>
+                                                <th>Notes</th>
+                                                <th>Amount (Exc. Tax)</th>
+                                                <th>Tax <span id="lblReverseCharge" style="display:none">(Reverse Charge)</span></th>
+                                                <th class="no_reversecharge" style="display:@(ViewBag.Expense.IsReverseCharge == 1 ? "none":"")">Amount (Inc. Tax)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="table-body">
+                                            @{
+                                                var counter = 1;
+                                                foreach (var expense in ViewBag.Expense.ExpensePayments)
+                                                {
+                                                    <tr id="divCombo@(counter)">
+                                                        <td width="15%">
+                                                            <div class="input-group">
+                                                                @{
+                                                                    if (ViewBag.AccountSubTypes != null)
+                                                                    {
+                                                                        foreach (var item in ViewBag.AccountSubTypes)
+                                                                        {
+                                                                            if (item.Accounts.Count > 0)
+                                                                            {
+                                                                                if (item.Type != "Accounts Receivable" && item.Type != "Accounts Payable")
+                                                                                {
+                                                                                    foreach (var inner in item.Accounts)
+                                                                                    {
+                                                                                        if (inner.Type != "Opening Balance Adjustments" && inner.Type != "Tag Adjustments")
+                                                                                        {
+                                                                                            if (expense.AccountId == inner.AccountId)
+                                                                                            {
+                                                                                                <span>@inner.DisplayAs</span>
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </div>
+                                                        </td>
+                                                        <td width="5%">
+                                                            <div class="form-group" style="margin-bottom:0;">
+                                                                @*<label style="margin-bottom:0;margin-top:0.5rem;">Item Type</label>*@
+                                                                <div class="input-group">
+                                                                    @{
+                                                                        if (expense.ItemType == "Product")
+                                                                        {
+                                                                            <span>Product</span>
+                                                                        }
+                                                                        if (expense.ItemType == "Service")
+                                                                        {
+                                                                            <span>Service</span>
+                                                                        }
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td width="15%">
+                                                            <div class="form-group" id="divItemCode@(counter)" style="display:@(ViewBag.BusinessSetting.CountryId == 2 ? "" : "none")">
+                                                                @*<label style="margin-bottom:0;margin-top:0.5rem;">@(expense.ItemType == "Product" ? "HSN" : "SAC") </label>*@
+                                                                <div class="input-group">
+                                                                    @foreach (var tax in ViewBag.ItemCodes)
+                                                                    {
+                                                                        if (expense.ItemType == "Product")
+                                                                        {
+                                                                            if (tax.ItemCodeType == "HSN")
+                                                                            {
+                                                                                if (expense.ItemCodeId == tax.ItemCodeId)
+                                                                                {
+                                                                                    <span>@tax.Code</span>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            if (tax.ItemCodeType == "SAC")
+                                                                            {
+                                                                                if (expense.ItemCodeId == tax.ItemCodeId)
+                                                                                {
+                                                                                    <span>@tax.Code</span>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td class="service" width="20%">
+                                                            <div class="form-group">
+                                                                <span>@expense.Notes</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="service" width="15%">
+                                                            <div class="form-group">
+                                                                <span>@expense.AmountExcTax</span>
+                                                            </div>
+                                                        </td>
+                                                        <td width="15%">
+                                                            <div class="input-group" id="divTax@(counter)">
+                                                                @foreach (var tax in ViewBag.Taxs)
+                                                                {
+                                                                    if (tax.Tax != "Taxable")
+                                                                    {
+                                                                        if (ViewBag.BusinessSetting.CountryId == 2)
+                                                                        {
+                                                                            if (ViewBag.Expense.SourceOfSupplyId == ViewBag.Expense.DestinationOfSupplyId)
+                                                                            {
+                                                                                if (tax.TaxTypeId != 3)
+                                                                                {
+                                                                                    if (expense.TaxId == tax.TaxId)
+                                                                                    {
+                                                                                        <span>@tax.Tax</span>
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                if (tax.CanDelete == false || tax.TaxTypeId == 3 || tax.TaxTypeId == 5)
+                                                                                {
+                                                                                    if (expense.TaxId == tax.TaxId)
+                                                                                    {
+                                                                                        <span>@tax.Tax</span>
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            if (expense.TaxId == tax.TaxId)
+                                                                            {
+                                                                                <span>@tax.Tax</span>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                                @*@if (ViewBag.TaxListPermission.IsAdd == true)
+                                                                    {
+                                                                        <span class="input-group-append">
+                                                                            <a href="javascript:void(0)" id="btnAddTax@(counter)" class="btn btn-info" onclick="openTaxModal(@counter)">+ </a>
+                                                                        </span>
+                                                                    }*@
+                                                            </div>
+                                                            <div class="form-group" id="divItc@(counter)"
+                                                                 style="display:@((ViewBag.BusinessSetting.CountryId == 2
+                                                && expense.TaxId != 0 && expense.Tax != "Non-Taxable" && expense.Tax != "Out of Scope" && expense.Tax != "Non-GST Supply") ? "" : "none")">
+                                                                <label style="margin-bottom:0;margin-top:0.5rem;">Input Tax Credit</label>
+                                                                <div class="input-group">
+                                                                    @{
+                                                                        if (expense.ITCType == "Eligible For ITC")
+                                                                        {
+                                                                            <span>Eligible For ITC</span>
+                                                                        }
+                                                                        if (expense.ITCType == "Ineligible - As per Section 17 (5)")
+                                                                        {
+                                                                            <span>Ineligible - As per Section 17 (5)</span>
+                                                                        }
+                                                                        if (expense.ITCType == "Ineligible - Others")
+                                                                        {
+                                                                            <span>Ineligible - Others</span>
+                                                                        }
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group" id="divTaxExemption@(counter)" style="display:@(expense.Tax == "Non-Taxable" ? "" : "none")">
+                                                                <label style="margin-bottom:0;margin-top:0.5rem;">Tax Exemption</label>
+                                                                <div class="input-group">
+                                                                    @{
+                                                                        foreach (var item in ViewBag.TaxExemptions)
+                                                                        {
+                                                                            if (expense.TaxExemptionId == item.TaxExemptionId)
+                                                                            {
+                                                                                <span>@item.Reason</span>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td class="no_reversecharge" width="15%" style="display:@(ViewBag.Expense.IsReverseCharge == 1 ? "none":"")">
+                                                            <div class="form-group">
+                                                                <span>@expense.Amount</span>
+                                                            </div>
+                                                            <small class="text-red font-weight-bold errorText" id="divAmount1"></small>
+                                                        </td>
+                                                    </tr>
+                                                    counter++;
+                                                }
+                                            }
+                                        </tbody>
+                                        @*<tbody>
+                                                <tr>
+                                                    <td colspan="3" data-title="Total" class="text-right"><b>Total</b></td>
+                                                    <td colspan="2">
+                                                        <span for="inputEmail3" class="col-4 col-form-label text-left" id="lblTotal">
+                                                            @{
+                                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                {
+                                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Expense.Amount))
+                                                                }
+                                                                else
+                                                                {
+                                                                    @(String.Format("{0:0.##}", ViewBag.Expense.Amount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                }
+                                                            }
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>*@
+                                    </table>
+                                    <small class="text-red font-weight-bold errorText" id="divExpensePayment"></small>
+                                </div>
+                                <div class="col-sm-12">
+
+                                    <div class="col-md-3 float-right">
+                                        <div class="row" id="divCalculationSummary">
+                                            <div class="col-12">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right  @(ViewBag.Expense.IsReverseCharge != 1 ? "" : "hidden")">Sub Total :</label>
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right  @(ViewBag.Expense.IsReverseCharge == 1 ? "" : "hidden")">Total :</label>
+                                                    <label for="inputEmail3" class="col-4 col-form-label text-left" id="divSubTotal">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Expense.Subtotal))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}", ViewBag.Expense.Subtotal))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            @{
+                                                foreach (var item in ViewBag.TaxBreakups)
+                                                {
+                                                    <div class="col-12 @(ViewBag.Expense.IsReverseCharge == 1 ? "hidden" : "")">
+                                                        <div class="row">
+                                                            <label for="inputEmail3" class="col-8 col-form-label text-right">@item.Tax :</label>
+                                                            <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTax">
+                                                                @{
+                                                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                    {
+                                                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.TaxAmount))
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @(String.Format("{0:0.##}", item.TaxAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                    }
+                                                                }
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                            <div class="col-12 @(ViewBag.Expense.IsReverseCharge == 1 ? "hidden" : "")">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right">Total :</label>
+                                                    <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTotal">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Expense.GrandTotal))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}", ViewBag.Expense.GrandTotal))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 @(ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Business Location </label>
+                                        <div class="input-group divBranch_ctrl">
+                                            @foreach (var item in ViewBag.Branchs)
+                                            {
+                                                if (ViewBag.Expense.BranchId == item.BranchId)
+                                                {
+                                                    <span>@item.Branch</span>
+                                                }
+                                            }
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Date </label>
+                                        <div class="input-group date" id="_Date" data-target-input="nearest">
+                                            <span>@ViewBag.Expense.Date.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</span>
+                                        </div>
+                                        @*<input type="datetime-local" class="form-control" id="txtDate">*@
+                                        <small class="text-red font-weight-bold errorText" id="divDate"></small>
+                                        @*<input type="date" class="form-control" id="txtDate">*@
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>User <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Choose the user for which expense is related to. <i>(Optional)</i><br/><small>Example: Salary of an employee.</small>"></i></label>
+                                        <div class="input-group divUser">
+                                            @foreach (var item in ViewBag.Users)
+                                            {
+                                                if (ViewBag.Expense.UserId == item.UserId)
+                                                {
+                                                    <span>
+                                                        @item.Name
+                                                        @if (item.MobileNo != null && item.MobileNo != "")
+                                                        {
+                                                            <span>- @item.MobileNo</span>
+                                                        }
+                                                    </span>
+                                                }
+                                            }
+                                        </div>
+                                        @*<input type="text" class="form-control" id="txtExpenseFor">*@
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Supplier </label>
+                                        <div class="input-group divIncomeFor">
+                                            @foreach (var item in ViewBag.Suppliers)
+                                            {
+                                                if (ViewBag.Expense.SupplierId == item.UserId)
+                                                {
+                                                    <span>@item.Name - @item.MobileNo</span>
+                                                }
+                                            }
+                                        </div>
+                                        @*<input type="text" class="form-control" id="txtExpenseFor">*@
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Customer </label>
+                                        <div class="input-group divIncomeFor">
+                                            @foreach (var item in ViewBag.Customers)
+                                            {
+                                                if (ViewBag.Expense.CustomerId == item.UserId)
+                                                {
+                                                    <span>@item.Name - @item.MobileNo</span>
+                                                }
+                                            }
+                                        </div>
+                                        @*<input type="text" class="form-control" id="txtExpenseFor">*@
+                                    </div>
+                                </div>
+                                @*@if (ViewBag.AccountsPermission.IsView == true)
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                            <div class="form-group">
+                                                <label>Account  </label>
+                                                <div class="input-group">
+                                                    <select class="form-control select2" id="ddlAccount">
+                                                        @{
+                                                            if (ViewBag.AccountSubTypes != null)
+                                                            {
+                                                                foreach (var item in ViewBag.AccountSubTypes)
+                                                                {
+                                                                    if (item.Accounts.Count > 0)
+                                                                    {
+                                                                        if (item.Type != "Accounts Receivable" && item.Type != "Accounts Payable")
+                                                                        {
+                                                                            <optgroup label="@item.DisplayAs">
+                                                                                @foreach (var inner in item.Accounts)
+                                                                                {
+                                                                                    if (inner.Type != "Opening Balance Adjustments" && inner.Type != "Tag Adjustments")
+                                                                                    {
+                                                                                        <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                                    }
+                                                                                }
+                                                                            </optgroup>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    </select>
+
+                                                </div>
+                                                <small class="text-red font-weight-bold errorText" id="divAccount"></small>
+                                            </div>
+                                        </div>
+                                    }*@
+
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Category </label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlExpenseCategory" onchange="fetchActiveSubCategories()">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.ExpenseCategories)
+                                                    {
+
+                                                        <option value="@item.ExpenseCategoryId">@item.ExpenseCategory</option>
+                                                    }
+                                                </select>
+                                                @if (ViewBag.ExpenseCategoriesPermission = true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#categoryModal">+ </a>
+                                                    </span>
+                                                }
+
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divExpenseCategory"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3" id="p_SubCategories_Dropdown">
+                                        @Html.Partial("PartialSubCategoryDropdown")
+                                    </div>*@
+                                @if (ViewBag.BusinessSetting.CountryId == 2)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3" style="display:none">
+                                        <div class="form-group">
+                                            <label>GST Treatment </label>
+                                            <div class="input-group">
+                                                <span>Out Of Scope</span>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divGstTreatment"></small>
+                                        </div>
+                                    </div>
+                                    @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3" style="display:none">
+                                            <div class="form-group">
+                                                <label>Business Registration Name </label>
+                                                <div class="input-group">
+                                                    <select class="form-control select2" id="ddlBusinessRegistrationName">
+                                                        @foreach (var item in ViewBag.BusinessRegistrationNames)
+                                                        {
+                                                            <option value="@item.BusinessRegistrationNameId">@item.Name</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationName"></small>
+                                            </div>
+                                        </div>*@
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3" style="display:none">
+                                        <div class="form-group">
+                                            <label>Tax </label>
+                                            <div class="input-group">
+                                                @foreach (var item in ViewBag.Taxs)
+                                                {
+                                                    if (item.Tax == "Out of Scope")
+                                                    {
+                                                        <span>@item.Tax</span>
+                                                    }
+                                                }
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationName"></small>
+                                        </div>
+                                    </div>
+                                    @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divGst">
+                                            <div class="form-group">
+                                                <label class="lblBusinessRegistrationName">@ViewBag.BusinessRegistrationNames[0].Name </label>
+                                                <input type="text" class="form-control" id="txtBusinessRegistrationNo" placeholder="">
+                                                <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationNo"></small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                            <div class="form-group">
+                                                <label>PAN</label>
+                                                <input type="text" class="form-control" id="txtPanNo" placeholder="">
+                                            </div>
+                                        </div>*@
+                                }
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3" style="display:none">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Account </label>
+                                        <div class="input-group">
+                                            @{
+                                                if (ViewBag.AccountSubTypes != null)
+                                                {
+                                                    foreach (var item in ViewBag.AccountSubTypes)
+                                                    {
+                                                        if (item.Accounts.Count > 0)
+                                                        {
+                                                            if (item.Type == "Expense")
+                                                            {
+                                                                foreach (var inner in item.Accounts)
+                                                                {
+                                                                    if (ViewBag.ExpenseSetting.MileageAccountId == inner.AccountId)
+                                                                    {
+                                                                        <span>@inner.DisplayAs</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            @*@if (ViewBag.AccountsPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#AccountModal">+ </a>
+                                                    </span>
+                                                }*@
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Vehicle </label>
+                                        <div class="input-group divIncomeFor">
+                                            @foreach (var item in ViewBag.Vehicles)
+                                            {
+                                                if (ViewBag.Expense.VehicleId == item.VehicleId)
+                                                {
+                                                    <span>@item.VehicleName</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Calculate Mileage Using </label>
+                                        <div class="custom-control custom-radio">
+                                            @if (ViewBag.Expense.CalculateMileageUsing == "Distance Travelled")
+                                            {
+                                                <input disabled class="custom-control-input" type="radio" id="rdbDistanceTravelled" name="customRadio" checked onchange="toggleCalcuateMileageUsing()">
+                                            }
+                                            else
+                                            {
+                                                <input disabled class="custom-control-input" type="radio" id="rdbDistanceTravelled" name="customRadio" onchange="toggleCalcuateMileageUsing()">
+                                            }
+                                            <label for="rdbDistanceTravelled" class="custom-control-label">Distance Travelled</label>
+                                        </div>
+                                        <div class="custom-control custom-radio">
+                                            @if (ViewBag.Expense.CalculateMileageUsing == "Odometer Reading")
+                                            {
+                                                <input disabled class="custom-control-input" type="radio" id="rdbOdometerReading" name="customRadio" checked onchange="toggleCalcuateMileageUsing()">
+                                            }
+                                            else
+                                            {
+                                                <input disabled class="custom-control-input" type="radio" id="rdbOdometerReading" name="customRadio" onchange="toggleCalcuateMileageUsing()">
+                                            }
+                                            <label for="rdbOdometerReading" class="custom-control-label">Odometer Reading</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divOdometerReading" style="display:@(ViewBag.Expense.CalculateMileageUsing == "Odometer Reading" ? "" : "none")">
+                                    <div class="form-group">
+                                        <label>Odometer Reading (Start) </label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.Expense.OdometerStartReading</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 divOdometerReading" style="display:@(ViewBag.Expense.CalculateMileageUsing == "Odometer Reading" ? "" : "none")">
+                                    <div class="form-group">
+                                        <label>Odometer Reading (End) </label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.Expense.OdometerEndReading</span>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divOdometerEndReading"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Distance in @ViewBag.ExpenseSetting.UnitName  </label>
+                                        <div class="input-group">
+                                            @if (ViewBag.Expense.CalculateMileageUsing == "Odometer Reading")
+                                            {
+                                                <span>@ViewBag.Expense.Distance</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@ViewBag.Expense.Distance</span>
+                                            }
+                                        </div>
+                                        @*<small class="font-weight-bold">
+                                                Rate per @ViewBag.ExpenseSetting.UnitName =
+                                                <span id="lblRate">@ViewBag.Expense.MileageRate</span>
+                                                <a href="javascript:void(0)"><i class="fas fa-edit" data-toggle="modal" data-target="#MileageRateModal"></i></a>
+                                            </small>*@
+                                        <small class="text-red font-weight-bold errorText" id="divDistance"></small>
+                                        <input type="hidden" id="hdnUnitId" value="@ViewBag.ExpenseSetting.UnitId" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Rate per @ViewBag.ExpenseSetting.UnitName  </label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.Expense.MileageRate</span>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divMileageRate"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Amount </label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.Expense.ExpensePayments[0].Amount</span>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divAmount"></small>
+                                    </div>
+                                </div>
+                                @*@if (ViewBag.AccountsPermission.IsView == true)
+                                    {*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Paid Through </label>
+                                        <div class="input-group">
+                                            @{
+                                                if (ViewBag.AccountSubTypes != null)
+                                                {
+                                                    foreach (var item in ViewBag.AccountSubTypes)
+                                                    {
+                                                        if (item.Accounts.Count > 0)
+                                                        {
+                                                            if (item.Type != "Accounts Receivable" && item.Type != "Accounts Payable")
+                                                            {
+                                                                foreach (var inner in item.Accounts)
+                                                                {
+                                                                    if (inner.Type != "Opening Balance Adjustments" && inner.Type != "Tag Adjustments")
+                                                                    {
+                                                                        if (ViewBag.Expense.AccountId == inner.AccountId)
+                                                                        {
+                                                                            <span>@inner.DisplayAs</span>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            @*@if (ViewBag.AccountsPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#AccountModal">+ </a>
+                                                    </span>
+                                                }*@
+
+                                        </div>
+                                    </div>
+                                </div>
+                                @*}*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Reference No </label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.Expense.ReferenceNo</span>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divReferenceNo"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Notes</label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.Expense.ExpensePayments[0].Notes</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Tax</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlTax">
+                                                    <option value="0" selected>Select </option>
+                                                    @foreach (var item in ViewBag.Taxs)
+                                                    {
+                                                        <option value="@item.TaxId">@item.Tax@@@(item.TaxPercent)%</option>
+                                                    }
+                                                </select>
+                                                @if (ViewBag.TaxListPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#taxModal">+ </a>
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>*@
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Amount </label>
+                                            <input type="number" class="form-control" id="txtAmount" onkeypress="return onlyDecimalKey(event)">
+                                            <small class="text-red font-weight-bold errorText" id="divAmount"></small>
+                                        </div>
+                                    </div>*@
+
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Attach Document</label>
+                                        <div class="input-group">
+                                            <img id="blahAttachDocument" src="@ViewBag.Expense.AttachDocument" alt="" height="60" style="padding-top:10px;">
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
+                                        <div class="form-group">
+                                            <label>Note</label>
+                                            <textarea class="form-control" id="txtNotes" rows="2"></textarea>
+                                        </div>
+                                    </div>*@
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="card card-outline">
+                <div class="card-header">
+                    <h3 class="card-title text-bold">Journal Details</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row table-responsive">
+                        <table class="table table-bordered table-striped">
+                            @{
+                                <thead id="thead">
+                                    <tr>
+                                        <th>Account Name</th>
+                                        <th>Debit</th>
+                                        <th>Credit</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-body">
+                                    @foreach (var item in ViewBag.BankPayments)
+                                    {
+                                        if (item.Debit != 0 || item.Credit != 0 || item.IsTaxAccount == true)
+                                        {
+                                            <tr>
+                                                <td>@item.AccountName</td>
+                                                <td>@(String.Format("{0:0.##}", item.Debit))</td>
+                                                <td>@(String.Format("{0:0.##}", item.Credit))</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="1" data-title="Total" class="text-right"><b>Total</b></td>
+                                        <td data-title="Due Amount" class="text-bold">@(String.Format("{0:0.##}", ViewBag.TotalDebit))</td>
+                                        <td data-title="Due Amount" class="text-bold">@(String.Format("{0:0.##}", ViewBag.TotalCredit))</td>
+                                    </tr>
+                                </tbody>
+                            }
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    }
+}
+

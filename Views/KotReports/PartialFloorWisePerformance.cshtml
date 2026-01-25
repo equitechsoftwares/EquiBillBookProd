@@ -1,0 +1,117 @@
+@{
+    var kots = ViewBag.Kots as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var currentPageIndex = ViewBag.CurrentPageIndex ?? 1;
+    var pageCount = ViewBag.PageCount ?? 0;
+}
+
+@{
+    // Group KOTs by floor (need to get floor info from table)
+    var floorGroups = kots
+        .Where(k => k.FloorId != null && k.FloorId > 0)
+        .GroupBy(k => new { FloorId = k.FloorId, FloorName = k.FloorName ?? "Unknown Floor" })
+        .Select(g => new {
+            FloorId = g.Key.FloorId,
+            FloorName = g.Key.FloorName,
+            TotalKots = g.Count(),
+            TotalRevenue = g.Where(k => k.SalesId != null && k.SalesId > 0).Sum(k => (decimal?)(k.SalesTotal ?? 0)) ?? 0,
+            ServedKots = g.Count(k => k.OrderStatus == "Served"),
+            TotalTables = g.Select(k => k.TableId).Distinct().Count(),
+            AvgGuestCount = g.Average(k => (int?)(k.GuestCount ?? 0)) ?? 0
+        })
+        .OrderByDescending(f => f.TotalRevenue)
+        .ToList();
+}
+
+<thead id="thead">
+    <tr>
+        <th>Floor Name</th>
+        <th>Total Tables</th>
+        <th>Total KOTs</th>
+        <th>Served KOTs</th>
+        <th>Total Revenue</th>
+        <th>Avg Guest Count</th>
+        <th>Revenue per Table</th>
+        <th>Utilization %</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (floorGroups.Count > 0)
+    {
+        foreach (var floor in floorGroups)
+        {
+            var revenuePerTable = floor.TotalTables > 0 ? floor.TotalRevenue / floor.TotalTables : 0;
+            var utilization = floor.TotalKots > 0 ? Math.Round((floor.ServedKots / (double)floor.TotalKots) * 100, 2) : 0;
+            
+            <tr>
+                <td><strong>@floor.FloorName</strong></td>
+                <td>@floor.TotalTables</td>
+                <td>@floor.TotalKots</td>
+                <td><span class="badge badge-success">@floor.ServedKots</span></td>
+                <td><strong>@floor.TotalRevenue.ToString("N2")</strong></td>
+                <td>@Math.Round(floor.AvgGuestCount, 1)</td>
+                <td>@revenuePerTable.ToString("N2")</td>
+                <td><span class="badge badge-@(utilization >= 80 ? "success" : utilization >= 60 ? "warning" : "danger")">@utilization%</span></td>
+            </tr>
+        }
+    }
+</tbody>
+@if (floorGroups.Count > 0)
+{
+    <tfoot>
+        <tr>
+            <th>Total</th>
+            <th>@floorGroups.Sum(f => f.TotalTables)</th>
+            <th>@floorGroups.Sum(f => f.TotalKots)</th>
+            <th>@floorGroups.Sum(f => f.ServedKots)</th>
+            <th>@floorGroups.Sum(f => f.TotalRevenue).ToString("N2")</th>
+            <th>@Math.Round(floorGroups.Average(f => f.AvgGuestCount), 1)</th>
+            <th>@(floorGroups.Sum(f => f.TotalTables) > 0 ? (floorGroups.Sum(f => f.TotalRevenue) / floorGroups.Sum(f => f.TotalTables)).ToString("N2") : "0.00")</th>
+            <th>-</th>
+        </tr>
+    </tfoot>
+}
+<tbody class="hide noPrint">
+    <tr></tr>
+    <tr>
+        <td colspan="8">
+            <div class="dataTables_info" id="tblFloorWisePerformance_info_custom" role="status" aria-live="polite">Showing @((currentPageIndex - 1) * pageSize + 1) to @(Math.Min(currentPageIndex * pageSize, totalCount)) of @totalCount entries</div>
+            @if (pageCount > 1)
+            {
+                int j = 0;
+                <div class="dataTables_paginate paging_simple_numbers" id="tblFloorWisePerformance_paginate_custom" style="float:right">
+                    <ul class="pagination">
+                        @if (currentPageIndex > 1)
+                        {
+                            <li class="paginate_button page-item previous" id="tblFloorWisePerformance_previous">
+                                <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblFloorWisePerformance" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                            </li>
+                            <li class="paginate_button page-item previous" id="tblFloorWisePerformance_previous">
+                                <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblFloorWisePerformance" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                            </li>
+                        }
+                        @for (int i = currentPageIndex; i <= pageCount; i++)
+                        {
+                            <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblFloorWisePerformance" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                            </li>
+                            if (j == 10)
+                            {
+                                i = pageCount + 1;
+                            }
+                            j++;
+                        }
+                        @if (currentPageIndex < pageCount)
+                        {
+                            <li class="paginate_button page-item next" id="tblFloorWisePerformance_next">
+                                <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblFloorWisePerformance" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </td>
+    </tr>
+</tbody>
+

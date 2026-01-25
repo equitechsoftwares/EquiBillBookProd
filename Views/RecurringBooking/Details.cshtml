@@ -1,0 +1,166 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Recurring Booking Details";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+    var recurringBooking = ViewBag.RecurringBooking;
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Recurring Booking Details</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/recurringbooking/index">Recurring Bookings</a></li>
+                        <li class="breadcrumb-item active">Recurring Booking Details</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/recurringbooking/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                @if (recurringBooking != null)
+                {
+                    var pattern = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(recurringBooking.RecurrencePattern ?? "{}");
+                    <div class="card card-primary card-outline">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th width="40%">Recurring Booking ID</th>
+                                            <td>@recurringBooking.RecurringBookingId</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Booking No</th>
+                                            <td>
+                                                @if (recurringBooking.BookingNo != null)
+                                                {
+                                                    <a href="/tablebooking/details/@recurringBooking.BookingId">@recurringBooking.BookingNo</a>
+                                                }
+                                                else
+                                                {
+                                                    <text>-</text>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Recurrence Type</th>
+                                            <td>@recurringBooking.RecurrenceType</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Repeat Pattern</th>
+                                            <td>
+                                                @{
+                                                    if (recurringBooking.RecurrenceType == "Weekly" && pattern.daysOfWeek != null)
+                                                    {
+                                                        var days = Newtonsoft.Json.JsonConvert.DeserializeObject<int[]>(pattern.daysOfWeek.ToString());
+                                                        var dayNames = new[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+                                                        var selectedDays = days.Select(d => dayNames[d]).ToArray();
+                                                        <text>Every @(pattern.interval ?? 1) week(s) on @string.Join(", ", selectedDays)</text>
+                                                    }
+                                                    else if (recurringBooking.RecurrenceType == "Monthly")
+                                                    {
+                                                        // For monthly, use the day from start date (backend handles this automatically)
+                                                        <text>Every @(pattern.interval ?? 1) month(s) on day @recurringBooking.StartDate.Day</text>
+                                                    }
+                                                    else if (recurringBooking.RecurrenceType == "Daily")
+                                                    {
+                                                        <text>Every @(pattern.interval ?? 1) day(s)</text>
+                                                    }
+                                                    else
+                                                    {
+                                                        <text>-</text>
+                                                    }
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Start Date</th>
+                                            <td>@recurringBooking.StartDate.ToString("dd-MMM-yyyy")</td>
+                                        </tr>
+                                        <tr>
+                                            <th>End Date</th>
+                                            <td>@(recurringBooking.EndDate != null ? ((DateTime)recurringBooking.EndDate).ToString("dd-MMM-yyyy") : "No End Date")</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th width="40%">Status</th>
+                                            <td>
+                                                @if (recurringBooking.IsActive)
+                                                {
+                                                    <span class="badge badge-success">Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary">Inactive</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Created On</th>
+                                            <td>@recurringBooking.AddedOn.ToString("dd-MMM-yyyy HH:mm")</td>
+                                        </tr>
+                                        @if (recurringBooking.Booking != null)
+                                        {
+                                            <tr>
+                                                <th>Booking Details</th>
+                                                <td>
+                                                    <strong>Date:</strong> @recurringBooking.Booking.BookingDate.ToString("dd-MMM-yyyy")<br />
+                                                    <strong>Time:</strong> @recurringBooking.Booking.BookingTime.ToString(@"hh\:mm")<br />
+                                                    <strong>Duration:</strong> @recurringBooking.Booking.Duration minutes<br />
+                                                    <strong>Guests:</strong> @recurringBooking.Booking.NoOfGuests<br />
+                                                    <strong>Status:</strong> @recurringBooking.Booking.Status
+                                                </td>
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsEdit)
+                                    {
+                                        <a href="/recurringbooking/edit?RecurringBookingId=@recurringBooking.RecurringBookingId" class="btn btn-primary"><i class="fas fa-edit"></i> Edit</a>
+                                    }
+                                    @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsDelete)
+                                    {
+                                        <button type="button" class="btn btn-danger" onclick="Delete(@recurringBooking.RecurringBookingId)"><i class="fas fa-trash"></i> Delete</button>
+                                    }
+                                    <a href="/tablebooking/details/@recurringBooking.BookingId" class="btn btn-info"><i class="fas fa-calendar"></i> View Booking</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card card-primary card-outline">
+                        <div class="card-body">
+                            <div class="alert alert-danger">
+                                <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                                Recurring booking not found.
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Customer/Restaurant/RecurringBooking.js"></script>
+

@@ -1,0 +1,1510 @@
+@using EquiBillBook.Models;
+@using System.Collections.Generic;
+@using System.Linq;
+@{
+    Layout = null;
+    string analyticsId = string.Empty;
+    bool enableAddToCart = false;
+    int addToCartMode = 0;
+    string quotationButtonLabel = "Send Quotation";
+    bool enableWhatsApp = false;
+    bool enableWhatsAppItems = false;
+    bool showWhatsAppContact = false;
+    string whatsappNumber = string.Empty;
+    string whatsappLink = string.Empty;
+    string whatsappDigits = string.Empty;
+    bool isHeaderFixed = false;
+    bool showPrices = false;
+    bool showMRP = false;
+    bool showDiscount = false;
+    bool showStock = false;
+    bool showOutOfStock = false;
+    bool showProductCode = false;
+    bool showImages = true;
+    bool showBusinessLogo = true;
+    bool showBusinessName = true;
+    bool showAddressInfo = false;
+    bool showContactInfo = false;
+    bool showEmailInfo = false;
+    bool showGstinInfo = false;
+    bool showBusinessInfoIcon = false;
+    string catalogueTagline = string.Empty;
+    string businessLogoUrl = string.Empty;
+    string businessName = string.Empty;
+    string catalogueSlug = string.Empty;
+    string defaultCartDisclaimerText = "";
+    string cartDisclaimerText = defaultCartDisclaimerText;
+    int catalogueType = 0;
+    var categories = new List<dynamic>();
+    var brands = new List<dynamic>();
+    bool showCategoryMenu = false;
+    bool showBrandFilter = false;
+    string headerColor = "#ffffff";
+    string headerTextColor = "#111827";
+    string headerControlBorder = "rgba(17,24,39,0.12)";
+    string headerControlHover = "rgba(17,24,39,0.05)";
+    string topBarBackgroundColor = "#f8fafc";
+    string topBarTextColor = "#6b7280";
+    string bodyBackgroundColor = "#ffffff";
+    string bodyTextColor = "#111827";
+    string addToCartButtonColor = "#e11d2e";
+    string whatsappSupportButtonColor = "#25d366";
+    string filterBadgeColor = "#0ea5e9";
+    string accentColor = "#e11d2e";
+    string pageTitle = "Shop";
+    string metaDescription = string.Empty;
+    if (!string.IsNullOrWhiteSpace(System.Convert.ToString(ViewBag.PageTitle)))
+    {
+        pageTitle = System.Convert.ToString(ViewBag.PageTitle);
+    }
+    else if (ViewBag.Catalogue != null && !string.IsNullOrWhiteSpace(System.Convert.ToString(ViewBag.Catalogue.CatalogueName)))
+    {
+        pageTitle = System.Convert.ToString(ViewBag.Catalogue.CatalogueName);
+    }
+    if (!string.IsNullOrWhiteSpace(System.Convert.ToString(ViewBag.MetaDescription)))
+    {
+        metaDescription = System.Convert.ToString(ViewBag.MetaDescription);
+    }
+    PublicCatalogueProductGridViewModel productGridModel = ViewBag.ProductGridModel as PublicCatalogueProductGridViewModel;
+    int totalProductCount = productGridModel?.TotalCount ?? 0;
+    int initialProductsOnPage = productGridModel?.Products?.Count ?? 0;
+    int initialPageIndexValue = productGridModel?.PageIndex > 0 ? productGridModel.PageIndex : 1;
+    int initialPageSizeValue = productGridModel?.PageSize ?? 0;
+    int initialResultStart = 0;
+    int initialResultEnd = 0;
+    if (totalProductCount > 0 && initialProductsOnPage > 0)
+    {
+        initialResultStart = initialPageSizeValue > 0 ? ((initialPageIndexValue - 1) * initialPageSizeValue) + 1 : 1;
+        if (initialResultStart < 1)
+        {
+            initialResultStart = 1;
+        }
+        initialResultEnd = initialResultStart + initialProductsOnPage - 1;
+        if (initialResultEnd > totalProductCount)
+        {
+            initialResultEnd = totalProductCount;
+        }
+    }
+    string resultsLabelText = (totalProductCount <= 0 || initialProductsOnPage <= 0)
+        ? "Showing 0 results"
+        : $"Showing {initialResultStart} \u2013 {initialResultEnd} of {totalProductCount} results";
+    int defaultSortOrder = 1;
+    try
+    {
+        defaultSortOrder = System.Convert.ToInt32(ViewBag.DefaultSortOrder);
+    }
+    catch
+    {
+        defaultSortOrder = 1;
+    }
+    if (defaultSortOrder <= 0)
+    {
+        defaultSortOrder = 1;
+    }
+    var sortOptions = new[]
+    {
+        new { Value = 1, Label = "Popularity" },
+        new { Value = 2, Label = "Price: Low to High" },
+        new { Value = 3, Label = "Price: High to Low" },
+        new { Value = 4, Label = "Newest First" }
+    };
+    var selectedSortOption = sortOptions.FirstOrDefault(option => option.Value == defaultSortOrder) ?? sortOptions.First();
+    Func<string, string> getReadableTextColor = color =>
+    {
+        if (string.IsNullOrWhiteSpace(color))
+        {
+            return "#111827";
+        }
+        var hex = color.Trim();
+        if (hex.StartsWith("#"))
+        {
+            hex = hex.Substring(1);
+        }
+        if (hex.Length != 6)
+        {
+            return "#111827";
+        }
+        int r, g, b;
+        if (!int.TryParse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out r) ||
+            !int.TryParse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out g) ||
+            !int.TryParse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out b))
+        {
+            return "#111827";
+        }
+        var brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness > 160 ? "#111827" : "#ffffff";
+    };
+    Func<string, System.Tuple<int, int, int>> tryParseHex = colorValue =>
+    {
+        if (string.IsNullOrWhiteSpace(colorValue))
+        {
+            return null;
+        }
+        var hex = colorValue.Trim();
+        if (hex.StartsWith("#", System.StringComparison.Ordinal))
+        {
+            hex = hex.Substring(1);
+        }
+        if (hex.Length == 3)
+        {
+            hex = new string(new[] { hex[0], hex[0], hex[1], hex[1], hex[2], hex[2] });
+        }
+        if (hex.Length != 6)
+        {
+            return null;
+        }
+        int rComponent, gComponent, bComponent;
+        if (!int.TryParse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out rComponent) ||
+            !int.TryParse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out gComponent) ||
+            !int.TryParse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out bComponent))
+        {
+            return null;
+        }
+        return System.Tuple.Create(rComponent, gComponent, bComponent);
+    };
+    Func<System.Tuple<int, int, int>, double, System.Tuple<int, int, int>> adjustBrightness = (rgb, ratio) =>
+    {
+        ratio = System.Math.Max(-1d, System.Math.Min(1d, ratio));
+        var target = ratio >= 0 ? System.Tuple.Create(255, 255, 255) : System.Tuple.Create(0, 0, 0);
+        var weight = System.Math.Abs(ratio);
+        Func<int, int, int> blend = (source, dest) =>
+        {
+            var value = (int)System.Math.Round(source * (1 - weight) + dest * weight);
+            if (value < 0) value = 0;
+            if (value > 255) value = 255;
+            return value;
+        };
+        return System.Tuple.Create(
+            blend(rgb.Item1, target.Item1),
+            blend(rgb.Item2, target.Item2),
+            blend(rgb.Item3, target.Item3));
+    };
+    Func<System.Tuple<int, int, int>, string> toHex = rgb =>
+    {
+        return $"#{rgb.Item1:X2}{rgb.Item2:X2}{rgb.Item3:X2}";
+    };
+    Func<object, string, long?> getLongProperty = (source, propertyName) =>
+    {
+        if (source == null || string.IsNullOrWhiteSpace(propertyName))
+        {
+            return null;
+        }
+        try
+        {
+            var dictionary = source as System.Collections.Generic.IDictionary<string, object>;
+            if (dictionary != null)
+            {
+                object dictValue;
+                if (dictionary.TryGetValue(propertyName, out dictValue))
+                {
+                    long parsedDictValue;
+                    if (long.TryParse(System.Convert.ToString(dictValue), out parsedDictValue))
+                    {
+                        return parsedDictValue;
+                    }
+                }
+            }
+            var type = source.GetType();
+            var prop = type.GetProperty(propertyName);
+            if (prop != null)
+            {
+                var value = prop.GetValue(source, null);
+                long parsedValue;
+                if (long.TryParse(System.Convert.ToString(value), out parsedValue))
+                {
+                    return parsedValue;
+                }
+            }
+        }
+        catch
+        {
+            // ignore and return null
+        }
+        return null;
+    };
+    Func<object, string> normalizeTheme = source =>
+    {
+        var rawValue = System.Convert.ToString(source);
+        if (string.IsNullOrWhiteSpace(rawValue))
+        {
+            return "default";
+        }
+        var trimmed = rawValue.Trim();
+        var lowered = trimmed.ToLowerInvariant();
+        switch (lowered)
+        {
+            case "0":
+            case "default":
+                return "default";
+            case "1":
+            case "classic":
+            case "classic grid":
+                return "classic";
+            case "2":
+            case "modern":
+            case "modern cards":
+                return "modern";
+            case "3":
+            case "minimal":
+            case "compact list":
+                return "minimal";
+            default:
+                return "default";
+        }
+    };
+    string themeVariant = "default";
+    if (ViewBag.Catalogue != null)
+    {
+        analyticsId = System.Convert.ToString(ViewBag.Catalogue.GoogleAnalyticsId);
+        catalogueSlug = System.Convert.ToString(ViewBag.Catalogue.UniqueSlug);
+        enableAddToCart = ViewBag.Catalogue.EnableAddToCart == true;
+        if (ViewBag.Catalogue.AddToCartQuotationMode != null)
+        {
+            int.TryParse(System.Convert.ToString(ViewBag.Catalogue.AddToCartQuotationMode), out addToCartMode);
+        }
+        enableWhatsApp = ViewBag.Catalogue.EnableWhatsAppEnquiry == true;
+        enableWhatsAppItems = ViewBag.Catalogue.EnableWhatsAppEnquiryForItems == true;
+        showWhatsAppContact = ViewBag.Catalogue.ShowWhatsApp == true;
+        isHeaderFixed = ViewBag.Catalogue.IsHeaderFixed == true;
+        showPrices = ViewBag.Catalogue.ShowPrices == true;
+        showMRP = ViewBag.Catalogue.ShowMRP == true;
+        showDiscount = ViewBag.Catalogue.ShowDiscount == true;
+        showStock = ViewBag.Catalogue.ShowStock == true;
+        showOutOfStock = ViewBag.Catalogue.ShowOutOfStock == true;
+        showProductCode = ViewBag.Catalogue.ShowProductCode == true;
+        showImages = ViewBag.Catalogue.ShowImages != null ? ViewBag.Catalogue.ShowImages : true;
+        showBusinessLogo = ViewBag.Catalogue.ShowBusinessLogo != null ? ViewBag.Catalogue.ShowBusinessLogo : true;
+        showBusinessName = ViewBag.Catalogue.ShowBusinessName != null ? ViewBag.Catalogue.ShowBusinessName : true;
+        showAddressInfo = ViewBag.Catalogue.ShowAddress == true;
+        showContactInfo = ViewBag.Catalogue.ShowContact == true;
+        showEmailInfo = ViewBag.Catalogue.ShowEmail == true;
+        showGstinInfo = ViewBag.Catalogue.ShowGstin == true;
+        showBusinessInfoIcon = showBusinessName || showAddressInfo || showContactInfo || showEmailInfo || showGstinInfo || showWhatsAppContact;
+        var configuredTagline = System.Convert.ToString(ViewBag.Catalogue.Tagline);
+        if (!string.IsNullOrWhiteSpace(configuredTagline))
+        {
+            catalogueTagline = configuredTagline;
+        }
+        var businessSetting = ViewBag.Catalogue.BusinessSetting;
+        if (businessSetting != null)
+        {
+            businessLogoUrl = System.Convert.ToString(businessSetting.BusinessLogo);
+            if (string.IsNullOrWhiteSpace(businessName))
+            {
+                businessName = System.Convert.ToString(businessSetting.BusinessName);
+            }
+        }
+        var branchInfo = ViewBag.Catalogue.Branch;
+        if (string.IsNullOrWhiteSpace(businessName) && branchInfo != null)
+        {
+            var branchName = System.Convert.ToString(branchInfo.Name);
+            if (string.IsNullOrWhiteSpace(branchName))
+            {
+                branchName = System.Convert.ToString(branchInfo.Branch);
+            }
+            businessName = branchName;
+        }
+        int.TryParse(System.Convert.ToString(ViewBag.Catalogue.CatalogueType), out catalogueType);
+        var configuredHeaderColor = System.Convert.ToString(ViewBag.Catalogue.HeaderColor);
+        var configuredHeaderTextColor = System.Convert.ToString(ViewBag.Catalogue.HeaderTextColor);
+        if (!string.IsNullOrWhiteSpace(configuredHeaderColor))
+        {
+            headerColor = configuredHeaderColor;
+        }
+        if (!string.IsNullOrWhiteSpace(configuredHeaderTextColor))
+        {
+            headerTextColor = configuredHeaderTextColor;
+        }
+        else if (!string.IsNullOrWhiteSpace(configuredHeaderColor))
+        {
+            headerTextColor = getReadableTextColor(configuredHeaderColor);
+        }
+        var isHeaderTextWhite = headerTextColor.Equals("#ffffff", System.StringComparison.OrdinalIgnoreCase);
+        headerControlBorder = isHeaderTextWhite
+            ? "rgba(255,255,255,0.35)"
+            : "rgba(17,24,39,0.12)";
+        headerControlHover = isHeaderTextWhite
+            ? "rgba(255,255,255,0.18)"
+            : "rgba(17,24,39,0.05)";
+        var configuredTopBarColor = System.Convert.ToString(ViewBag.Catalogue.TopBarColor);
+        if (!string.IsNullOrWhiteSpace(configuredTopBarColor))
+        {
+            topBarBackgroundColor = configuredTopBarColor;
+            if (string.IsNullOrWhiteSpace(System.Convert.ToString(ViewBag.Catalogue.TopBarTextColor)))
+            {
+                topBarTextColor = getReadableTextColor(configuredTopBarColor);
+            }
+        }
+        var configuredTopBarTextColor = System.Convert.ToString(ViewBag.Catalogue.TopBarTextColor);
+        if (!string.IsNullOrWhiteSpace(configuredTopBarTextColor))
+        {
+            topBarTextColor = configuredTopBarTextColor;
+        }
+        var configuredBodyBackground = System.Convert.ToString(ViewBag.Catalogue.BodyBackgroundColor);
+        if (!string.IsNullOrWhiteSpace(configuredBodyBackground))
+        {
+            bodyBackgroundColor = configuredBodyBackground;
+            if (string.IsNullOrWhiteSpace(System.Convert.ToString(ViewBag.Catalogue.BodyTextColor)))
+            {
+                bodyTextColor = getReadableTextColor(configuredBodyBackground);
+            }
+        }
+        var configuredBodyText = System.Convert.ToString(ViewBag.Catalogue.BodyTextColor);
+        if (!string.IsNullOrWhiteSpace(configuredBodyText))
+        {
+            bodyTextColor = configuredBodyText;
+        }
+        var configuredPrimary = System.Convert.ToString(ViewBag.Catalogue.AddToCartButtonColor);
+        if (!string.IsNullOrWhiteSpace(configuredPrimary))
+        {
+            addToCartButtonColor = configuredPrimary;
+        }
+        else if (!string.IsNullOrWhiteSpace(whatsappSupportButtonColor))
+        {
+            addToCartButtonColor = whatsappSupportButtonColor;
+        }
+        var configuredSecondary = System.Convert.ToString(ViewBag.Catalogue.WhatsappSupportButtonColor);
+        if (!string.IsNullOrWhiteSpace(configuredSecondary))
+        {
+            whatsappSupportButtonColor = configuredSecondary;
+        }
+        var configuredAccent = System.Convert.ToString(ViewBag.Catalogue.LinkIconAccentColor);
+        if (!string.IsNullOrWhiteSpace(configuredAccent))
+        {
+            accentColor = configuredAccent;
+        }
+        else if (!string.IsNullOrWhiteSpace(addToCartButtonColor))
+        {
+            accentColor = addToCartButtonColor;
+        }
+        else
+        {
+            accentColor = whatsappSupportButtonColor;
+        }
+        var configuredTertiary = System.Convert.ToString(ViewBag.Catalogue.FilterBadgeColor);
+        if (!string.IsNullOrWhiteSpace(configuredTertiary))
+        {
+            filterBadgeColor = configuredTertiary;
+        }
+        var configuredDisclaimer = System.Convert.ToString(ViewBag.Catalogue.CartDisclaimerText);
+        if (!string.IsNullOrWhiteSpace(configuredDisclaimer))
+        {
+            cartDisclaimerText = configuredDisclaimer;
+        }
+        bool requiresWhatsappDetails = enableWhatsApp || enableWhatsAppItems || (enableAddToCart && (addToCartMode == 2 || addToCartMode == 3));
+        if (requiresWhatsappDetails)
+        {
+            whatsappNumber = System.Convert.ToString(ViewBag.Catalogue.Branch.DialingCode + ViewBag.Catalogue.Branch.WhatsappNo);
+            whatsappDigits = Regex.Replace(whatsappNumber ?? string.Empty, "[^0-9]", "");
+            if (!string.IsNullOrWhiteSpace(whatsappDigits))
+            {
+                if (enableWhatsApp)
+                {
+                    var defaultMessage = System.Uri.EscapeDataString($"Hi {System.Convert.ToString(ViewBag.Catalogue.CatalogueName)} team, I have a question about your catalogue.");
+                    whatsappLink = $"https://wa.me/{whatsappDigits}?text={defaultMessage}";
+                }
+            }
+            else
+            {
+                if (enableWhatsApp)
+                {
+                    enableWhatsApp = false;
+                }
+                if (enableWhatsAppItems)
+                {
+                    enableWhatsAppItems = false;
+                }
+            }
+        }
+        themeVariant = normalizeTheme(ViewBag.Catalogue.Theme);
+    }
+    var categorySource = ViewBag.Categories as System.Collections.IEnumerable;
+    if (categorySource != null)
+    {
+        categories = categorySource.Cast<dynamic>().ToList();
+    }
+    var brandSource = ViewBag.Brands as System.Collections.IEnumerable;
+    if (brandSource != null)
+    {
+        foreach (var entry in brandSource)
+        {
+            try
+            {
+                var type = entry.GetType();
+                var idObj = type.GetProperty("BrandId")?.GetValue(entry, null);
+                var nameObj = type.GetProperty("Brand")?.GetValue(entry, null) ?? type.GetProperty("BrandName")?.GetValue(entry, null);
+                long id;
+                if (!long.TryParse(System.Convert.ToString(idObj), out id) || id <= 0)
+                {
+                    continue;
+                }
+                var name = System.Convert.ToString(nameObj);
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    continue;
+                }
+                brands.Add(new { BrandId = id, Brand = name.Trim() });
+            }
+            catch
+            {
+                // ignore invalid brand entries
+            }
+        }
+    }
+    showCategoryMenu = (catalogueType == 1 || catalogueType == 3) && categories.Any();
+    showBrandFilter = (catalogueType == 1 || catalogueType == 4) && brands.Any();
+    var bodyTextRgb = tryParseHex(bodyTextColor) ?? System.Tuple.Create(17, 24, 39);
+    var bodyBgRgb = tryParseHex(bodyBackgroundColor) ?? System.Tuple.Create(255, 255, 255);
+    var headerTextRgb = tryParseHex(headerTextColor) ?? System.Tuple.Create(17, 24, 39);
+    var primaryRgb = tryParseHex(addToCartButtonColor) ?? System.Tuple.Create(225, 29, 46);
+    var secondaryRgb = tryParseHex(whatsappSupportButtonColor) ?? System.Tuple.Create(37, 211, 102);
+    var tertiaryRgb = tryParseHex(filterBadgeColor) ?? System.Tuple.Create(14, 165, 233);
+    var accentRgb = tryParseHex(accentColor) ?? primaryRgb;
+    string bodyTextRgbString = $"{bodyTextRgb.Item1},{bodyTextRgb.Item2},{bodyTextRgb.Item3}";
+    string bodyBgRgbString = $"{bodyBgRgb.Item1},{bodyBgRgb.Item2},{bodyBgRgb.Item3}";
+    string headerTextRgbString = $"{headerTextRgb.Item1},{headerTextRgb.Item2},{headerTextRgb.Item3}";
+    string primaryRgbString = $"{primaryRgb.Item1},{primaryRgb.Item2},{primaryRgb.Item3}";
+    string secondaryRgbString = $"{secondaryRgb.Item1},{secondaryRgb.Item2},{secondaryRgb.Item3}";
+    string tertiaryRgbString = $"{tertiaryRgb.Item1},{tertiaryRgb.Item2},{tertiaryRgb.Item3}";
+    string accentRgbString = $"{accentRgb.Item1},{accentRgb.Item2},{accentRgb.Item3}";
+    string surfaceBorderColor = $"rgba({bodyTextRgbString},0.08)";
+    string surfaceBorderStrongColor = $"rgba({bodyTextRgbString},0.12)";
+    string surfaceMutedBgColor = $"rgba({bodyTextRgbString},0.05)";
+    string surfaceControlBgColor = $"rgba({bodyTextRgbString},0.07)";
+    string placeholderColor = $"rgba({bodyTextRgbString},0.45)";
+    string placeholderStrongColor = $"rgba({bodyTextRgbString},0.65)";
+    string priceOldColor = $"rgba({bodyTextRgbString},0.55)";
+    string headerBorderColor = headerTextColor.Equals("#ffffff", System.StringComparison.OrdinalIgnoreCase)
+        ? "rgba(255,255,255,0.25)"
+        : $"rgba({headerTextRgbString},0.12)";
+    string primarySoftColor = $"rgba({primaryRgbString},0.12)";
+    string primarySoftHoverColor = $"rgba({primaryRgbString},0.18)";
+    var primaryHoverRgb = adjustBrightness(primaryRgb, -0.16);
+    var primaryStrongRgb = adjustBrightness(primaryRgb, -0.25);
+    var primaryPositiveBgRgb = adjustBrightness(primaryRgb, 0.72);
+    string primaryHoverColor = toHex(primaryHoverRgb);
+    string primaryStrongColor = toHex(primaryStrongRgb);
+    string primaryPositiveBgColor = toHex(primaryPositiveBgRgb);
+    string primaryPositiveTextColor = getReadableTextColor(primaryPositiveBgColor);
+    string primaryTextColor = getReadableTextColor(addToCartButtonColor);
+    var secondaryHoverRgb = adjustBrightness(secondaryRgb, -0.16);
+    string secondaryHoverColor = toHex(secondaryHoverRgb);
+    string secondarySoftColor = $"rgba({secondaryRgbString},0.12)";
+    string secondarySoftHoverColor = $"rgba({secondaryRgbString},0.18)";
+    string secondaryTextColor = getReadableTextColor(whatsappSupportButtonColor);
+    var tertiaryHoverRgb = adjustBrightness(tertiaryRgb, -0.16);
+    string tertiaryHoverColor = toHex(tertiaryHoverRgb);
+    string tertiarySoftColor = $"rgba({tertiaryRgbString},0.12)";
+    string tertiarySoftHoverColor = $"rgba({tertiaryRgbString},0.18)";
+    string tertiaryTextColor = getReadableTextColor(filterBadgeColor);
+    string accentSoftColor = $"rgba({accentRgbString},0.12)";
+    string accentSoftHoverColor = $"rgba({accentRgbString},0.18)";
+    var accentStrongRgb = adjustBrightness(accentRgb, -0.25);
+    var accentPositiveBgRgb = adjustBrightness(accentRgb, 0.72);
+    var accentHoverRgb = adjustBrightness(accentRgb, -0.16);
+    string accentHoverColor = toHex(accentHoverRgb);
+    string accentStrongColor = toHex(accentStrongRgb);
+    string accentPositiveBgColor = toHex(accentPositiveBgRgb);
+    string accentPositiveTextColor = getReadableTextColor(accentPositiveBgColor);
+    string accentTextColor = getReadableTextColor(accentColor);
+    string chipBgColor = $"rgba({bodyTextRgbString},0.08)";
+    if (string.IsNullOrWhiteSpace(catalogueTagline))
+    {
+        catalogueTagline = string.Empty;
+    }
+    string navToneClass = headerTextColor.Equals("#ffffff", System.StringComparison.OrdinalIgnoreCase) ? "navbar-dark" : "navbar-light";
+    var bodyClasses = new System.Collections.Generic.List<string>
+{
+        enableAddToCart ? "allow-cart" : "no-cart",
+        showPrices ? "show-prices" : "hide-prices",
+        showMRP ? "show-mrp" : "hide-mrp",
+        showDiscount ? "show-discount" : "hide-discount",
+        showStock ? "show-stock" : "hide-stock",
+        showOutOfStock ? "show-outofstock" : "hide-outofstock",
+        showProductCode ? "show-product-code" : "hide-product-code",
+        showImages ? "show-images" : "hide-images",
+        showBusinessLogo ? "show-business-logo" : "hide-business-logo",
+        showBusinessName ? "show-business-name" : "hide-business-name",
+        showAddressInfo ? "show-address" : "hide-address",
+        showContactInfo ? "show-contact" : "hide-contact",
+        showEmailInfo ? "show-email" : "hide-email",
+        showGstinInfo ? "show-gstin" : "hide-gstin",
+        showWhatsAppContact ? "show-whatsapp-contact" : "hide-whatsapp-contact",
+        enableWhatsApp ? "enable-whatsapp" : "disable-whatsapp",
+        isHeaderFixed ? "header-fixed" : "header-static"
+    };
+    bodyClasses.Add("theme-" + themeVariant);
+    switch (addToCartMode)
+    {
+        case 1:
+            quotationButtonLabel = "Create Quotation";
+            break;
+        case 2:
+            quotationButtonLabel = "Send Quotation on WhatsApp";
+            break;
+        case 3:
+            quotationButtonLabel = "Save & Send on WhatsApp";
+            break;
+    }
+}
+@using System.Text.RegularExpressions
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@pageTitle</title>
+    @if (!string.IsNullOrWhiteSpace(metaDescription))
+    {
+        <meta name="description" content="@metaDescription" />
+    }
+    @if (!string.IsNullOrWhiteSpace(analyticsId))
+    {
+        <script async src="https://www.googletagmanager.com/gtag/js?id=@analyticsId"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', '@analyticsId');
+        </script>
+    }
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/nouislider@15.8.1/dist/nouislider.min.css" rel="stylesheet" />
+    <link href="~/Content/PublicCatalogue/styles/public-catalogue.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --primary: @addToCartButtonColor;
+            --primary-rgb: @primaryRgbString;
+            --primary-hover: @primaryHoverColor;
+            --primary-soft: @primarySoftColor;
+            --primary-soft-hover: @primarySoftHoverColor;
+            --primary-strong: @primaryStrongColor;
+            --primary-text: @primaryTextColor;
+            --primary-positive-bg: @primaryPositiveBgColor;
+            --primary-positive-text: @primaryPositiveTextColor;
+            --secondary: @whatsappSupportButtonColor;
+            --secondary-rgb: @secondaryRgbString;
+            --secondary-hover: @secondaryHoverColor;
+            --secondary-soft: @secondarySoftColor;
+            --secondary-soft-hover: @secondarySoftHoverColor;
+            --secondary-text: @secondaryTextColor;
+            --tertiary: @filterBadgeColor;
+            --tertiary-rgb: @tertiaryRgbString;
+            --tertiary-hover: @tertiaryHoverColor;
+            --tertiary-soft: @tertiarySoftColor;
+            --tertiary-soft-hover: @tertiarySoftHoverColor;
+            --tertiary-text: @tertiaryTextColor;
+            --accent: @accentColor;
+            --accent-rgb: @accentRgbString;
+            --accent-hover: @accentHoverColor;
+            --accent-soft: @accentSoftColor;
+            --accent-soft-hover: @accentSoftHoverColor;
+            --accent-strong: @accentStrongColor;
+            --accent-text: @accentTextColor;
+            --accent-positive-bg: @accentPositiveBgColor;
+            --accent-positive-text: @accentPositiveTextColor;
+            --body-text: @bodyTextColor;
+            --body-text-rgb: @bodyTextRgbString;
+            --body-bg: @bodyBackgroundColor;
+            --body-bg-rgb: @bodyBgRgbString;
+            --chip-bg: @chipBgColor;
+            --chip-active-bg: rgba(13, 110, 253, 0.15);
+            --chip-active-text: #0d6efd;
+            --price: @bodyTextColor;
+            --price-old: @priceOldColor;
+            --positive: @primaryStrongColor;
+            --whatsapp-bg: @whatsappSupportButtonColor;
+            --whatsapp-hover: @secondaryHoverColor;
+            --whatsapp-text: @secondaryTextColor;
+            --card-shadow: 0 1px 2px rgba(var(--body-text-rgb), 0.04), 0 4px 12px rgba(var(--body-text-rgb), 0.06);
+            --header-bg: @headerColor;
+            --header-text: @headerTextColor;
+            --header-text-rgb: @headerTextRgbString;
+            --header-border: @headerBorderColor;
+            --header-control-border: @headerControlBorder;
+            --header-control-hover: @headerControlHover;
+            --surface-border: @surfaceBorderColor;
+            --surface-border-strong: @surfaceBorderStrongColor;
+            --surface-muted-bg: @surfaceMutedBgColor;
+            --surface-control-bg: @surfaceControlBgColor;
+            --placeholder: @placeholderColor;
+            --placeholder-strong: @placeholderStrongColor;
+            --topbar-bg: @topBarBackgroundColor;
+            --topbar-text: @topBarTextColor;
+        }
+        /* Make right toolbar group fill space on mobile, but not on lg and up */
+        .toolbar-actions { flex-grow: 1; }
+        @@media (min-width: 992px) {
+            .toolbar-actions { flex-grow: 0; }
+        }
+        /* Cart item refinements */
+        .cart-item { border-color: var(--surface-border); box-shadow: var(--card-shadow); }
+        .cart-qty-btn { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+        .cart-qty-controls .qty { min-width: 1.5rem; text-align: center; }
+    </style>
+</head>
+<body class="@string.Join(" ", bodyClasses)" data-theme="@themeVariant">
+    @if (!string.IsNullOrWhiteSpace(catalogueTagline) || showBusinessInfoIcon)
+    {
+        <div class="top-tagline">
+            <div class="container-xl d-flex align-items-center justify-content-between">
+                <span class="small">@catalogueTagline</span>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-link p-0 places-of-supply-btn" data-bs-toggle="modal" data-bs-target="#placesOfSupplyModal" aria-label="Select Place of Supply">
+                        <i class="bi bi-chevron-down" style="font-size: 1rem;"></i>
+                    </button>
+                    @if (showBusinessInfoIcon)
+                    {
+                        <button type="button" class="btn btn-link p-0 small" data-bs-toggle="modal" data-bs-target="#bizInfoModal" aria-label="Business info">
+                            <i class="bi bi-info-circle" style="font-size: 1rem;"></i>
+                        </button>
+                    }
+                </div> 
+            </div>
+        </div>
+    }
+    <!-- Header / Navbar -->
+    <header class="site-header @(isHeaderFixed ? "sticky-top shadow-sm" : "")">
+        <nav class="navbar navbar-expand-lg @navToneClass py-3">
+            <div class="container-xl">
+                
+                    @if (showBusinessLogo && !string.IsNullOrWhiteSpace(businessLogoUrl))
+                    {
+                        <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                        <img src="@businessLogoUrl" alt="@businessName" class="brand-logo">
+                        </a>
+                    }
+                
+
+                <div class="d-flex align-items-center gap-2 order-lg-2">
+                    <button id="btnHeaderSearch" class="icon-btn" type="button" aria-label="Search"><i class="bi bi-search"></i></button>
+                    <div id="headerSearch" class="d-none">
+                        <div class="input-group input-group-sm">
+                            <input id="headerSearchInput" type="search" class="form-control" placeholder="Search products..." aria-label="Search">
+                        </div>
+                    </div>
+                    @if (enableAddToCart)
+                    {
+                        <button id="btnCart" class="icon-btn position-relative" type="button" aria-label="Cart">
+                            <i class="bi bi-cart3"></i>
+                            <span id="cartBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;">0</span>
+                        </button>
+                    }
+                    @if (showCategoryMenu)
+                    {
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                    }
+                </div>
+
+                @if (showCategoryMenu)
+                {
+                    <div class="collapse navbar-collapse" id="mainNav">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="mainNavItems">
+                            @foreach (var category in categories)
+                            {
+                                long? categoryIdValue = getLongProperty(category, "CategoryId");
+                                var categoryIdString = categoryIdValue.HasValue ? categoryIdValue.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : string.Empty;
+                                var categoryLabel = System.Convert.ToString(category.Category) ?? string.Empty;
+                                var categoryLabelEncoded = System.Web.HttpUtility.HtmlAttributeEncode(categoryLabel);
+                                var subCategoriesEnumerable = category.SubCategories as System.Collections.IEnumerable;
+                                var subCategoriesList = subCategoriesEnumerable?.Cast<dynamic>().ToList() ?? new List<dynamic>();
+                                var hasSubCategories = subCategoriesList.Count > 0;
+
+                                <li class="nav-item dropdown mega-menu" data-category-root="@categoryIdString">
+                                    <a class="nav-link category-link@(hasSubCategories ? " dropdown-toggle" : string.Empty)"
+                                       href="#"
+                                       role="button"
+                                       @(hasSubCategories ? "data-bs-toggle=\"dropdown\"" : null)
+                                       aria-expanded="false"
+                                       data-category-label="@categoryLabelEncoded"
+                                       data-category-root="@categoryIdString"
+                                       data-category-select="@categoryIdString"
+                                       data-category-level="category">@category.Category</a>
+                                    @if (hasSubCategories)
+                                    {
+                                        <div class="dropdown-menu mega-dropdown shadow">
+                                            <div class="row g-4">
+                                                @foreach (var subCategory in subCategoriesList)
+                                                {
+                                                    <div class="col-6 col-md-3">
+                                                        @{
+                                                            long? subCategoryIdValue = getLongProperty(subCategory, "SubCategoryId");
+                                                            var subCategoryIdString = subCategoryIdValue.HasValue ? subCategoryIdValue.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : string.Empty;
+                                                            var subCategoryLabel = System.Convert.ToString(subCategory.SubCategory) ?? string.Empty;
+                                                            var subCategoryLabelEncoded = System.Web.HttpUtility.HtmlAttributeEncode(subCategoryLabel);
+                                                        }
+                                                        <a href="#"
+                                                           class="mega-col-title category-link"
+                                                           data-category-select="@subCategoryIdString"
+                                                           data-category-root="@categoryIdString"
+                                                           data-category-label="@subCategoryLabelEncoded"
+                                                           data-category-level="subcategory">@subCategory.SubCategory</a>
+                                                        <ul class="mega-list">
+                                                            @{
+                                                                var subSubCategories = subCategory.SubSubCategories as System.Collections.IEnumerable;
+                                                                if (subSubCategories != null)
+                                                                {
+                                                                    foreach (var subSubCategory in subSubCategories.Cast<dynamic>())
+                                                                    {
+                                                                        <li>
+                                                                            @{
+                                                                                long? subSubCategoryIdValue = getLongProperty(subSubCategory, "SubSubCategoryId");
+                                                                                var subSubCategoryIdString = subSubCategoryIdValue.HasValue ? subSubCategoryIdValue.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : string.Empty;
+                                                                                var subSubCategoryLabel = System.Convert.ToString(subSubCategory.SubSubCategory) ?? string.Empty;
+                                                                                var subSubCategoryLabelEncoded = System.Web.HttpUtility.HtmlAttributeEncode(subSubCategoryLabel);
+                                                                            }
+                                                                            <a href="#"
+                                                                               class="category-link"
+                                                                               data-category-select="@subSubCategoryIdString"
+                                                                               data-category-root="@categoryIdString"
+                                                                               data-category-label="@subSubCategoryLabelEncoded"
+                                                                               data-category-level="subsubcategory"
+                                                                               data-parent-subcategory="@subCategoryIdString">@subSubCategory.SubSubCategory</a>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </ul>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main -->
+    <main class="pb-5">
+        <div class="container-xl">
+
+            <!-- Toolbar -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mt-4">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="text-muted small" id="resultsLabel">@resultsLabelText</div>
+                </div>
+                <div class="d-flex align-items-center gap-2 toolbar-actions">
+                    <span class="text-muted small">Sort by</span>
+                    <div class="dropdown sort-dropdown">
+                        <button class="btn btn-sort dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-sort-value="@selectedSortOption.Value">@selectedSortOption.Label</button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            @foreach (var option in sortOptions)
+                            {
+                                var isActive = option.Value == selectedSortOption.Value;
+                                <li>
+                                    <a class="dropdown-item@(isActive ? " active" : string.Empty)" href="#" data-sort-value="@option.Value">@option.Label</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <button class="icon-btn d-lg-none ms-auto" type="button" data-bs-toggle="offcanvas" data-bs-target="#filtersOffcanvas" aria-controls="filtersOffcanvas" aria-label="Filters">
+                        <i class="bi bi-sliders"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="row mt-3 g-4">
+                <!-- Filters (desktop) -->
+                <aside class="col-lg-2 filters-column">
+                    <div class="filters-wrap">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-sliders"></i>
+                                <span class="filter-title">Filters</span>
+                            </div>
+                            <button class="btn btn-sm clear-btn">Clear Filters</button>
+                        </div>
+
+                        <div class="accordion" id="filtersAccordion">
+                            <!-- removed Pet Types and Categories filter groups -->
+
+                            @if (showBrandFilter)
+                            {
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="ft3">
+                                        <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#c3" aria-expanded="false" aria-controls="c3">Brands</button>
+                                    </h2>
+                                    <div id="c3" class="accordion-collapse collapse" data-bs-parent="#filtersAccordion">
+                                        <div class="accordion-body">
+                                            @foreach (var brand in brands)
+                                            {
+                                                var brandInputId = string.Format("brand_{0}", brand.BrandId);
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="@brandInputId" data-brand-id="@brand.BrandId" />
+                                                    <label class="form-check-label" for="@brandInputId">@brand.Brand</label>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="ft4">
+                                    <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#c4" aria-expanded="false" aria-controls="c4">Price</button>
+                                </h2>
+                                <div id="c4" class="accordion-collapse collapse" data-bs-parent="#filtersAccordion">
+                                    <div class="accordion-body">
+                                        <div id="priceSlider" class="mt-2"></div>
+                                        <div class="d-flex align-items-center justify-content-between small text-muted mt-3">
+                                            <span id="priceMinLabel">&#8377;@ViewBag.MinPrice</span>
+                                            <span id="priceMaxLabel">&#8377;@ViewBag.MaxPrice</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="ftAvailability">
+                                    <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#cAvailability" aria-expanded="false" aria-controls="cAvailability">Availability</button>
+                                </h2>
+                                <div id="cAvailability" class="accordion-collapse collapse" data-bs-parent="#filtersAccordion">
+                                    <div class="accordion-body">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="includeOutOfStock" />
+                                            <label class="form-check-label" for="includeOutOfStock">Include Out of Stock</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Product grid -->
+                <section class="col-lg-10">
+                    <div class="row g-4" id="productsGrid">
+                        @{
+                            if (productGridModel == null)
+                            {
+                                productGridModel = new PublicCatalogueProductGridViewModel
+                                {
+                                    Products = new List<PublicCatalogueProductVm>(),
+                                    ShowPrices = showPrices,
+                                    ShowMRP = showMRP,
+                                    ShowDiscount = showDiscount,
+                                    ShowStock = showStock,
+                                    ShowOutOfStock = showOutOfStock,
+                                    ShowProductCode = showProductCode,
+                                    ShowImages = showImages,
+                                    PageIndex = 1,
+                                    NextPageIndex = 2,
+                                    PageSize = 0,
+                                    TotalCount = 0,
+                                    HasMore = false
+                                };
+                            }
+                            else
+                            {
+                                productGridModel.ShowPrices = showPrices;
+                                productGridModel.ShowMRP = showMRP;
+                                productGridModel.ShowDiscount = showDiscount;
+                                productGridModel.ShowStock = showStock;
+                                productGridModel.ShowOutOfStock = showOutOfStock;
+                                productGridModel.ShowProductCode = showProductCode;
+                                productGridModel.ShowImages = showImages;
+                            }
+                        }
+                        @Html.Partial("_ProductGrid", productGridModel)
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Filters Offcanvas (mobile) -->
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="filtersOffcanvasLabel">Filters</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-sliders"></i>
+                        <span class="filter-title">Filters</span>
+                    </div>
+                    <button class="btn btn-sm clear-btn">Clear Filters</button>
+                </div>
+                <div class="accordion" id="filtersAccordionSm">
+                    <!-- removed Pet Types and Categories filter groups -->
+
+                    @if (showBrandFilter)
+                    {
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="sft3">
+                                <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#sc3" aria-expanded="false" aria-controls="sc3">Brands</button>
+                            </h2>
+                            <div id="sc3" class="accordion-collapse collapse" data-bs-parent="#filtersAccordionSm">
+                                <div class="accordion-body">
+                                    @foreach (var brand in brands)
+                                    {
+                                        var brandInputIdSm = string.Format("brand_sm_{0}", brand.BrandId);
+                                        <div class="form-check ms-4 me-4">
+                                            <input class="form-check-input" type="checkbox" id="@brandInputIdSm" data-brand-id="@brand.BrandId" />
+                                            <label class="form-check-label" for="@brandInputIdSm">@brand.Brand</label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="sft4">
+                            <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#sc4" aria-expanded="false" aria-controls="sc4">Price</button>
+                        </h2>
+                        <div id="sc4" class="accordion-collapse collapse" data-bs-parent="#filtersAccordionSm">
+                            <div class="accordion-body">
+                                <div id="priceSliderSm" class="mt-4 ms-4 me-4"></div>
+                                <div class="d-flex align-items-center justify-content-between small text-muted mt-3 ms-4 me-4">
+                                    <span id="priceMinLabelSm">&#8377;0</span>
+                                    <span id="priceMaxLabelSm">&#8377;0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="sftAvailability">
+                            <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#scAvailability" aria-expanded="false" aria-controls="scAvailability">Availability</button>
+                        </h2>
+                        <div id="scAvailability" class="accordion-collapse collapse" data-bs-parent="#filtersAccordionSm">
+                            <div class="accordion-body">
+                                <div class="form-check ms-4 me-4">
+                                    <input class="form-check-input" type="checkbox" id="sIncludeOutOfStock" />
+                                    <label class="form-check-label" for="sIncludeOutOfStock">Include Out of Stock</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-danger w-100 btn-cart" data-bs-dismiss="offcanvas">Apply</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Variant selection modal -->
+    <div class="modal fade" id="variantModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Options</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="variantProductTitle" class="fw-semibold mb-2"></div>
+                    <div id="variantGroups"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger">Select</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product details modal (separate from variant modal) -->
+    <div class="modal fade" id="productDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pdTitle">Product Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <div class="pd-zoom-wrap">
+                                <img id="pdImage" class="pd-zoom-img" src="" alt="Product image" />
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="small text-muted" id="pdCodeRow" style="display:none;">Code: <span id="pdCode"></span></div>
+                            <div id="pdName" class="fw-semibold"></div>
+                            <div id="pdPriceRow" class="d-flex align-items-center gap-1 mt-2">
+                                <div class="price" id="pdPrice">&#8377;0</div>
+                                <div class="price-old" id="pdPriceOld" style="display:none;">&#8377;0</div>
+                                <div class="off" id="pdOff" style="display:none;">0% off</div>
+                            </div>
+                            <div class="small text-muted" id="pdPriceMeta" style="display:none;"></div>
+                            <div class="mt-2" id="pdVariantSection" style="display:none;">
+                                <div id="pdVariantGroups"></div>
+                            </div>
+                            <div class="mt-2">
+                                <div id="pdStockNote" class="small fw-semibold" style="display:none;"></div>
+                            </div>
+                            <div class="mt-3">
+                                @if (enableAddToCart)
+                                {
+                                    <button type="button" id="pdAddToCart" class="btn btn-danger"><i class="bi bi-cart3 me-1"></i> Add to Cart</button>
+                                }
+                                @if (enableWhatsAppItems)
+                                {
+                                    <a href="#" id="pdWhatsApp" target="_blank" rel="noopener" class="btn btn-success @(enableAddToCart ? "ms-2" : "")"><i class="bi bi-whatsapp me-1"></i> WhatsApp Enquiry</a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="fw-semibold mb-1">Description</div>
+                        <div class="text-muted" id="pdDescription">—</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (enableAddToCart)
+    {
+        <!-- Cart modal -->
+        <div class="modal fade" id="cartModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Your Cart</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="cartEmpty" class="text-muted text-center py-4" style="display:none;">Your cart is empty</div>
+                        <div id="cartList"></div>
+                        <div id="cartSummary" class="d-flex justify-content-end mt-3 cart-summary-total" style="display:none;">
+                            <div class="fw-semibold">Total: <span id="cartTotal">&#8377;0</span></div>
+                        </div>
+                        <div id="cartNote" class="text-danger small mt-2" style="display:none;">@Html.Encode(cartDisclaimerText)</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" id="btnSendQuotation" class="btn btn-danger" disabled>@quotationButtonLabel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+	<!-- Add New Customer - Separate Bootstrap 5 Modal -->
+	<div class="modal fade" id="pcCustomerModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Add New Customer</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row g-3">
+						
+						<div class="col-md-4">
+							<label for="pcCustMobile" class="form-label">Mobile <span class="text-danger">*</span></label>
+							<input type="tel" id="pcCustMobile" class="form-control" placeholder="10-digit mobile" maxlength="15" />
+							<div id="pcCustMobileErr" class="form-text text-danger d-none">Valid mobile is required</div>
+						</div>
+                        <div class="col-md-4">
+							<label for="pcCustName" class="form-label">Name <span class="text-danger">*</span></label>
+							<input type="text" id="pcCustName" class="form-control" placeholder="Customer name" />
+							<div id="pcCustNameErr" class="form-text text-danger d-none">Name is required</div>
+						</div>
+						<div class="col-md-4">
+							<label for="pcCustEmail" class="form-label">Email</label>
+							<input type="email" id="pcCustEmail" class="form-control" placeholder="name@example.com" />
+						</div>
+					</div>
+
+					<hr class="my-4" />
+
+					<div class="mb-2 h6">Billing Address</div>
+					<div class="row g-3">
+						<div class="col-md-4">
+							<label for="pcBillLandmark" class="form-label">Landmark</label>
+							<input type="text" id="pcBillLandmark" class="form-control" placeholder="Nearby landmark" />
+						</div>
+						<div class="col-md-4">
+							<label for="pcBillCountry" class="form-label">Country</label>
+							<select id="pcBillCountry" class="form-select">
+								<option value="">Select</option>
+							</select>
+						</div>
+						<div class="col-md-4">
+							<label for="pcBillState" class="form-label">State</label>
+							<select id="pcBillState" class="form-select">
+								<option value="">Select</option>
+							</select>
+						</div>
+					</div>
+					<div class="row g-3 mt-0">
+						<div class="col-md-4">
+							<label for="pcBillCity" class="form-label">City</label>
+							<input id="pcBillCity" type="text" class="form-control" placeholder="" />
+						</div>
+						<div class="col-md-4">
+							<label for="pcBillPincode" class="form-label">Pincode</label>
+							<input type="text" id="pcBillPincode" class="form-control" />
+						</div>
+						<div class="col-md-4">
+							<label for="pcBillAddress" class="form-label">Address</label>
+							<textarea id="pcBillAddress" class="form-control" rows="2"></textarea>
+						</div>
+						<div class="col-12">
+							<div class="mt-1">
+								<input class="form-check-input" type="checkbox" id="pcShipIsDifferent" />
+								<label class="form-check-label" for="pcShipIsDifferent">Shipping address is different from billing address</label>
+							</div>
+						</div>
+					</div>
+
+					<hr class="my-4" />
+
+					<div id="pcShippingSection">
+						<div class="mb-2 h6">Shipping Address</div>
+						<div class="row g-3">
+							<div class="col-md-4">
+								<label for="pcShipName" class="form-label">Name</label>
+								<input type="text" id="pcShipName" class="form-control" />
+							</div>
+							<div class="col-md-4">
+								<label for="pcShipMobile" class="form-label">Mobile</label>
+								<input type="tel" id="pcShipMobile" class="form-control" maxlength="15" />
+							</div>
+							<div class="col-md-4">
+								<label for="pcShipAltMobile" class="form-label">Alternate Mobile</label>
+								<input type="tel" id="pcShipAltMobile" class="form-control" maxlength="15" />
+							</div>
+						</div>
+						<div class="row g-3">
+							<div class="col-md-4">
+								<label for="pcShipLandmark" class="form-label">Landmark</label>
+								<input type="text" id="pcShipLandmark" class="form-control" />
+							</div>
+							<div class="col-md-4">
+								<label for="pcShipCountry" class="form-label">Country</label>
+								<select id="pcShipCountry" class="form-select">
+									<option value="">Select</option>
+								</select>
+							</div>
+							<div class="col-md-4">
+								<label for="pcShipState" class="form-label">State</label>
+								<select id="pcShipState" class="form-select">
+									<option value="">Select</option>
+								</select>
+							</div>
+						</div>
+						<div class="row g-3 mt-0">
+							<div class="col-md-4">
+								<label for="pcShipCity" class="form-label">City</label>
+								<select id="pcShipCity" class="form-select">
+									<option value="">Select</option>
+								</select>
+							</div>
+							<div class="col-md-4">
+								<label for="pcShipPincode" class="form-label">Pincode</label>
+								<input type="text" id="pcShipPincode" class="form-control" />
+							</div>
+							<div class="col-md-4">
+								<label for="pcShipAddress" class="form-label">Address</label>
+								<textarea id="pcShipAddress" class="form-control" rows="2"></textarea>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="button" id="pcAddCustomerSave" class="btn btn-primary">Save</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+    @{
+        var cat = ViewBag.Catalogue;
+        var bs = (cat != null) ? cat.BusinessSetting : null;
+        var br = (cat != null) ? cat.Branch : null;
+        string modalBusinessName = !string.IsNullOrWhiteSpace(businessName) ? businessName : (bs != null ? bs.BusinessName : "");
+        if (string.IsNullOrWhiteSpace(modalBusinessName) && br != null)
+        {
+            modalBusinessName = !string.IsNullOrWhiteSpace(br.Name) ? br.Name : (br.Branch ?? "");
+        }
+        string taxLabel = (br != null && !string.IsNullOrWhiteSpace(br.Tax)) ? br.Tax : "GSTIN";
+        string gstin = (br != null && br.TaxNo != null) ? br.TaxNo : "";
+        string address = (br != null && br.Address != null) ? br.Address : "";
+        string mobile = (br != null && br.Mobile != null) ? br.Mobile : "";
+        string email = (br != null && br.Email != null) ? br.Email : "";
+        string wa = (br != null && br.WhatsappNo != null) ? (br.DialingCode + br.WhatsappNo) : "";
+        string mobileDigits = Regex.Replace(mobile ?? "", "[^0-9]", "");
+        string waDigits = Regex.Replace(wa ?? "", "[^0-9]", "");
+        string emailSafe = email ?? "";
+        string addressQuery = HttpUtility.UrlEncode(address ?? "");
+        string avatar = !string.IsNullOrWhiteSpace(modalBusinessName) ? modalBusinessName.Substring(0, 1).ToUpperInvariant() : "";
+        bool hasGstin = !string.IsNullOrWhiteSpace(gstin);
+        bool hasAddress = !string.IsNullOrWhiteSpace(address);
+        bool hasMobile = !string.IsNullOrWhiteSpace(mobileDigits);
+        bool hasEmail = !string.IsNullOrWhiteSpace(emailSafe);
+        bool hasWa = !string.IsNullOrWhiteSpace(waDigits);
+        bool canShowWa = showWhatsAppContact && hasWa;
+        string waMsg = HttpUtility.UrlEncode("Hi! I have an enquiry");
+        bool canShowBusinessName = showBusinessName && !string.IsNullOrWhiteSpace(modalBusinessName);
+        bool canShowGstin = showGstinInfo && hasGstin;
+        string googleReviewUrl = ViewBag.Catalogue != null ? System.Convert.ToString(ViewBag.Catalogue.GoogleReviewUrl ?? "") : "";
+        bool hasGoogleReviewUrl = !string.IsNullOrWhiteSpace(googleReviewUrl);
+    }
+
+    <div class="modal fade" id="bizInfoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Business Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        @if (canShowBusinessName)
+                        {
+                            <div class="h6 mb-1 biz-name">@modalBusinessName</div>
+                        }
+                        @if (canShowGstin)
+                        {
+                            <div class="small gstin-text">@taxLabel: @gstin</div>
+                        }
+                    </div>
+
+                    <div class="biz-list-item address-item">
+                        <div class="small text-muted">Address</div>
+                        <div>
+                            @if (hasAddress)
+                            {
+                                <a href="https://www.google.com/maps/search/?api=1&query=@addressQuery" target="_blank" rel="noopener">@address</a>
+                            }
+                            else
+                            { <span></span>}
+                        </div>
+                    </div>
+
+                    <div class="biz-list-item contact-item">
+                        <div class="small text-muted">Mobile</div>
+                        <div>
+                            @if (hasMobile)
+                            {
+                                <a href="tel:@mobileDigits">@mobile</a>
+                            }
+                            else
+                            { <span></span>}
+                        </div>
+                    </div>
+
+                    <div class="biz-list-item email-item">
+                        <div class="small text-muted">Email</div>
+                        <div>
+                            @if (hasEmail)
+                            {
+                                <a href="mailto:@emailSafe">@emailSafe</a>
+                            }
+                            else
+                            { <span></span>}
+                        </div>
+                    </div>
+
+                    @if (showWhatsAppContact)
+                    {
+                        <div class="biz-list-item whatsapp-item">
+                            <div class="small text-muted">WhatsApp</div>
+                            <div>
+                                @if (canShowWa)
+                                {
+                                    <a href="https://wa.me/@waDigits?text=@waMsg" target="_blank" rel="noopener">@wa</a>
+                                }
+                                else
+                                { <span></span>}
+                            </div>
+                        </div>
+                    }
+                    @{
+                        string facebookUrl = ViewBag.Catalogue != null ? System.Convert.ToString(ViewBag.Catalogue.FacebookUrl ?? "") : "";
+                        string instagramUrl = ViewBag.Catalogue != null ? System.Convert.ToString(ViewBag.Catalogue.InstagramUrl ?? "") : "";
+                        string twitterUrl = ViewBag.Catalogue != null ? System.Convert.ToString(ViewBag.Catalogue.TwitterUrl ?? "") : "";
+                        string linkedInUrl = ViewBag.Catalogue != null ? System.Convert.ToString(ViewBag.Catalogue.LinkedInUrl ?? "") : "";
+                        string youTubeUrl = ViewBag.Catalogue != null ? System.Convert.ToString(ViewBag.Catalogue.YouTubeUrl ?? "") : "";
+                        string tikTokUrl = ViewBag.Catalogue != null ? System.Convert.ToString(ViewBag.Catalogue.TikTokUrl ?? "") : "";
+                        string pinterestUrl = ViewBag.Catalogue != null ? System.Convert.ToString(ViewBag.Catalogue.PinterestUrl ?? "") : "";
+                        bool hasSocialMedia = !string.IsNullOrWhiteSpace(facebookUrl) || !string.IsNullOrWhiteSpace(instagramUrl) || 
+                                             !string.IsNullOrWhiteSpace(twitterUrl) || !string.IsNullOrWhiteSpace(linkedInUrl) || 
+                                             !string.IsNullOrWhiteSpace(youTubeUrl) || !string.IsNullOrWhiteSpace(tikTokUrl) || 
+                                             !string.IsNullOrWhiteSpace(pinterestUrl);
+                    }
+                    @if (hasSocialMedia)
+                    {
+                        <div class="biz-list-item social-media-item">
+                            <div class="small text-muted mb-2">Follow Us</div>
+                            <div class="d-flex flex-wrap gap-2 social-icons">
+                                @if (!string.IsNullOrWhiteSpace(facebookUrl))
+                                {
+                                    <a href="@facebookUrl" target="_blank" rel="noopener" class="social-icon social-icon-facebook" aria-label="Facebook">
+                                        <i class="bi bi-facebook"></i>
+                                    </a>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(instagramUrl))
+                                {
+                                    <a href="@instagramUrl" target="_blank" rel="noopener" class="social-icon social-icon-instagram" aria-label="Instagram">
+                                        <i class="bi bi-instagram"></i>
+                                    </a>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(twitterUrl))
+                                {
+                                    <a href="@twitterUrl" target="_blank" rel="noopener" class="social-icon social-icon-twitter" aria-label="Twitter">
+                                        <i class="bi bi-twitter"></i>
+                                    </a>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(linkedInUrl))
+                                {
+                                    <a href="@linkedInUrl" target="_blank" rel="noopener" class="social-icon social-icon-linkedin" aria-label="LinkedIn">
+                                        <i class="bi bi-linkedin"></i>
+                                    </a>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(youTubeUrl))
+                                {
+                                    <a href="@youTubeUrl" target="_blank" rel="noopener" class="social-icon social-icon-youtube" aria-label="YouTube">
+                                        <i class="bi bi-youtube"></i>
+                                    </a>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(tikTokUrl))
+                                {
+                                    <a href="@tikTokUrl" target="_blank" rel="noopener" class="social-icon social-icon-tiktok" aria-label="TikTok">
+                                        <i class="bi bi-tiktok"></i>
+                                    </a>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(pinterestUrl))
+                                {
+                                    <a href="@pinterestUrl" target="_blank" rel="noopener" class="social-icon social-icon-pinterest" aria-label="Pinterest">
+                                        <i class="bi bi-pinterest"></i>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    @if (hasGoogleReviewUrl)
+                    {
+                        <a href="@googleReviewUrl" target="_blank" rel="noopener" class="btn btn-primary">
+                            <i class="bi bi-star-fill me-1"></i> Write a Review
+                        </a>
+                    }
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Places of Supply Modal -->
+    <div class="modal fade" id="placesOfSupplyModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Your State</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="places-of-supply-list">
+                        @if (ViewBag.PlacesOfSupply != null)
+                        {
+                            foreach (var item in ViewBag.PlacesOfSupply)
+                            {
+                                <button type="button" class="btn btn-outline-secondary w-100 mb-2 text-start places-of-supply-item" data-state-id="@item.StateId" data-state-name="@item.State">
+                                    @item.State
+                                </button>
+                            }
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (enableWhatsApp)
+    {
+        <!-- WhatsApp enquiry floating button -->
+        <a id="whatsappEnquiry" class="whatsapp-fab" href="#" target="_blank" rel="noopener" aria-label="WhatsApp Enquiry">
+            <i class="bi bi-whatsapp" style="font-size: 1.6rem;"></i>
+        </a>
+    }
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nouislider@15.8.1/dist/nouislider.min.js"></script>
+    <script src="https://unpkg.com/%40panzoom/panzoom%409.4.0/dist/panzoom.min.js"></script>
+    <script>
+        window.publicCatalogueConfig = window.publicCatalogueConfig || {};
+        window.publicCatalogueConfig.enableAddToCart = @(enableAddToCart ? "true" : "false");
+        window.publicCatalogueConfig.addToCartMode = @addToCartMode;
+        window.publicCatalogueConfig.cartDisclaimerText = '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(cartDisclaimerText ?? string.Empty))';
+        window.publicCatalogueConfig.whatsappDigits = '@whatsappDigits';
+        window.publicCatalogueConfig.enableWhatsApp = @(enableWhatsApp ? "true" : "false");
+        window.publicCatalogueConfig.enableWhatsAppItems = @(enableWhatsAppItems ? "true" : "false");
+        window.publicCatalogueConfig.slug = '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(catalogueSlug ?? string.Empty))';
+        window.publicCatalogueConfig.categories = @Html.Raw(ViewBag.CategoriesJson ?? "[]");
+        window.publicCatalogueConfig.brands = @Html.Raw(ViewBag.BrandsJson ?? "[]");
+        window.publicCatalogueConfig.showBrandFilter = @(showBrandFilter ? "true" : "false");
+        window.publicCatalogueConfig.whatsappLink = '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(whatsappLink ?? string.Empty))';
+        window.publicCatalogueConfig.initialPageIndex = @(productGridModel?.PageIndex ?? 1);
+        window.publicCatalogueConfig.initialNextPageIndex = @(productGridModel?.NextPageIndex ?? ((productGridModel?.PageIndex ?? 1) + 1));
+        window.publicCatalogueConfig.initialHasMore = @((productGridModel?.HasMore ?? false).ToString().ToLowerInvariant());
+        window.publicCatalogueConfig.initialSortOrder = @selectedSortOption.Value;
+        window.publicCatalogueConfig.pageSize = @(productGridModel?.PageSize ?? 0);
+        window.publicCatalogueConfig.initialTotalCount = @(productGridModel?.TotalCount ?? 0);
+        window.publicCatalogueConfig.initialLoadedCount = @(productGridModel?.Products?.Count ?? 0);
+        window.publicCatalogueConfig.initialMinPageIndex = @(productGridModel?.PageIndex ?? 1);
+        window.publicCatalogueConfig.priceRange = {
+            min: @Html.Raw(Convert.ToDecimal(ViewBag.MinPrice ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            max: @Html.Raw(Convert.ToDecimal(ViewBag.MaxPrice ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture))
+        };
+        window.publicCatalogueConfig.placesOfSupply = @if (ViewBag.PlacesOfSupply != null) {
+            var placesJson = new System.Text.StringBuilder("[");
+            var first = true;
+            foreach (var item in ViewBag.PlacesOfSupply)
+            {
+                if (!first) { placesJson.Append(","); }
+                placesJson.AppendFormat("{{\"StateId\":{0},\"State\":\"{1}\"}}", 
+                    item.StateId, 
+                    System.Web.HttpUtility.JavaScriptStringEncode(item.State ?? ""));
+                first = false;
+            }
+            placesJson.Append("]");
+            @Html.Raw(placesJson.ToString())
+        } else {
+            @Html.Raw("[]")
+        };
+        window.publicCatalogueConfig.settings = {
+            showPrices: @(showPrices.ToString().ToLowerInvariant()),
+            showMRP: @(showMRP.ToString().ToLowerInvariant()),
+            showDiscount: @(showDiscount.ToString().ToLowerInvariant()),
+            showStock: @(showStock.ToString().ToLowerInvariant()),
+            showOutOfStock: @(showOutOfStock.ToString().ToLowerInvariant()),
+            showProductCode: @(showProductCode.ToString().ToLowerInvariant()),
+            showImages: @(showImages.ToString().ToLowerInvariant()),
+            showBusinessName: @(showBusinessName.ToString().ToLowerInvariant()),
+            showGstin: @(showGstinInfo.ToString().ToLowerInvariant()),
+            showWhatsAppContact: @(showWhatsAppContact.ToString().ToLowerInvariant())
+        };
+        window.publicCatalogueConfig.theme = '@themeVariant';
+    </script>
+    <script src="~/Content/PublicCatalogue/scripts/public-catalogue.js"></script>
+
+</body>
+</html>
+
+
+

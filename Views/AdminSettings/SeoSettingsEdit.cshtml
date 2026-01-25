@@ -1,0 +1,192 @@
+@{
+    var seoSettings = ViewBag.SeoSettings as EquiBillBook.Models.ClsPageSeoSettings;
+    ViewBag.Title = "Edit SEO Settings";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>@ViewBag.Title</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/admindashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/adminsettings/seosettings">SEO Settings</a></li>
+                        <li class="breadcrumb-item active">@ViewBag.Title</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <a href="/adminsettings/seosettings" class="btn btn-warning float-sm-right">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">SEO Information</h3>
+                    </div>
+                    <form id="seoSettingsForm">
+                        <input type="hidden" id="PageSeoSettingsId" name="PageSeoSettingsId" value="@(seoSettings?.PageSeoSettingsId ?? 0)" />
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="PageIdentifier">Page Identifier <span class="text-danger">*</span></label>
+                                        <select class="form-control select2" id="PageIdentifier" name="PageIdentifier" required>
+                                            <option value="">-- Select Page --</option>
+                                            @if (ViewBag.PageIdentifiers != null)
+                                            {
+                                                foreach (string pageId in ViewBag.PageIdentifiers)
+                                                {
+                                                    <option value="@pageId" @(seoSettings?.PageIdentifier == pageId ? "selected" : "")>@pageId</option>
+                                                }
+                                            }
+                                        </select>
+                                        <small class="text-red font-weight-bold errorText" id="divPageIdentifier" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox" id="IsActive" name="IsActive" @(seoSettings == null || seoSettings.IsActive ? "checked" : "") /> 
+                                            Is Active
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <h5>Basic Meta Tags</h5>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="PageTitle">Page Title</label>
+                                        <input type="text" class="form-control" id="PageTitle" name="PageTitle" 
+                                               value="@(seoSettings?.PageTitle ?? "")" maxlength="200" />
+                                        <small class="text-muted">Recommended: 50-60 characters</small>
+                                        <small class="text-red font-weight-bold errorText" id="divPageTitle" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="MetaDescription">Meta Description</label>
+                                        <textarea class="form-control" id="MetaDescription" name="MetaDescription" 
+                                                  rows="3" maxlength="500">@(seoSettings?.MetaDescription ?? "")</textarea>
+                                        <small class="text-muted">Recommended: 150-160 characters</small>
+                                        <small class="text-red font-weight-bold errorText" id="divMetaDescription" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="MetaKeywords">Meta Keywords</label>
+                                        <textarea class="form-control" id="MetaKeywords" name="MetaKeywords" 
+                                                  rows="2" maxlength="1000">@(seoSettings?.MetaKeywords ?? "")</textarea>
+                                        <small class="text-muted">Comma-separated keywords</small>
+                                        <small class="text-red font-weight-bold errorText" id="divMetaKeywords" style="display: none;"></small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <h5>Open Graph Tags</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="OgTitle">OG Title</label>
+                                        <input type="text" class="form-control" id="OgTitle" name="OgTitle" 
+                                               value="@(seoSettings?.OgTitle ?? "")" maxlength="200" />
+                                        <small class="text-red font-weight-bold errorText" id="divOgTitle" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="OgImage">OG Image URL</label>
+                                        <input type="url" class="form-control" id="OgImage" name="OgImage" 
+                                               value="@(seoSettings?.OgImage ?? "")" maxlength="500" />
+                                        <small class="text-red font-weight-bold errorText" id="divOgImage" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="OgDescription">OG Description</label>
+                                        <textarea class="form-control" id="OgDescription" name="OgDescription" 
+                                                  rows="2" maxlength="500">@(seoSettings?.OgDescription ?? "")</textarea>
+                                        <small class="text-red font-weight-bold errorText" id="divOgDescription" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="OgUrl">OG URL</label>
+                                        <input type="url" class="form-control" id="OgUrl" name="OgUrl" 
+                                               value="@(seoSettings?.OgUrl ?? "")" maxlength="500" />
+                                        <small class="text-red font-weight-bold errorText" id="divOgUrl" style="display: none;"></small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <h5>Twitter Card Tags</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="TwitterTitle">Twitter Title</label>
+                                        <input type="text" class="form-control" id="TwitterTitle" name="TwitterTitle" 
+                                               value="@(seoSettings?.TwitterTitle ?? "")" maxlength="200" />
+                                        <small class="text-red font-weight-bold errorText" id="divTwitterTitle" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="TwitterImage">Twitter Image URL</label>
+                                        <input type="url" class="form-control" id="TwitterImage" name="TwitterImage" 
+                                               value="@(seoSettings?.TwitterImage ?? "")" maxlength="500" />
+                                        <small class="text-red font-weight-bold errorText" id="divTwitterImage" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="TwitterDescription">Twitter Description</label>
+                                        <textarea class="form-control" id="TwitterDescription" name="TwitterDescription" 
+                                                  rows="2" maxlength="500">@(seoSettings?.TwitterDescription ?? "")</textarea>
+                                        <small class="text-red font-weight-bold errorText" id="divTwitterDescription" style="display: none;"></small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <h5>Additional Settings</h5>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="CanonicalUrl">Canonical URL</label>
+                                        <input type="url" class="form-control" id="CanonicalUrl" name="CanonicalUrl" 
+                                               value="@(seoSettings?.CanonicalUrl ?? "")" maxlength="500" />
+                                        <small class="text-red font-weight-bold errorText" id="divCanonicalUrl" style="display: none;"></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary float-right">
+                                <i class="fas fa-save"></i> Save SEO Settings
+                            </button>
+                            <a href="/adminsettings/seosettings" class="btn btn-secondary float-right mr-2">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Admin/SeoSettings.js"></script>
+

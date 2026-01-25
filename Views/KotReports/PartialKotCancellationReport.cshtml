@@ -1,0 +1,86 @@
+@{
+    var kots = ViewBag.Kots as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var currentPageIndex = ViewBag.CurrentPageIndex ?? 1;
+    var pageCount = ViewBag.PageCount ?? 0;
+}
+<thead id="thead">
+    <tr>
+        <th>KOT No</th>
+        <th>Order Time</th>
+        <th>Table</th>
+        <th>Customer</th>
+        <th>Waiter</th>
+        <th>Guest Count</th>
+        <th>Cancelled Time</th>
+        <th>Time to Cancel (min)</th>
+        <th>Reason</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (kots != null && kots.Count > 0)
+    {
+        foreach (var kot in kots)
+        {
+            var orderTime = kot.OrderTime != null ? (DateTime)kot.OrderTime : DateTime.MinValue;
+            var cancelledTime = kot.ModifiedOn != null ? (DateTime?)kot.ModifiedOn : null;
+            var timeToCancel = cancelledTime.HasValue && orderTime != DateTime.MinValue ? (cancelledTime.Value - orderTime).TotalMinutes : (double?)null;
+            
+            <tr>
+                <td><a href="/kot/details/@kot.KotId">@kot.KotNo</a></td>
+                <td>@(orderTime != DateTime.MinValue ? orderTime.ToString("dd/MM/yyyy HH:mm") : "")</td>
+                <td>@(kot.TableNo ?? "-")</td>
+                <td>@(kot.CustomerName ?? "-")</td>
+                <td>@(kot.WaiterName ?? "-")</td>
+                <td>@(kot.GuestCount ?? 0)</td>
+                <td>@(cancelledTime.HasValue ? cancelledTime.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                <td>@(timeToCancel.HasValue ? Math.Round(timeToCancel.Value, 1).ToString() : "-")</td>
+                <td>@(kot.SpecialInstructions ?? "-")</td>
+            </tr>
+        }
+    }
+</tbody>
+<tbody class="hide noPrint">
+    <tr></tr>
+    <tr>
+        <td colspan="9">
+            <div class="dataTables_info" id="tblKotCancellationReport_info_custom" role="status" aria-live="polite">Showing @((currentPageIndex - 1) * pageSize + 1) to @(Math.Min(currentPageIndex * pageSize, totalCount)) of @totalCount entries</div>
+            @if (pageCount > 1)
+            {
+                int j = 0;
+                <div class="dataTables_paginate paging_simple_numbers" id="tblKotCancellationReport_paginate_custom" style="float:right">
+                    <ul class="pagination">
+                        @if (currentPageIndex > 1)
+                        {
+                            <li class="paginate_button page-item previous" id="tblKotCancellationReport_previous">
+                                <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblKotCancellationReport" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                            </li>
+                            <li class="paginate_button page-item previous" id="tblKotCancellationReport_previous">
+                                <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblKotCancellationReport" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                            </li>
+                        }
+                        @for (int i = currentPageIndex; i <= pageCount; i++)
+                        {
+                            <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblKotCancellationReport" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                            </li>
+                            if (j == 10)
+                            {
+                                i = pageCount + 1;
+                            }
+                            j++;
+                        }
+                        @if (currentPageIndex < pageCount)
+                        {
+                            <li class="paginate_button page-item next" id="tblKotCancellationReport_next">
+                                <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblKotCancellationReport" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </td>
+    </tr>
+</tbody>
+

@@ -1,0 +1,163 @@
+﻿
+
+
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th>Sln</th>
+            <th class="hide noPrint">Action</th>
+            @*<th>Account Type</th>*@
+            <th>Type</th>
+            <th>Account Name</th>
+            <th>Account/ Card Number</th>
+            <th class="hidden">Status</th>
+            <th class="hide">Status</th>
+            @*<th>Added By</th>
+            <th>Added On</th>
+            <th>Last Modified By</th>
+            <th>Last Modified On</th>*@
+
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.Accounts)
+        {
+            <tr>
+                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1)+count)</td>
+                <td class="noPrint">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-info">Action</button>
+                        <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <div class="dropdown-menu" role="menu">
+                            @if (ViewBag.AccountsPermission.IsEdit)
+                            {
+                                @*<a href="/accounts/Accountedit?AccountId=@item.AccountId" class="btn btn-success btn-sm" id="Edit" data-toggle="tooltip" data-placement="bottom" title="Edit"> <i class="fas fa-edit"></i></a>*@
+                                <a class="dropdown-item" href="/banking/Accountedit?AccountId=@item.AccountId" id="Pay" onclick="AvailableBranches(false)"><i class="fas fa-edit"></i> Edit</a>
+                            }
+                            <a class="dropdown-item" href="javascript:void(0)" id="" onclick="View(@item.AccountId)"><i class="fas fa-eye"></i> View</a>
+                            @if (ViewBag.AccountsPermission.IsDelete)
+                            {
+                                <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="Delete(@item.AccountId,'@Html.Raw(HttpUtility.JavaScriptStringEncode(item.AccountName))')"><i class="fas fa-trash-alt"></i> Delete</a>
+                                @*<a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="Delete(@item.AccountId,'@Html.Raw(HttpUtility.JavaScriptStringEncode(item.AccountNumber))')"><i class="fas fa-power-off"></i> Close</a>*@
+                            }
+                            <div class="dropdown-divider"></div>
+                            @if (ViewBag.AccountsTransactionsPermission.IsView)
+                            {
+                                <a class="dropdown-item" href="/accountsreports/BankTransactions?AccountId=@item.AccountId&AccountName=@item.AccountName&Type=banking&Page=banking" id="Pay"><i class="fas fa-list"></i> View Transactions</a>
+                            }
+                            @if (ViewBag.ContraPermission.IsAdd)
+                            {
+                                <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openFundTransferModal(@item.AccountId,'@item.AccountName')"><i class="fas fa-arrow-alt-circle-right"></i> Fund Transfer</a>
+                            }
+                            @if (ViewBag.ContraPermission.IsAdd)
+                            {
+                                <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openDepositModal(@item.AccountId,'@item.AccountName')"><i class="fas fa-arrow-alt-circle-down"></i> Deposit</a>
+                            }
+                            @if (ViewBag.ContraPermission.IsAdd)
+                            {
+                                <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openWithdrawModal(@item.AccountId,'@item.AccountName')"><i class="fas fa-arrow-alt-circle-up"></i> Withdraw</a>
+                            }
+                        </div>
+                    </div>
+                </td>
+                <td>@item.Type</td>
+                @*<td>@item.DisplayAs</td>*@
+                <td>@item.AccountName</td>
+                <td>@item.AccountNumber</td>
+                <td class="hidden">@(item.IsActive==true?"Active":"Inactive")</td>
+                <td class="hide">
+                    @if (item.IsActive)
+                    {
+                        if (ViewBag.AccountsPermission.IsEdit)
+                        {
+                            <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.AccountId,false)" checked data-on="Active" data-off="Closed" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                        else
+                        {
+                            <input disabled class="chkIsActive" type="checkbox" checked data-on="Active" data-off="Closed" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                    }
+                    else
+                    {
+                        if (ViewBag.AccountsPermission.IsEdit)
+                        {
+                            <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.AccountId,true)" data-on="Active" data-off="Closed" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                        else
+                        {
+                            <input disabled class="chkIsActive" type="checkbox" data-on="Active" data-off="Closed" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+
+                    }
+                </td>
+                @*<td>@item.AddedByCode</td>
+        <td>@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+        <td>@item.ModifiedByCode</td>
+        <td>@(item.ModifiedOn != null ? item.ModifiedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1]) : "")</td>*@
+                @*<td class="hide noPrint">
+            @if (ViewBag.AccountsPermission.IsEdit)
+            {
+                <a href="/accounts/Accountedit?AccountId=@item.AccountId" class="btn btn-success btn-sm" id="Edit" data-toggle="tooltip" data-placement="bottom" title="Edit"> <i class="fas fa-edit"></i></a>
+            }
+            @if (ViewBag.AccountsPermission.IsDelete)
+            {
+                <a href="javascript:void(0)" onclick="Delete(@item.AccountId,'@Html.Raw(HttpUtility.JavaScriptStringEncode(item.AccountNumber))')" class="btn btn-danger btn-sm" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+            }
+
+        </td>*@
+            </tr>
+            count++;
+        }
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="11">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    $('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));
+</script>
+

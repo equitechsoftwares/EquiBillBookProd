@@ -1,0 +1,638 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Whatsapp Setting";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Whatsapp Setting</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/notificationsettings/whatsappsettings">Whatsapp Settings</a></li>
+                        <li class="breadcrumb-item active">Edit Whatsapp Setting</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/notificationsettings/whatsappsettings" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+                            <div class="row mt-3">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group divWhatsappService_ctrl">
+                                        <label>Whatsapp Service <span class="danger">*</span>  </label>
+                                        <select class="form-control" style="width: 100%;" id="ddlWhatsappService" onchange="toggleWhatsappService()">
+                                            @{
+                                                <option value="0" selected>Select</option>
+                                                if (ViewBag.WhatsappSetting.WhatsappService == 1)
+                                                {
+                                                    <option value="1" selected>Whatsapp Desktop</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="1">Whatsapp Desktop</option>
+                                                }
+                                                if (ViewBag.WhatsappSetting.WhatsappService == 2)
+                                                {
+                                                    <option value="2" selected>Twilio</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="2">Twilio</option>
+                                                }
+                                                @*if (ViewBag.WhatsappSetting.WhatsappService == 3)
+                                                {
+                                                    <option value="3" selected>WhatsApp Web</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="3">WhatsApp Web</option>
+                                                }*@
+                                            }
+                                        </select>
+                                        <small class="text-red font-weight-bold errorText" id="divWhatsappService"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Test Mobile No <span class="danger">*</span></label>
+                                        <div class="input-group">
+                                            @*<span class="input-group-append">
+                            <a href="javascript:void(0)" class="btn bg-gray-light"> @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] </a>
+                        </span>*@
+                                            <input type="text" class="form-control divWTestMobileNo_ctrl" id="txtWTestMobileNo" placeholder=""
+                                                   value="@ViewBag.WhatsappSetting.TestMobileNo" onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divWTestMobileNo"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divWTwilio" style="display:@(ViewBag.WhatsappSetting.WhatsappService == 2 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Twilio Account SID </label>
+                                        <input type="text" class="form-control divWTwilioAccountSID_ctrl" id="txtWTwilioAccountSID" placeholder="" value="@ViewBag.WhatsappSetting.TwilioAccountSID">
+                                        <small class="text-red font-weight-bold errorText" id="divWTwilioAccountSID"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Twilio Auth Token </label>
+                                        <input type="text" class="form-control divWTwilioAuthToken_ctrl" id="txtWTwilioAuthToken" placeholder="" value="@ViewBag.WhatsappSetting.TwilioAuthToken">
+                                        <small class="text-red font-weight-bold errorText" id="divWTwilioAuthToken"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>From </label>
+                                        <input type="text" class="form-control divWTwilioFrom_ctrl" id="txtWTwilioFrom" placeholder="" value="@ViewBag.WhatsappSetting.TwilioFrom">
+                                        <small class="text-red font-weight-bold errorText" id="divWTwilioFrom"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- QR Code section for Node.js service (Service Type 3) -->
+                            <div class="row divWNodeJS" style="display:@(ViewBag.WhatsappSetting.WhatsappService == 3 ? "flex":"none")">
+                                <div class="col-12">
+                                    <div class="card card-info">
+                                        <div class="card-header">
+                                            <h3 class="card-title"><i class="fas fa-qrcode"></i> WhatsApp Web Connection</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="qrCodeStatus" class="alert alert-info">
+                                                <i class="fas fa-spinner fa-spin"></i> Checking connection status...
+                                            </div>
+                                            <div id="qrCodeContainer" style="text-align: center; display: none;">
+                                                <p class="text-muted"><strong>Instructions:</strong> Scan this QR code with your WhatsApp mobile app to connect:</p>
+                                                <ol class="text-left" style="display: inline-block; text-align: left;">
+                                                    <li>Open WhatsApp on your mobile phone</li>
+                                                    <li>Go to Settings → Linked Devices</li>
+                                                    <li>Tap "Link a Device"</li>
+                                                    <li>Scan the QR code below</li>
+                                                </ol>
+                                                <div id="qrCodeImage" style="margin: 20px auto; max-width: 300px; padding: 20px;">
+                                                    <!-- QR code will be displayed here -->
+                                                </div>
+                                                <div>
+                                                    <button type="button" class="btn btn-primary" onclick="refreshQRCode()">
+                                                        <i class="fas fa-sync-alt"></i> Refresh QR Code
+                                                    </button>
+                                                    <button type="button" class="btn btn-success ml-2" onclick="checkWhatsAppStatus()">
+                                                        <i class="fas fa-check-circle"></i> Check Connection Status
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div id="qrCodeConnected" style="display: none;">
+                                                <div class="alert alert-success">
+                                                    <i class="fas fa-check-circle"></i> <strong>Connected!</strong> WhatsApp is ready to send messages automatically.
+                                                </div>
+                                                <div class="alert alert-warning mt-3" style="margin-top: 15px;">
+                                                    <i class="fas fa-exclamation-triangle"></i> <strong>Important Notice:</strong> 
+                                                    <br/>• It is NOT an official WhatsApp API
+                                                    <br/>• WhatsApp can block numbers if misused.
+                                                    <br/>• Not recommended for large-scale business messaging (use Cloud API for that).
+                                                </div>
+                                                <div style="text-align: center; margin-top: 15px;">
+                                                    <button type="button" class="btn btn-info" onclick="checkWhatsAppStatus()">
+                                                        <i class="fas fa-sync-alt"></i> Check Connection Status
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger ml-2" onclick="logoutWhatsApp()">
+                                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="pb-2 row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Save As <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divWhatsappSaveAs_ctrl" id="txtWhatsappSaveAs" placeholder="" value="@ViewBag.WhatsappSetting.SaveAs">
+                                        <small class="text-red font-weight-bold errorText" id="divWhatsappSaveAs"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <br />
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.WhatsappSetting.IsDefault == true)
+                                            {
+                                                <input type="checkbox" id="chkWhatsappIsDefault" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkWhatsappIsDefault">
+                                            }
+                                            <label for="chkWhatsappIsDefault" class="mt-2">Is Default</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pb-2 divDesktop" style="display:@(ViewBag.WhatsappSetting.WhatsappService == 1 ? "flex":"none")">
+                                <span>Note: Auto sending of whatsapp notification will not work in Whatsapp Desktop</span>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnUpdate" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                            <button id="btnUpdate_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                            @*<a id="btnBack" href="/items/category" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I add and update product categories?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    •	To add a new product category, click on the ‘Add New’ button at the top of the screen
+                                    •	To update an existing product category, click on 'Edit' button beside the name of product category you want to change, make your changes and then click the ‘Save’ button at the bottom of the screen.
+                                    •	To delete an existing product category, tick the box that is to the left of the product category you would like to delete and then click the ‘Delete’ button at the top of the list.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I make a product category inactive?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    IMS allows you stop an entire product category from displaying in your catalogue, by marking it as inactive. This is sometimes better than deleting all those products since all the product information is retained but the products are not shown in the catalogue. To mark a product category as inactive, follow these steps:
+
+                                    •	Click on the name of the product category that you want to make active.
+                                    •	Change the status field from ‘Active’ to ‘Inactive’.
+                                    •	Click the ‘Save’ button at the bottom of the page.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Settings/NotificationSettings/WhatsappSettings.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+    // WhatsApp Node.js service URL
+    var whatsappServiceUrl = '@(System.Configuration.ConfigurationManager.AppSettings["WhatsAppNodeServiceUrl"] ?? "http://localhost:3000")';
+    if (whatsappServiceUrl.includes('/send-message')) {
+        whatsappServiceUrl = whatsappServiceUrl.replace('/send-message', '');
+    }
+    
+    // Get WebSocket URL (convert http/https to ws/wss)
+    var wsUrl = whatsappServiceUrl.replace(/^https/, 'wss').replace(/^http:/, 'ws:');
+    
+    // Get CompanyId from cookies (for multi-tenant support)
+    var companyId = '@(Request.Cookies["data"] != null && Request.Cookies["data"]["CompanyId"] != null ? Request.Cookies["data"]["CompanyId"] : "0")';
+    console.log('CompanyId for WhatsApp service:', companyId);
+    
+    // Check if service type is Node.js (3)
+    var isNodeJSService = '@ViewBag.WhatsappSetting.WhatsappService' == '3';
+    var socket = null;
+    var isSocketConnected = false;
+    
+    // Function to cleanup WebSocket connection
+    function cleanupWhatsAppConnection() {
+        if (socket) {
+            socket.emit('unsubscribe', companyId);
+            socket.disconnect();
+            socket = null;
+            isSocketConnected = false;
+        }
+    }
+    
+    // Function to initialize WebSocket connection
+    function initWebSocket() {
+        if (!isNodeJSService || socket) return;
+        
+        console.log('Initializing WebSocket connection to:', wsUrl);
+        
+        // Create socket connection
+        socket = io(wsUrl, {
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: Infinity
+        });
+        
+        // Connection established
+        socket.on('connect', function() {
+            console.log('WebSocket connected');
+            isSocketConnected = true;
+            
+            // Subscribe to company updates
+            socket.emit('subscribe', companyId);
+        });
+        
+        // Connection error
+        socket.on('connect_error', function(error) {
+            console.error('WebSocket connection error:', error);
+            isSocketConnected = false;
+            $('#qrCodeStatus').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Cannot connect to WhatsApp service. Make sure the Node.js service is running on: ' + whatsappServiceUrl + '</div>');
+            $('#qrCodeStatus').show();
+        });
+        
+        // Disconnected
+        socket.on('disconnect', function(reason) {
+            console.log('WebSocket disconnected:', reason);
+            isSocketConnected = false;
+        });
+        
+        // QR Code received
+        socket.on('qr-code', function(data) {
+            console.log('QR code received via WebSocket:', data);
+            
+            if (data.qrCode) {
+                $('#qrCodeStatus').hide();
+                $('#qrCodeContainer').show();
+                $('#qrCodeConnected').hide();
+                $('#qrCodeImage').html('<img src="' + data.qrCode + '" alt="QR Code" style="max-width: 100%; border: 2px solid #007bff; padding: 10px; background: white;" />');
+            } else {
+                $('#qrCodeStatus').html('<i class="fas fa-spinner fa-spin"></i> ' + (data.message || 'Waiting for QR code...'));
+                $('#qrCodeStatus').show();
+                $('#qrCodeContainer').hide();
+                $('#qrCodeConnected').hide();
+            }
+        });
+        
+        // Status update received
+        socket.on('status', function(data) {
+            console.log('Status update received via WebSocket:', data);
+            
+            if (data.ready && !data.disconnected) {
+                // Connected
+                $('#qrCodeStatus').hide();
+                $('#qrCodeContainer').hide();
+                $('#qrCodeConnected').show();
+            } else if (data.disconnected) {
+                // Disconnected
+                $('#qrCodeStatus').html('<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> <strong>WhatsApp Disconnected!</strong> Your WhatsApp session has been disconnected. Please scan the QR code again to reconnect.</div>');
+                $('#qrCodeStatus').show();
+                $('#qrCodeContainer').show();
+                $('#qrCodeConnected').hide();
+            } else if (data.isInitializing) {
+                // Initializing
+                $('#qrCodeStatus').html('<i class="fas fa-spinner fa-spin"></i> <strong>Initializing WhatsApp client...</strong> This may take a few seconds. Please wait...');
+                $('#qrCodeStatus').show();
+                $('#qrCodeContainer').hide();
+                $('#qrCodeConnected').hide();
+            } else {
+                // Waiting for QR
+                $('#qrCodeStatus').html('<i class="fas fa-spinner fa-spin"></i> ' + (data.message || 'Waiting for QR code...'));
+                $('#qrCodeStatus').show();
+                $('#qrCodeContainer').hide();
+                $('#qrCodeConnected').hide();
+            }
+        });
+        
+        // Disconnected event
+        socket.on('disconnected', function(data) {
+            console.log('Disconnected event received via WebSocket:', data);
+            $('#qrCodeStatus').html('<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> <strong>WhatsApp Disconnected!</strong> Your WhatsApp session has been disconnected. Please scan the QR code again to reconnect.</div>');
+            $('#qrCodeStatus').show();
+            $('#qrCodeContainer').show();
+            $('#qrCodeConnected').hide();
+        });
+        
+        // Auth failure event
+        socket.on('auth-failure', function(data) {
+            console.error('Auth failure received via WebSocket:', data);
+            $('#qrCodeStatus').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> <strong>Authentication Failed!</strong> ' + (data.message || 'Please try again.') + '</div>');
+            $('#qrCodeStatus').show();
+            $('#qrCodeContainer').hide();
+            $('#qrCodeConnected').hide();
+        });
+        
+        // Error event
+        socket.on('error', function(data) {
+            console.error('Error received via WebSocket:', data);
+            $('#qrCodeStatus').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> ' + (data.message || 'An error occurred.') + '</div>');
+            $('#qrCodeStatus').show();
+        });
+    }
+    
+    // Function to refresh QR code
+    function refreshQRCode() {
+        $('#qrCodeStatus').html('<i class="fas fa-spinner fa-spin"></i> Clearing session and refreshing QR code...');
+        $('#qrCodeStatus').show();
+        $('#qrCodeContainer').hide();
+        $('#qrCodeConnected').hide();
+        
+        // Use reset endpoint to clear session and reinitialize
+        $.ajax({
+            url: whatsappServiceUrl + '/reset/' + companyId,
+            method: 'POST',
+            timeout: 15000,
+            success: function(response) {
+                console.log('Reset response:', response);
+                $('#qrCodeStatus').html('<i class="fas fa-spinner fa-spin"></i> <strong>Initializing WhatsApp client...</strong> This may take a few seconds. Please wait...');
+                $('#qrCodeStatus').show();
+                // WebSocket will receive QR code automatically when it's ready
+            },
+            error: function(xhr, status, error) {
+                console.error('Error resetting session:', error);
+                // Fallback: try disconnect with clearSession
+                $.ajax({
+                    url: whatsappServiceUrl + '/disconnect/' + companyId + '?clearSession=true',
+                    method: 'POST',
+                    timeout: 10000,
+                    success: function(disconnectResponse) {
+                        console.log('Disconnected and cleared session:', disconnectResponse);
+                        // Wait a moment then request new QR code
+                        setTimeout(function() {
+                            $.ajax({
+                                url: whatsappServiceUrl + '/qr-code/' + companyId,
+                                method: 'GET',
+                                timeout: 10000,
+                                success: function(qrResponse) {
+                                    console.log('QR code response after reset:', qrResponse);
+                                    if (qrResponse.qrCode) {
+                                        $('#qrCodeStatus').hide();
+                                        $('#qrCodeContainer').show();
+                                        $('#qrCodeConnected').hide();
+                                        $('#qrCodeImage').html('<img src="' + qrResponse.qrCode + '" alt="QR Code" style="max-width: 100%; border: 2px solid #007bff; padding: 10px; background: white;" />');
+                                    } else {
+                                        $('#qrCodeStatus').html('<i class="fas fa-spinner fa-spin"></i> ' + (qrResponse.message || 'Waiting for QR code...'));
+                                        $('#qrCodeStatus').show();
+                                    }
+                                },
+                                error: function(xhr2, status2, error2) {
+                                    console.error('Error getting QR code after reset:', error2);
+                                    $('#qrCodeStatus').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error refreshing QR code: ' + (xhr2.responseText || error2) + '</div>');
+                                    $('#qrCodeStatus').show();
+                                }
+                            });
+                        }, 2000);
+                    },
+                    error: function(xhr2, status2, error2) {
+                        console.error('Error disconnecting:', error2);
+                        $('#qrCodeStatus').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error refreshing QR code: ' + (xhr2.responseText || error2) + '</div>');
+                        $('#qrCodeStatus').show();
+                    }
+                });
+            }
+        });
+    }
+    
+    // Function to logout from WhatsApp (disconnect and clear session)
+    function logoutWhatsApp() {
+        if (!confirm('Are you sure you want to logout from WhatsApp? This will disconnect your session and you will need to scan the QR code again to reconnect.')) {
+            return;
+        }
+        
+        $('#qrCodeStatus').html('<i class="fas fa-spinner fa-spin"></i> Logging out from WhatsApp...');
+        $('#qrCodeStatus').show();
+        $('#qrCodeContainer').hide();
+        $('#qrCodeConnected').hide();
+        
+        $.ajax({
+            url: whatsappServiceUrl + '/disconnect/' + companyId + '?clearSession=true',
+            method: 'POST',
+            timeout: 15000,
+            success: function(response) {
+                console.log('Logout response:', response);
+                $('#qrCodeStatus').html('<div class="alert alert-success"><i class="fas fa-check-circle"></i> <strong>Logged out successfully!</strong> Your WhatsApp session has been disconnected. Please scan the QR code again to reconnect.</div>');
+                $('#qrCodeStatus').show();
+                $('#qrCodeContainer').hide();
+                $('#qrCodeConnected').hide();
+                
+                // Cleanup WebSocket connection
+                cleanupWhatsAppConnection();
+                
+                // Request new QR code after a short delay
+                setTimeout(function() {
+                    checkWhatsAppStatus();
+                }, 2000);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error logging out:', error);
+                $('#qrCodeStatus').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Error logging out: ' + (xhr.responseText || error) + '</div>');
+                $('#qrCodeStatus').show();
+            }
+        });
+    }
+    
+    // Function to check WhatsApp connection status (manual check via HTTP)
+    function checkWhatsAppStatus() {
+        $('#qrCodeStatus').html('<i class="fas fa-spinner fa-spin"></i> Checking connection status...');
+        $('#qrCodeStatus').show();
+        
+        $.ajax({
+            url: whatsappServiceUrl + '/status/' + companyId,
+            method: 'GET',
+            timeout: 5000,
+            success: function(response) {
+                console.log('Status check response:', response);
+                
+                // Update UI immediately based on response
+                if (response.ready && !response.disconnected) {
+                    $('#qrCodeStatus').hide();
+                    $('#qrCodeContainer').hide();
+                    $('#qrCodeConnected').show();
+                } else if (response.disconnected) {
+                    $('#qrCodeStatus').html('<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> <strong>WhatsApp Disconnected!</strong> Your WhatsApp session has been disconnected. Please scan the QR code again to reconnect.</div>');
+                    $('#qrCodeStatus').show();
+                    $('#qrCodeContainer').show();
+                    $('#qrCodeConnected').hide();
+                } else if (response.isInitializing) {
+                    $('#qrCodeStatus').html('<i class="fas fa-spinner fa-spin"></i> <strong>Initializing WhatsApp client...</strong> This may take a few seconds. Please wait...');
+                    $('#qrCodeStatus').show();
+                    $('#qrCodeContainer').hide();
+                    $('#qrCodeConnected').hide();
+                } else if (response.needsQR) {
+                    // Request QR code if needed
+                    $.ajax({
+                        url: whatsappServiceUrl + '/qr-code/' + companyId,
+                        method: 'GET',
+                        timeout: 10000,
+                        success: function(qrResponse) {
+                            if (qrResponse.qrCode) {
+                                $('#qrCodeStatus').hide();
+                                $('#qrCodeContainer').show();
+                                $('#qrCodeConnected').hide();
+                                $('#qrCodeImage').html('<img src="' + qrResponse.qrCode + '" alt="QR Code" style="max-width: 100%; border: 2px solid #007bff; padding: 10px; background: white;" />');
+                            } else {
+                                $('#qrCodeStatus').html('<i class="fas fa-spinner fa-spin"></i> ' + (qrResponse.message || 'Waiting for QR code...'));
+                                $('#qrCodeStatus').show();
+                                $('#qrCodeContainer').hide();
+                                $('#qrCodeConnected').hide();
+                            }
+                        }
+                    });
+                } else {
+                    $('#qrCodeStatus').html('<i class="fas fa-spinner fa-spin"></i> ' + (response.message || 'Checking status...'));
+                    $('#qrCodeStatus').show();
+                    $('#qrCodeContainer').hide();
+                    $('#qrCodeConnected').hide();
+                }
+                // WebSocket will also receive status updates automatically
+            },
+            error: function(xhr, status, error) {
+                console.error('Error checking status:', error);
+                $('#qrCodeStatus').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Cannot check status. Make sure the Node.js service is running. Error: ' + (xhr.responseText || error) + '</div>');
+                $('#qrCodeStatus').show();
+            }
+        });
+    }
+    
+    // Override toggleWhatsappService to handle WebSocket initialization
+    var originalToggleWhatsappService = window.toggleWhatsappService;
+    window.toggleWhatsappService = function() {
+        if (originalToggleWhatsappService) {
+            originalToggleWhatsappService();
+        }
+        
+        var selectedValue = $('#ddlWhatsappService').val();
+        if (selectedValue == '3') {
+            // Node.js service selected - initialize WebSocket
+            isNodeJSService = true;
+            if (!socket) {
+                initWebSocket();
+            }
+        } else {
+            // Not Node.js service - cleanup WebSocket connection
+            isNodeJSService = false;
+            cleanupWhatsAppConnection();
+        }
+    };
+    
+    // Auto-initialize WebSocket when page loads (if Node.js service is selected)
+    $(document).ready(function() {
+        // Monitor dropdown changes to cleanup connection when switching away from Node.js
+        $('#ddlWhatsappService').on('change', function() {
+            var selectedValue = $(this).val();
+            if (selectedValue != '3') {
+                // Not Node.js service - cleanup WebSocket connection
+                isNodeJSService = false;
+                cleanupWhatsAppConnection();
+            } else {
+                // Node.js service selected - initialize WebSocket
+                isNodeJSService = true;
+                if (!socket) {
+                    initWebSocket();
+                }
+            }
+        });
+        
+        if (isNodeJSService) {
+            initWebSocket();
+        }
+    });
+    
+    // Cleanup on page unload
+    $(window).on('beforeunload', function() {
+        cleanupWhatsAppConnection();
+    });
+</script>

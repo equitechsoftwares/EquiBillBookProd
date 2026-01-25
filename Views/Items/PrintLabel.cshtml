@@ -1,0 +1,305 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Print Labels";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Print Labels</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Print Labels</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                @*<div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    <h5><i class="fas fa-info"></i> Note:</h5>
+                    This page has been enhanced for printing. Click the print button at the bottom of the invoice to test.
+                </div>*@
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <div class="@(ViewBag.Branchs.Count > 1 ? "card-header":"")">
+                        <div class="row">
+                            @if (ViewBag.Branchs.Count > 1)
+                            {
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Business Location <span class="danger">*</span></label>
+                                        <div class="input-group divBranch_ctrl">
+                                            <select class="form-control select2" style="width: 100%;" id="ddlBranch">
+                                                <option value="0">Select</option>
+                                                @foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    <option value="@item.BranchId">@item.Branch</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 hidden">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Business Location <span class="danger">*</span></label>
+                                        <div class="input-group divBranch_ctrl">
+                                            <select class="form-control select2" style="width: 100%;" id="ddlBranch">
+                                                @foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    <option value="@item.BranchId">@item.Branch</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                    </div>
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+                    <!-- form start -->
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-12 mb-3">
+                                <div class="input-group ">
+                                    @*<div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                                    </div>*@
+                                    <input type="text" class="form-control divtags_ctrl" placeholder="Sku Code/ Item Name" id="txttags">
+                                </div>
+                                <small class="text-red font-weight-bold errorText" id="divtags"></small>
+                            </div>
+                        </div>
+                        <div class="row table-responsive">
+                            <table id="example1" class="table table-bordered table-striped">
+                                <thead class="bg-info">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Item</th>
+                                        <th>Unit</th>
+                                        <th style="width:20%">No of labels</th>
+                                        <th style="width:20%">Packaging Date</th>
+                                        <th style="width:5%">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="divCombo">
+                                </tbody>
+
+                            </table>
+                        </div>
+                        <div class="row mt-3">
+                            <!--<div class="col-md-12">
+                    <div class="row">
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                            <div class="form-group">
+                                <div class="">-->
+                            @*<input type="checkbox" id="chkPrintPackingDate" onchange="CheckManageStock()" />*@
+                            <!--<label for="chkPrintPackingDate">Barcode Setting</label>
+                                    <select class="form-control mt-2" style="width: 100%;" id="ddlBarcodeSettings" onchange="setvalues()">
+                                        <option value="1">20 Labels per Sheet, Sheet Size: 8.5" x 11", Label Size: 4" x 1", Labels per sheet: 20</option>
+                                        <option value="2">30 Labels per sheet, Sheet Size: 8.5" x 11", Label Size: 2.625" x 1", Labels per sheet: 30</option>
+                                        <option value="3">32 Labels per sheet, Sheet Size: 8.5" x 11", Label Size: 2" x 1.25", Labels per sheet: 32</option>
+                                        <option value="4">40 Labels per sheet, Sheet Size: 8.5" x 11", Label Size: 2" x 1", Labels per sheet: 40</option>
+                                        <option value="5">50 Labels per Sheet, Sheet Size: 8.5" x 11", Label Size: 1.5" x 1", Labels per sheet: 50</option>
+                                        <option value="6">Continuous Rolls - 31.75mm x 25.4mm, Label Size: 31.75mm x 25.4mm, Gap: 3.18mm</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>-->
+                            <div class="col-md-12">
+                                <h5>Information to show in Labels</h5>
+                                <div class="row">
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                <input type="checkbox" id="chkProductName" checked/>
+                                                <label for="chkProductName">Product Name (Size)</label>
+                                                <input type="number" onkeypress="onlyNumberKey(event)" class="form-control mt-2" id="txtProductSize" placeholder="Size" value="15">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                <input type="checkbox" id="chkProductVariation"/>
+                                                <label for="chkProductVariation">Product Variation (Size)</label>
+                                                <input type="number" onkeypress="onlyNumberKey(event)" class="form-control mt-2" id="txtProductVariationSize" placeholder="Size" value="15">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                <input type="checkbox" id="chkProductPrice" onchange="togglePrice()" checked/>
+                                                <label for="chkProductPrice">Product Price (Size)</label>
+                                                <input type="number" onkeypress="onlyNumberKey(event)" class="form-control mt-2" id="txtProductPriceSize" placeholder="Size" value="14">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divPriceType hidden">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Show Price (Size)</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" style="width: 100%;" id="ddlPriceType">
+                                                    <option value="inc">Inc. Tax</option>
+                                                    <option value="exc">Exc. Tax</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                <input type="checkbox" id="chkBranchName"/>
+                                                <label for="chkBranchName">Branch Name (Size)</label>
+                                                <input type="number" onkeypress="onlyNumberKey(event)" class="form-control mt-2" id="txtBranchNameSize" placeholder="Size" value="20">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                <input type="checkbox" id="chkPrintPackingDate"/>
+                                                <label for="chkPrintPackingDate">Packaging Date (Size)</label>
+                                                <input type="number" onkeypress="onlyNumberKey(event)" class="form-control mt-2" id="txtPrintPackingDateSize" placeholder="Size" value="12">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                <hr />
+                                <div class="row">
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <div class="">
+                                                @*<input type="checkbox" id="chkPrintPackingDate" onchange="CheckManageStock()" />*@
+                                                <label for="chkPrintPackingDate">Barcode Setting</label>
+                                                <select class="form-control mt-2" style="width: 100%;" id="ddlBarcodeSettings" onchange="setvalues()">
+                                                    <option value="1">20 Labels per Sheet, Sheet Size: 8.5" x 11", Label Size: 4" x 1", Labels per sheet: 20</option>
+                                                    <option value="2">30 Labels per sheet, Sheet Size: 8.5" x 11", Label Size: 2.625" x 1", Labels per sheet: 30</option>
+                                                    <option value="3">32 Labels per sheet, Sheet Size: 8.5" x 11", Label Size: 2" x 1.25", Labels per sheet: 32</option>
+                                                    <option value="4">40 Labels per sheet, Sheet Size: 8.5" x 11", Label Size: 2" x 1", Labels per sheet: 40</option>
+                                                    <option value="5">50 Labels per Sheet, Sheet Size: 8.5" x 11", Label Size: 1.5" x 1", Labels per sheet: 50</option>
+                                                    <option value="6">Continuous Rolls - 31.75mm x 25.4mm, Label Size: 31.75mm x 25.4mm, Gap: 3.18mm</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="javascript:void(0)" class="btn btn-primary float-right" onclick="Preview()">Print</a>
+                    </div>
+
+
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is print labels?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Label printing is the process of printing custom labels through various methods. These methods include digital printing, flexographic printing, and wide-format printing, all of which yield different results in the look, feel, and purpose of the label.
+                                    What are the labels used for?
+                                    Labels may be used for any combination of identification, information, warning, instructions for use, environmental advice or advertising. They may be stickers, permanent or temporary labels or printed packaging.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What are the 3 types of labels?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Types of Labelling
+                                    •	Brand label: It plays an important role in labelling as it gives information about the brand. It can be removable or non-removable.
+                                    •	Descriptive label: It specifies product usage.
+                                    •	Grade label: It describes the aspect and features of the product.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title"> Are labels necessary?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Labeling is just the start in the process of better understanding someone or something. Labels are like material possessions: they are necessary, but we don't need to give them as much meaning as we often do.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+      rel="stylesheet">
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script type="text/javascript" src="~/Content/assets/js/jquery-barcode.min.js"></script>
+<script src="~/Content/JQuery/Customer/Items/PrintLabel.js"></script>

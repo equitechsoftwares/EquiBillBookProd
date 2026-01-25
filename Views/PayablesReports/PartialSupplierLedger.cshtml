@@ -1,0 +1,167 @@
+﻿
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th style="">Sln</th>
+            <th style="">Date</th>
+            <th style="">Reference No</th>
+            <th style="">Type </th>
+            <th style="">Location</th>
+            <th style="">Status</th>
+            <th style="">Debit</th>
+            <th style="">Credit</th>
+            <th>Balance</th>
+            <th>Payment Method</th>
+            <th>Others</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.Sales)
+        {
+
+            <tr>
+                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1)+count)</td>
+                <td>@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                <td>@item.InvoiceNo</td>
+                <td>@item.Type</td>
+                <td>@item.BranchName</td>
+                <td>@item.Status</td>
+                <td>
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.Debit))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", item.Debit))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>
+                <td>
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.Credit))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", item.Credit))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>
+                <td>
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.Balance))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", item.Balance))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>
+                <td>
+                    @item.PaymentType
+                </td>
+                <td>
+                    @item.OtherRemarks
+                </td>
+            </tr>
+            count++;
+
+        }
+    </tbody>
+    <tbody>
+        <tr>
+            <td colspan="6" data-title="Total" class="text-right"><b>Total</b></td>
+            <td data-title="Total Amount">
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalDebit))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalDebit))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+            <td data-title="Total Amount">
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalCredit))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalCredit))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+            @*<td data-title="Total Amount">
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalBalance))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalBalance))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>*@
+            <td colspan="9"></td>
+        </tr>
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="12">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    @*$('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));*@
+</script>
+

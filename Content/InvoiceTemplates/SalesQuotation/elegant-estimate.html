@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elegant Estimate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #000000;
+            background: #ffffff;
+            padding: 40px;
+        }
+
+        .invoice-container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: white;
+        }
+
+        /* Header Section */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #000000;
+        }
+
+        .company-section {
+            flex: 1;
+        }
+
+        .company-logo {
+            height: 60px;
+            max-width: 180px;
+            object-fit: contain;
+            margin-bottom: 12px;
+        }
+
+        .company-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .company-address {
+            font-size: 13px;
+            color: #333333;
+            line-height: 1.8;
+        }
+
+        .estimate-header {
+            text-align: right;
+        }
+
+        .estimate-title {
+            font-size: 42px;
+            font-weight: 700;
+            color: #000000;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .estimate-number {
+            font-size: 16px;
+            color: #000000;
+            font-weight: 400;
+        }
+
+        /* Body Content */
+        .invoice-body {
+            margin-top: 30px;
+        }
+
+        /* Two Column Layout */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        /* Left Column - Party Information */
+        .party-section {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .party-block {
+            border-left: 3px solid #000000;
+            padding-left: 16px;
+        }
+
+        .party-block h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #000000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .party-block .party-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 8px;
+        }
+
+        .party-block p {
+            font-size: 13px;
+            color: #333333;
+            margin-bottom: 4px;
+            line-height: 1.6;
+        }
+
+        .party-block .gstin {
+            font-size: 12px;
+            color: #666666;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* Right Column - Estimate Details */
+        .details-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .details-group {
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dotted #cccccc;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333333;
+            min-width: 140px;
+        }
+
+        .detail-value {
+            font-size: 13px;
+            color: #000000;
+            text-align: right;
+            flex: 1;
+        }
+
+        /* Items Table */
+        .items-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #000000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #000000;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .items-table thead {
+            background: #000000;
+            color: white;
+        }
+
+        .items-table thead th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .items-table thead th:last-child {
+            text-align: right;
+        }
+
+        .items-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .items-table tbody tr:last-child {
+            border-bottom: 2px solid #000000;
+        }
+
+        .items-table tbody td {
+            padding: 14px 12px;
+            color: #333333;
+            font-size: 13px;
+            vertical-align: top;
+        }
+
+        .items-table tbody td:last-child {
+            text-align: right;
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .item-description {
+            font-size: 12px;
+            color: #666666;
+            font-style: italic;
+        }
+
+        /* Summary Table */
+        .summary-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+        }
+
+        .summary-table {
+            width: 400px;
+            border: 2px solid #000000;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333333;
+        }
+
+        .summary-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #000000;
+            text-align: right;
+        }
+
+        .total-row {
+            background: #000000;
+            color: white;
+        }
+
+        .total-row .summary-label,
+        .total-row .summary-value {
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* Notes Section */
+        .notes-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #000000;
+            background: #f9fafb;
+        }
+
+        .notes-section h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #000000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .notes-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .notes-section li {
+            padding: 6px 0 6px 20px;
+            position: relative;
+            font-size: 13px;
+            color: #1f2937;
+        }
+
+        .notes-section li:before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        /* Terms & Conditions */
+        .terms-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            background: #fafafa;
+        }
+
+        .terms-section h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #000000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .terms-section p {
+            font-size: 13px;
+            color: #333333;
+            margin-bottom: 8px;
+            line-height: 1.8;
+        }
+
+        .terms-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .terms-section li {
+            padding: 6px 0 6px 20px;
+            position: relative;
+            font-size: 13px;
+            color: #333333;
+        }
+
+        .terms-section li:before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        /* Validity Notice */
+        .validity-notice {
+            text-align: center;
+            padding: 16px;
+            background: #f0f0f0;
+            border: 1px dashed #666666;
+            margin-bottom: 30px;
+        }
+
+        .validity-notice p {
+            font-size: 13px;
+            color: #333333;
+            font-weight: 600;
+        }
+
+            display: flex;
+            justify-content: space-between;
+            margin-top: 60px;
+            margin-bottom: 30px;
+        }
+
+        .signature-box {
+            width: 45%;
+        }
+
+        .signature-line {
+            border-top: 2px solid #000000;
+            padding-top: 10px;
+            margin-top: 70px;
+            text-align: center;
+        }
+
+        .signature-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #000000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .signature-subtitle {
+            font-size: 11px;
+            color: #666666;
+            margin-top: 4px;
+        }
+
+        /* Footer */
+        .footer-section {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 2px solid #000000;
+        }
+
+        .footer-section p {
+            font-size: 12px;
+            color: #666666;
+            margin-bottom: 4px;
+        }
+
+        .footer-section strong {
+            color: #000000;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .header-section {
+                flex-direction: column;
+            }
+
+            .estimate-header {
+                text-align: left;
+                margin-top: 20px;
+            }
+
+            .summary-table {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="company-section">
+                <img src="/Content/web-assets/images/logo.png" alt="EquiBillBook Logo" class="company-logo">
+                <div class="company-name">STELLAR DESIGN CO.</div>
+                <div class="company-address">
+                    890 Artisan Lane, Studio 5<br>
+                    Portland, OR, USA, 97201<br>
+                    Phone: +1 (555) 789-0123<br>
+                    Email: quotes@stellardesign.com
+                </div>
+            </div>
+            <div class="estimate-header">
+                <div class="estimate-title">QUOTATION</div>
+                <div class="estimate-number">SQ# SQ-2024-5683</div>
+            </div>
+        </div>
+
+        <!-- Body Content -->
+        <div class="invoice-body">
+            <!-- Two Column Layout -->
+            <div class="main-content">
+                <!-- Left Column - Party Information -->
+                <div class="party-section">
+                    <div class="party-block">
+                        <h4>From (Provider)</h4>
+                        <div class="party-name">Stellar Design Co.</div>
+                        <p>890 Artisan Lane, Studio 5</p>
+                        <p>Portland, OR, USA</p>
+                        <p>97201</p>
+                        <p class="gstin">Tax ID: 93-8765432</p>
+                    </div>
+
+                    <div class="party-block">
+                        <h4>Bill To</h4>
+                        <div class="party-name">Jennifer Martinez</div>
+                        <p>Coastal Ventures LLC</p>
+                        <p>654 Bayview Boulevard</p>
+                        <p>San Francisco, CA, USA</p>
+                        <p>94102</p>
+                        <p>jennifer@coastalventures.com</p>
+                        <p class="gstin">Tax ID: 94-5678901</p>
+                    </div>
+
+                    <div class="party-block">
+                        <h4>Ship To</h4>
+                        <div class="party-name">Jennifer Martinez</div>
+                        <p>Coastal Ventures LLC</p>
+                        <p>654 Bayview Boulevard</p>
+                        <p>San Francisco, CA, USA</p>
+                        <p>94102</p>
+                    </div>
+                </div>
+
+                <!-- Right Column - Estimate Details -->
+                <div class="details-section">
+                    <div class="details-group">
+                        <div class="detail-row">
+                            <span class="detail-label">Quotation Date:</span>
+                            <span class="detail-value">December 2, 2024 4:00 PM</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Quotation #:</span>
+                            <span class="detail-value">SQ-2024-5683</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status:</span>
+                            <span class="detail-value">Pending</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Due Date:</span>
+                            <span class="detail-value">January 2, 2025</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Section -->
+            <div class="items-section">
+                <h3 class="section-title">Items & Services</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>Item Description</th>
+                            <th style="width: 80px;">SKU</th>
+                            <th style="width: 70px;">Qty</th>
+                            <th style="width: 100px;">Rate</th>
+                            <th style="width: 90px;">Discount</th>
+                            <th style="width: 80px;">Tax</th>
+                            <th style="width: 110px;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>
+                                <div class="item-name">Brand Identity Package</div>
+                                <div class="item-description">Complete brand design with logo and guidelines</div>
+                            </td>
+                            <td>BRD-101</td>
+                            <td>1 Unit</td>
+                            <td>$3,500.00</td>
+                            <td>$175.00</td>
+                            <td>$598.50</td>
+                            <td>$3,923.50</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>
+                                <div class="item-name">Website UI/UX Design</div>
+                                <div class="item-description">Modern responsive design for 12 pages</div>
+                            </td>
+                            <td>WEB-102</td>
+                            <td>1 Unit</td>
+                            <td>$6,000.00</td>
+                            <td>10%</td>
+                            <td>$972.00</td>
+                            <td>$6,372.00</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>
+                                <div class="item-name">Frontend Development</div>
+                                <div class="item-description">HTML/CSS/JavaScript implementation</div>
+                            </td>
+                            <td>DEV-103</td>
+                            <td>1 Unit</td>
+                            <td>$4,500.00</td>
+                            <td>5%</td>
+                            <td>$769.50</td>
+                            <td>$5,044.50</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>
+                                <div class="item-name">Content Management System</div>
+                                <div class="item-description">CMS setup and training</div>
+                            </td>
+                            <td>CMS-104</td>
+                            <td>1 Unit</td>
+                            <td>$2,000.00</td>
+                            <td>$0.00</td>
+                            <td>$360.00</td>
+                            <td>$2,360.00</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>
+                                <div class="item-name">Premium Support</div>
+                                <div class="item-description">12 months technical support and updates</div>
+                            </td>
+                            <td>SUP-105</td>
+                            <td>12 Months</td>
+                            <td>$250.00</td>
+                            <td>$0.00</td>
+                            <td>$540.00</td>
+                            <td>$3,540.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Summary Section -->
+            <div class="summary-section">
+                <div class="summary-table">
+                    <div class="summary-row">
+                        <span class="summary-label">Total Qty</span>
+                        <span class="summary-value">16 Units</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Gross Amount</span>
+                        <span class="summary-value">$19,250.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Discount</span>
+                        <span class="summary-value">-$1,075.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Tax (GST 18%)</span>
+                        <span class="summary-value">$3,240.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Net Amount</span>
+                        <span class="summary-value">$21,415.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Round Off</span>
+                        <span class="summary-value">-$15.00</span>
+                    </div>
+                    <div class="summary-row total-row">
+                        <span class="summary-label">Grand Total</span>
+                        <span class="summary-value">$21,240.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="notes-section">
+                <h4>Important Notes</h4>
+                <ul>
+                    <li>Delivery schedule will be agreed after advance payment</li>
+                    <li>Client to provide content, images, and feedback within agreed timelines</li>
+                    <li>All work will be completed according to the specifications outlined above</li>
+                    <li>Any additional requirements outside the agreed scope may require additional time and resources</li>
+                </ul>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="terms-section">
+                <h4>Terms & Conditions</h4>
+                <ul>
+                    <li>Payment terms: 40% advance payment required, 30% at midpoint, 30% upon completion</li>
+                    <li>All prices in USD and include applicable taxes</li>
+                    <li>This quotation is valid for 30 days from the date of issue</li>
+                    <li>Scope modifications after approval may result in additional charges</li>
+                    <li>This quotation may be revised if significant project scope changes occur</li>
+                    <li>All work remains our property until full payment is received</li>
+                    <li>All intellectual property rights transfer upon full payment</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer-section">
+            <p><strong>Thank you for your business</strong></p>
+            <p>This is a computer-generated quotation and does not require a signature for validity</p>
+            <p>For any queries, please contact us at quotes@stellardesign.com or call +1 (555) 789-0123</p>
+        </div>
+    </div>
+</body>
+</html>

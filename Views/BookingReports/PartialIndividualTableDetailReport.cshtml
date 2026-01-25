@@ -1,0 +1,178 @@
+@{
+    var tableDetails = ViewBag.TableDetails as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+}
+
+<thead id="thead">
+    <tr>
+        <th>Table No</th>
+        <th>Table Name</th>
+        <th>Capacity</th>
+        <th>Table Type</th>
+        <th>Floor</th>
+        <th>Total Bookings</th>
+        <th>Confirmed</th>
+        <th>Completed</th>
+        <th>Cancelled</th>
+        <th>Total Revenue</th>
+        <th>Occupancy Hours</th>
+        <th>Utilization %</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (tableDetails != null && tableDetails.Count > 0)
+    {
+        foreach (var table in tableDetails)
+        {
+            var tableDict = table as System.Collections.Generic.Dictionary<string, object>;
+            
+            // Get TableNo
+            string tableNo = "-";
+            if (tableDict != null && tableDict.ContainsKey("TableNo"))
+            {
+                tableNo = tableDict["TableNo"]?.ToString() ?? "-";
+            }
+            else
+            {
+                try { tableNo = ((dynamic)table).TableNo?.ToString() ?? "-"; } catch { }
+            }
+            
+            // Get TableName
+            string tableName = "-";
+            if (tableDict != null && tableDict.ContainsKey("TableName"))
+            {
+                tableName = tableDict["TableName"]?.ToString() ?? tableNo;
+            }
+            else
+            {
+                try { tableName = ((dynamic)table).TableName?.ToString() ?? tableNo; } catch { }
+            }
+            
+            // Get Capacity
+            int capacity = 0;
+            if (tableDict != null && tableDict.ContainsKey("Capacity"))
+            {
+                capacity = tableDict["Capacity"] != null ? Convert.ToInt32(tableDict["Capacity"]) : 0;
+            }
+            else
+            {
+                try { capacity = ((dynamic)table).Capacity ?? 0; } catch { }
+            }
+            
+            // Get TableType
+            string tableType = "-";
+            if (tableDict != null && tableDict.ContainsKey("TableType"))
+            {
+                tableType = tableDict["TableType"]?.ToString() ?? "-";
+            }
+            else
+            {
+                try { tableType = ((dynamic)table).TableType?.ToString() ?? "-"; } catch { }
+            }
+            
+            // Get Floor
+            string floor = "-";
+            if (tableDict != null && tableDict.ContainsKey("Floor"))
+            {
+                floor = tableDict["Floor"]?.ToString() ?? "-";
+            }
+            else
+            {
+                try { floor = ((dynamic)table).Floor?.ToString() ?? "-"; } catch { }
+            }
+            
+            // Get TotalBookings
+            int totalBookings = 0;
+            if (tableDict != null && tableDict.ContainsKey("TotalBookings"))
+            {
+                totalBookings = tableDict["TotalBookings"] != null ? Convert.ToInt32(tableDict["TotalBookings"]) : 0;
+            }
+            else
+            {
+                try { totalBookings = ((dynamic)table).TotalBookings ?? 0; } catch { }
+            }
+            
+            // Get ConfirmedBookings
+            int confirmedBookings = 0;
+            if (tableDict != null && tableDict.ContainsKey("ConfirmedBookings"))
+            {
+                confirmedBookings = tableDict["ConfirmedBookings"] != null ? Convert.ToInt32(tableDict["ConfirmedBookings"]) : 0;
+            }
+            else
+            {
+                try { confirmedBookings = ((dynamic)table).ConfirmedBookings ?? 0; } catch { }
+            }
+            
+            // Get CompletedBookings
+            int completedBookings = 0;
+            if (tableDict != null && tableDict.ContainsKey("CompletedBookings"))
+            {
+                completedBookings = tableDict["CompletedBookings"] != null ? Convert.ToInt32(tableDict["CompletedBookings"]) : 0;
+            }
+            else
+            {
+                try { completedBookings = ((dynamic)table).CompletedBookings ?? 0; } catch { }
+            }
+            
+            // Get CancelledBookings
+            int cancelledBookings = 0;
+            if (tableDict != null && tableDict.ContainsKey("CancelledBookings"))
+            {
+                cancelledBookings = tableDict["CancelledBookings"] != null ? Convert.ToInt32(tableDict["CancelledBookings"]) : 0;
+            }
+            else
+            {
+                try { cancelledBookings = ((dynamic)table).CancelledBookings ?? 0; } catch { }
+            }
+            
+            // Get TotalRevenue
+            decimal totalRevenue = 0;
+            if (tableDict != null && tableDict.ContainsKey("TotalRevenue"))
+            {
+                totalRevenue = tableDict["TotalRevenue"] != null ? Convert.ToDecimal(tableDict["TotalRevenue"]) : 0;
+            }
+            else
+            {
+                try { totalRevenue = ((dynamic)table).TotalRevenue ?? 0; } catch { }
+            }
+            
+            // Get TotalOccupancyHours
+            double totalOccupancyHours = 0;
+            if (tableDict != null && tableDict.ContainsKey("TotalOccupancyHours"))
+            {
+                totalOccupancyHours = tableDict["TotalOccupancyHours"] != null ? Convert.ToDouble(tableDict["TotalOccupancyHours"]) : 0;
+            }
+            else
+            {
+                try { totalOccupancyHours = ((dynamic)table).TotalOccupancyHours ?? 0; } catch { }
+            }
+            
+            // Get UtilizationPercentage
+            double utilizationPercentage = 0;
+            if (tableDict != null && tableDict.ContainsKey("UtilizationPercentage"))
+            {
+                utilizationPercentage = tableDict["UtilizationPercentage"] != null ? Convert.ToDouble(tableDict["UtilizationPercentage"]) : 0;
+            }
+            else
+            {
+                try { utilizationPercentage = ((dynamic)table).UtilizationPercentage ?? 0; } catch { }
+            }
+            
+            <tr>
+                <td>@tableNo</td>
+                <td>@(tableName ?? tableNo ?? "-")</td>
+                <td>@capacity</td>
+                <td>@tableType</td>
+                <td>@floor</td>
+                <td>@totalBookings</td>
+                <td>@confirmedBookings</td>
+                <td>@completedBookings</td>
+                <td>@cancelledBookings</td>
+                <td>@totalRevenue.ToString("N2")</td>
+                <td>@totalOccupancyHours.ToString("N2")</td>
+                <td>@utilizationPercentage.ToString("N2")%</td>
+            </tr>
+        }
+    }
+</tbody>
+

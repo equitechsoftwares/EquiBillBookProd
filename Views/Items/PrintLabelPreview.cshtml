@@ -1,0 +1,193 @@
+﻿
+@{
+    ViewBag.Title = "Print Label Preview";
+    Layout = null;
+}
+
+<html>
+<head>
+    <style>
+        .barcode div {
+            /*max-width: 90% !important;*/
+            height: 0.24in !important;
+        }
+
+        .content-wrapper {
+            background: #fff;
+        }
+        @@page {
+            size: auto;
+        }
+    </style>
+</head>
+<body style="background:#fff">
+    <table align="center" style=" overflow: hidden !important;">
+        <tbody id="divTable">
+        </tbody>
+    </table>
+
+    <style type="text/css">
+
+        td {
+            border: 1px dotted lightgray;
+        }
+
+        @@media print {
+
+            table {
+                page-break-after: always;
+            }
+
+
+            @@page {
+                size: 8.5in 11in;
+                /*width: 8.5in !important;*/
+                /*height:11in !important ;*/
+                margin-top: 0.5in !important;
+                margin-bottom: 0.5in !important;
+                margin-left: 0.125in !important;
+                margin-right: 0.125in !important;
+            }
+        }
+    </style>
+    <script src="//code.jquery.com/jquery-latest.min.js"></script>
+    <script type="text/javascript" src="~/Content/assets/js/jquery-barcode.min.js"></script>
+
+    <script>
+        //$(document).ready(function () {
+            setBarCode();
+
+            function setBarCode() {
+                var html = ''; var skuList = [];
+                var _Item = @Html.Raw(Json.Encode(ViewBag.PrintLabel));//$.parseJSON(sessionStorage.getItem('Item'));
+                var Item = $.parseJSON(_Item.PrintLabelJson);
+                var showTr = true; var count = 0; var innerCount = 0;
+                var width = ''; var height = '';
+
+                if (Item.BarcodeSettings == 1) {
+                    width = 4; height = 1; count = 2; innerCount = 2;
+                    $('table').css('border-spacing', '0.1875in 0in');
+                }
+                else if (Item.BarcodeSettings == 2) {
+                    width = 2.625; height = 1; count = 3; innerCount = 3;
+                    $('table').css('border-spacing', '0.125in 0in');
+                }
+                else if (Item.BarcodeSettings == 3) {
+                    width = 2; height = 1.25; count = 4; innerCount = 4;
+                    $('table').css('border-spacing', '0in 0in');
+                } else if (Item.BarcodeSettings == 4) {
+                    width = 2; height = 1; count = 4; innerCount = 4;
+                    $('table').css('border-spacing', '0in 0in');
+                } else if (Item.BarcodeSettings == 5) {
+                    width = 1.5; height = 1; count = 5; innerCount = 5;
+                    $('table').css('border-spacing', '0in 0in');
+                } else if (Item.BarcodeSettings == 6) {
+                    width = 1.25; height = 1; count = 1; innerCount = 1;
+                    $('table').css('border-spacing', '0in 0in');
+                }
+
+                jQuery.each(Item.ItemDetails, function (i, val) {
+                    var qty = val.Quantity;
+                    var sku = '';
+                    for (var i = 1; i <= qty; i++) {
+                        if (innerCount == count) {
+                            html = html + '<tr>';
+                        }
+                        var price = 0;
+                        if (Item.ShowProductPrice == true) {
+                            //if (Item.PriceType == 'inc') {
+                            //price = val.SalesIncTax;
+                            //}
+                            //else {
+                                price = val.SalesExcTax;
+                            //}
+                        }
+                        var newLine = "";
+                        if (Item.ShowProductName == true || Item.ShowProductVariation == true) {
+                            newLine = '</br>';
+                        }
+                        html = html + '<td align="center" valign="center">' +
+                            '<div style="overflow:hidden !important;display:flex; flex-wrap: wrap;align-content: center;width: ' + width + 'in; height: ' + height + 'in; justify-content: center;line-height: 1.2;">' +
+                            '<div>' +
+                            '<b class="divBranchName" style="display: block !important; font-size: ' + Item.BranchNameSize + 'px">' + Item.BranchName + '</b>' +
+                            '<span class="divProductName" style="font-size: ' + Item.ProductSize + 'px">' + val.ItemName +
+                            '</span>' +
+                            '<span style="display:' + (Item.ShowProductVariation == true && val.Variation != "" ? 'inline' : 'none') + '" class="divProductVariation" style="font-size: ' + Item.ProductVariationSize + 'px">' +
+                            '(' + val.Variation + ')' +
+                            '</span>' + newLine +
+                            '<span class="divProductPrice" style="font-size: ' + Item.ProductPriceSize + 'px;">' +
+                            '   Price:' +
+                            '   <b>' + @Html.Raw(Json.Encode(ViewBag.CurrencySymbol)) + price + '</b>' +
+                            '</span>' +
+                            '<span class="divPackingDate" style="display:' + (Item.ShowPrintPackingDate == true && val.PackingDate != "" ? 'inline' : 'none')+';font-size: ' + Item.PrintPackingDateSize + 'px">' +
+                            '     Pkg Date:<b>' + val.PackingDate + '</b>' +
+                            '</span>' +
+                            '<div class="barcode ' + val.SKU + '"></div>' +
+                            //'   <img style="max-width:90% !important;height: 0.24in !important; display: block;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHsAAAAeAQMAAAA2MPPVAAAABlBMVEX///8AAABVwtN+AAAAAXRSTlMAQObYZgAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAB9JREFUGJVjuCSSXBL7duYk/ZI7c645yyYwjAqMHAEA8uTsm3ts9+oAAAAASUVORK5CYII=">' +
+                            //'      <span style="font-size: 10px !important">' + val.SKU +
+                            //'    </span>' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>';
+
+                        sku = val.SKU;
+                        innerCount--;
+
+                        if (innerCount == 0) {
+                            html = html + '<tr>';
+                            innerCount = count;
+                        }
+                    }
+                    skuList.push(sku);
+                });
+
+                $('#divTable').html = '';
+                $('#divTable').append(html);
+
+                setTimeout(function () {
+                    jQuery.each(skuList, function (i, val) {
+                        $("." + val + "").barcode(
+                            //$(".barcode").barcode(
+                            val, // Value barcode (dependent on the type of barcode)
+                            "code39", // type (string)
+                            {
+                                bgColor: '#FFFFFF',
+                                color: '#000000',
+                                barWidth: '1',
+                                barHeight: '50',
+                                moduleSize: '5',
+                                posX: '10',
+                                posY: '20',
+                                addQuietZone: '1'
+                            }
+                        );
+                    });
+                    if (Item.ShowProductName == false) {
+                        $('.divProductName').hide();
+                    }
+                    if (Item.ShowProductVariation == false) {
+                        $('.divProductVariation').hide();
+                    }
+                    if (Item.ShowProductPrice == false) {
+                        $('.divProductPrice').hide();
+                    }
+                    if (Item.ShowBranchName == false) {
+                        $('.divBranchName').hide();
+                    }
+                    if (Item.ShowPrintPackingDate == false) {
+                        $('.divPackingDate').hide();
+                    }
+                    window.print();
+
+                    var isMobile = navigator.userAgentData.mobile; 
+                    if (!isMobile) {
+                        setTimeout(window.close, 100);
+                    }
+
+                }, 100);
+            }
+
+        //});
+    </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+﻿
+
+
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th style="">Sln</th>
+            <th style="">Item Name</th>
+            <th style="">Sku Code</th>
+            <th>Stock</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.ItemDetails)
+        {
+            <tr>
+                <td>@(count)</td>
+                <td>
+                    @if (ViewBag.ItemsPermission.IsView)
+                    {
+                        <a href="javascript:void(0)" onclick="ViewItem(@item.ItemId)">
+                            @if (item.VariationName != "" && item.VariationName != null)
+                            {
+                                <span>@item.ItemName (@item.VariationName)</span>
+                            }
+                            else
+                            {
+                                @item.ItemName
+                            }
+                        </a>
+                    }
+                    else
+                    {
+                        if (item.VariationName != "" && item.VariationName != null)
+                        {
+                            <span>@item.ItemName (@item.VariationName)</span>
+                        }
+                        else
+                        {
+                            @item.ItemName
+                        }
+                    }
+                </td>
+                <td>
+                    @if (ViewBag.ItemsPermission.IsView)
+                    {
+                        <a href="javascript:void(0)" onclick="ViewItem(@item.ItemId)">@item.SKU</a>
+                    }
+                    else
+                    {
+                        @item.SKU
+                    }
+                </td>
+                <td>
+                    @*<a href="/inventoryreports/stockledger?ItemId=@item.ItemId&ItemDetailsId=@item.ItemDetailsId&BranchId=@ViewBag.BranchId"
+           id="Edit" data-toggle="tooltip" data-placement="bottom" title="Edit">
+            @(String.Format("{0:0.##}", item.Quantity)) @item.UnitName
+        </a>*@
+                    @(String.Format("{0:0.##}", item.Quantity)) @item.UnitName
+                </td>
+                <td>
+                    @if (item.Quantity > 0)
+                    {
+                        <a class="btn btn-primary" href="javascript:void(0)" onclick="fetchItem('@item.SKU')">Select</a>
+                    }
+                </td>
+            </tr>
+            count++;
+        }
+    </tbody>
+}
+

@@ -1,0 +1,84 @@
+﻿
+
+
+@{
+    <thead id="thead">
+        <tr>
+            @*<th>Sln</th>*@
+            <th>Account Type</th>
+            <th>Opening Balance</th>
+            <th>Debit</th>
+            <th>Credit</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var accountType in ViewBag.AccountTypes)
+        {
+            <tr class="bg-secondary">
+                @*<td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>*@
+                <td class="text-bold" colspan="4">@accountType.AccountType</td>
+            </tr>
+            foreach (var item in accountType.AccountSubTypes)
+            {
+                <tr>
+                    @*<td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>*@
+                    <td>@item.AccountSubType</td>
+                    <td>
+                        @{
+                            if (item.OpeningBalanceDebit > 0)
+                            {
+                                <a href="/accountsreports/generalledger?AccountSubTypeId=@item.AccountSubTypeId&BranchId=@ViewBag.BranchId&FromDate=@ViewBag.FromDate.ToString("MM-dd-yyyy")&ToDate=@ViewBag.ToDate.ToString("MM-dd-yyyy")&Page=account type summary">
+                                    @(String.Format("{0:0.##}", item.OpeningBalanceDebit)) Dr
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="/accountsreports/generalledger?AccountSubTypeId=@item.AccountSubTypeId&BranchId=@ViewBag.BranchId&FromDate=@ViewBag.FromDate.ToString("MM-dd-yyyy")&ToDate=@ViewBag.ToDate.ToString("MM-dd-yyyy")&Page=account type summary">
+                                    @(String.Format("{0:0.##}", item.OpeningBalanceCredit)) Cr
+                                </a>
+                            }
+                        }
+                    </td>
+                    <td>
+                        @{
+                            if (item.Debit > 0)
+                            {
+                                <a href="/accountsreports/generalledger?AccountSubTypeId=@item.AccountSubTypeId&BranchId=@ViewBag.BranchId&FromDate=@ViewBag.FromDate.ToString("MM-dd-yyyy")&ToDate=@ViewBag.ToDate.ToString("MM-dd-yyyy")&Page=account type summary">
+                                    @String.Format("{0:0.##}", item.Debit)
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="/accountsreports/generalledger?AccountSubTypeId=@item.AccountSubTypeId&BranchId=@ViewBag.BranchId&FromDate=@ViewBag.FromDate.ToString("MM-dd-yyyy")&ToDate=@ViewBag.ToDate.ToString("MM-dd-yyyy")&Page=account type summary">
+                                    0
+                                </a>
+                            }
+                        }
+                    </td>
+                    <td>
+                        @{
+                            if (item.Credit > 0)
+                            {
+                                <a href="/accountsreports/generalledger?AccountSubTypeId=@item.AccountSubTypeId&BranchId=@ViewBag.BranchId&FromDate=@ViewBag.FromDate.ToString("MM-dd-yyyy")&ToDate=@ViewBag.ToDate.ToString("MM-dd-yyyy")&Page=account type summary">
+                                    @String.Format("{0:0.##}", item.Credit)
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="/accountsreports/generalledger?AccountSubTypeId=@item.AccountSubTypeId&BranchId=@ViewBag.BranchId&FromDate=@ViewBag.FromDate.ToString("MM-dd-yyyy")&ToDate=@ViewBag.ToDate.ToString("MM-dd-yyyy")&Page=account type summary">
+                                    0
+                                </a>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+}
+<script type="text/javascript">
+     $('#divAsof').text('Showing Results: (' + @Html.Raw(Json.Encode(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    @*$('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));*@
+</script>

@@ -1,0 +1,556 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Sms Setting";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Sms Setting</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/notificationsettings/smssettings">Sms Settings</a></li>
+                        <li class="breadcrumb-item active">Edit Sms Setting</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/notificationsettings/smssettings" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+                            <div class="row mt-3">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group divSmsService_ctrl">
+                                        <label>SMS Service <span class="danger">*</span>  </label>
+                                        <select class="form-control" style="width: 100%;" id="ddlSmsService" onchange="toggleSmsService()">
+                                            @{
+                                                <option value="0" selected>Select</option>
+                                                if (ViewBag.SmsSetting.SmsService == 1)
+                                                {
+                                                    <option value="1" selected>Twilio</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="1">Twilio</option>
+                                                }
+                                                if (ViewBag.SmsSetting.SmsService == 2)
+                                                {
+                                                    <option value="2" selected>Nexmo</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="2">Nexmo</option>
+                                                }
+                                                if (ViewBag.SmsSetting.SmsService == 3)
+                                                {
+                                                    <option value="3" selected>Others</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="3">Others</option>
+                                                }
+                                            }
+                                        </select>
+                                        <small class="text-red font-weight-bold errorText" id="divSmsService"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <br />
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.SmsSetting.EnableCountryCode)
+                                            {
+                                                <input type="checkbox" id="chkEnableCountryCode" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableCountryCode">
+                                            }
+                                            <label for="chkEnableCountryCode" class="mt-2">
+                                                Enable Country Code
+                                                <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Enable this to add @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] country dialing code before mobile numbers while sending sms."></i>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Test Mobile No <span class="danger">*</span></label>
+                                        <div class="input-group">
+                                            @*<span class="input-group-append">
+                            <a href="javascript:void(0)" class="btn bg-gray-light"> @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] </a>
+                        </span>*@
+                                            <input type="text" class="form-control divTestMobileNo_ctrl" id="txtTestMobileNo" placeholder=""
+                                                   value="@ViewBag.SmsSetting.TestMobileNo" onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divTestMobileNo"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divTwilio" style="display:@(ViewBag.SmsSetting.SmsService == 1 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Twilio Account SID <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divTwilioAccountSID_ctrl" id="txtTwilioAccountSID" placeholder="" value="@ViewBag.SmsSetting.TwilioAccountSID">
+                                        <small class="text-red font-weight-bold errorText" id="divTwilioAccountSID"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Twilio Auth Token <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divTwilioAuthToken_ctrl" id="txtTwilioAuthToken" placeholder="" value="@ViewBag.SmsSetting.TwilioAuthToken">
+                                        <small class="text-red font-weight-bold errorText" id="divTwilioAuthToken"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>From <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divTwilioFrom_ctrl" id="txtTwilioFrom" placeholder="" value="@ViewBag.SmsSetting.TwilioFrom">
+                                        <small class="text-red font-weight-bold errorText" id="divTwilioFrom"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divNexmo" style="display:@(ViewBag.SmsSetting.SmsService == 2 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Nexmo Api Key <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divNexmoApiKey_ctrl" id="txtNexmoApiKey" placeholder="" value="@ViewBag.SmsSetting.NexmoApiKey">
+                                        <small class="text-red font-weight-bold errorText" id="divNexmoApiKey"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Nexmo Api Secret <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divNexmoApiSecret_ctrl" id="txtNexmoApiSecret" placeholder="" value="@ViewBag.SmsSetting.NexmoApiSecret">
+                                        <small class="text-red font-weight-bold errorText" id="divNexmoApiSecret"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>From <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divNexmoFrom_ctrl" id="txtNexmoFrom" placeholder="" value="@ViewBag.SmsSetting.NexmoFrom">
+                                        <small class="text-red font-weight-bold errorText" id="divNexmoFrom"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 ">
+                                    <div class="form-group divRequestMethod_ctrl">
+                                        <label>Request Method <span class="danger">*</span> <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Starting month of The Financial Year for your business"></i> </label>
+                                        <select class="form-control" style="width: 100%;" id="ddlRequestMethod" onchange="toggleRequestMethod()">
+                                            @{
+                                                if (ViewBag.SmsSetting.RequestMethod == 1)
+                                                {
+                                                    <option value="1" selected>GET</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="1">GET</option>
+                                                }
+                                                if (ViewBag.SmsSetting.RequestMethod == 2)
+                                                {
+                                                    <option value="2" selected>POST</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="2">POST</option>
+                                                }
+                                            }
+                                        </select>
+                                        <small class="text-red font-weight-bold errorText" id="divRequestMethod"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 ">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>URL <span class="danger">*</span></label>
+                                        <input id="txtUrl" type="text" class="form-control divUrl_ctrl" value="@ViewBag.SmsSetting.Url">
+                                        <small class="text-red font-weight-bold errorText" id="divUrl"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 ">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Send To Parameter Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divSendToParameterName_ctrl" id="txtSendToParameterName" placeholder="" value="@ViewBag.SmsSetting.SendToParameterName">
+                                        <small class="text-red font-weight-bold errorText" id="divSendToParameterName"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 ">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Message Parameter Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divMessageParameterName_ctrl" id="txtMessageParameterName" placeholder="" value="@ViewBag.SmsSetting.MessageParameterName">
+                                        <small class="text-red font-weight-bold errorText" id="divMessageParameterName"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")" />
+                            <div class="row divHeader divOthers" style="display:@((ViewBag.SmsSetting.SmsService == 3 && ViewBag.SmsSetting.RequestMethod == 2) ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Header 1 key </label>
+                                        <input type="text" class="form-control" id="txtHeader1Key" placeholder="" value="@ViewBag.SmsSetting.Header1Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Header 1 value </label>
+                                        <input type="text" class="form-control" id="txtHeader1Value" placeholder="" value="@ViewBag.SmsSetting.Header1Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divHeader divOthers" style="display:@((ViewBag.SmsSetting.SmsService == 3 && ViewBag.SmsSetting.RequestMethod == 2) ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Header 2 key </label>
+                                        <input type="text" class="form-control" id="txtHeader2Key" placeholder="" value="@ViewBag.SmsSetting.Header2Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Header 2 value </label>
+                                        <input type="text" class="form-control" id="txtHeader2Value" placeholder="" value="@ViewBag.SmsSetting.Header2Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divHeader divOthers" style="display:@((ViewBag.SmsSetting.SmsService == 3 && ViewBag.SmsSetting.RequestMethod == 2) ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Header 3 key </label>
+                                        <input type="text" class="form-control" id="txtHeader3Key" placeholder="" value="@ViewBag.SmsSetting.Header3Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Header 3 value </label>
+                                        <input type="text" class="form-control" id="txtHeader3Value" placeholder="" value="@ViewBag.SmsSetting.Header3Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divHeader divOthers" style="display:@((ViewBag.SmsSetting.SmsService == 3 && ViewBag.SmsSetting.RequestMethod == 2) ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Header 4 key </label>
+                                        <input type="text" class="form-control" id="txtHeader4Key" placeholder="" value="@ViewBag.SmsSetting.Header4Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Header 4 value </label>
+                                        <input type="text" class="form-control" id="txtHeader4Value" placeholder="" value="@ViewBag.SmsSetting.Header4Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")" />
+                            @*<div class="row">
+            <h5 class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">Parameters</h5>
+        </div>*@
+                            <div class="row divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 1 key </label>
+                                        <input type="text" class="form-control" id="txtParameter1Key" placeholder="" value="@ViewBag.SmsSetting.Parameter1Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 1 value </label>
+                                        <input type="text" class="form-control" id="txtParameter1Value" placeholder="" value="@ViewBag.SmsSetting.Parameter1Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 2 key </label>
+                                        <input type="text" class="form-control" id="txtParameter2Key" placeholder="" value="@ViewBag.SmsSetting.Parameter2Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 2 value </label>
+                                        <input type="text" class="form-control" id="txtParameter2Value" placeholder="" value="@ViewBag.SmsSetting.Parameter2Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 3 key </label>
+                                        <input type="text" class="form-control" id="txtParameter3Key" placeholder="" value="@ViewBag.SmsSetting.Parameter3Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 3 value </label>
+                                        <input type="text" class="form-control" id="txtParameter3Value" placeholder="" value="@ViewBag.SmsSetting.Parameter3Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 4 key </label>
+                                        <input type="text" class="form-control" id="txtParameter4Key" placeholder="" value="@ViewBag.SmsSetting.Parameter4Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 4 value </label>
+                                        <input type="text" class="form-control" id="txtParameter4Value" placeholder="" value="@ViewBag.SmsSetting.Parameter4Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 5 key </label>
+                                        <input type="text" class="form-control" id="txtParameter5Key" placeholder="" value="@ViewBag.SmsSetting.Parameter5Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 5 value </label>
+                                        <input type="text" class="form-control" id="txtParameter5Value" placeholder="" value="@ViewBag.SmsSetting.Parameter5Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 6 key </label>
+                                        <input type="text" class="form-control" id="txtParameter6Key" placeholder="" value="@ViewBag.SmsSetting.Parameter6Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 6 value </label>
+                                        <input type="text" class="form-control" id="txtParameter6Value" placeholder="" value="@ViewBag.SmsSetting.Parameter6Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 7 key </label>
+                                        <input type="text" class="form-control" id="txtParameter7Key" placeholder="" value="@ViewBag.SmsSetting.Parameter7Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 7 value </label>
+                                        <input type="text" class="form-control" id="txtParameter7Value" placeholder="" value="@ViewBag.SmsSetting.Parameter7Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 8 key </label>
+                                        <input type="text" class="form-control" id="txtParameter8Key" placeholder="" value="@ViewBag.SmsSetting.Parameter8Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 8 value </label>
+                                        <input type="text" class="form-control" id="txtParameter8Value" placeholder="" value="@ViewBag.SmsSetting.Parameter8Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 9 key </label>
+                                        <input type="text" class="form-control" id="txtParameter9Key" placeholder="" value="@ViewBag.SmsSetting.Parameter9Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 9 value </label>
+                                        <input type="text" class="form-control" id="txtParameter9Value" placeholder="" value="@ViewBag.SmsSetting.Parameter9Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row divOthers" style="display:@(ViewBag.SmsSetting.SmsService == 3 ? "flex":"none")">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 10 key </label>
+                                        <input type="text" class="form-control" id="txtParameter10Key" placeholder="" value="@ViewBag.SmsSetting.Parameter10Key">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Parameter 10 value </label>
+                                        <input type="text" class="form-control" id="txtParameter10Value" placeholder="" value="@ViewBag.SmsSetting.Parameter10Value">
+                                    </div>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="pb-2 row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Save As <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divSmsSaveAs_ctrl" id="txtSmsSaveAs" placeholder="" value="@ViewBag.SmsSetting.SaveAs">
+                                        <small class="text-red font-weight-bold errorText" id="divSmsSaveAs"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <br />
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.SmsSetting.IsDefault == true)
+                                            {
+                                                <input type="checkbox" id="chkSmsIsDefault" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkSmsIsDefault">
+                                            }
+                                            <label for="chkSmsIsDefault" class="mt-2">Is Default</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pb-2">
+                                <span>Note: Send Test Sms will not work if a pre-defined template needs to be registered first</span>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnUpdate" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                            <button id="btnUpdate_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                            @*<a id="btnBack" href="/items/category" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I add and update product categories?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    •	To add a new product category, click on the ‘Add New’ button at the top of the screen
+                                    •	To update an existing product category, click on 'Edit' button beside the name of product category you want to change, make your changes and then click the ‘Save’ button at the bottom of the screen.
+                                    •	To delete an existing product category, tick the box that is to the left of the product category you would like to delete and then click the ‘Delete’ button at the top of the list.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I make a product category inactive?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    IMS allows you stop an entire product category from displaying in your catalogue, by marking it as inactive. This is sometimes better than deleting all those products since all the product information is retained but the products are not shown in the catalogue. To mark a product category as inactive, follow these steps:
+
+                                    •	Click on the name of the product category that you want to make active.
+                                    •	Change the status field from ‘Active’ to ‘Inactive’.
+                                    •	Click the ‘Save’ button at the bottom of the page.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Settings/NotificationSettings/SmsSettings.js"></script>

@@ -1,0 +1,295 @@
+﻿
+
+
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th>Sln</th>
+            <th class="hide noPrint">Action</th>
+            <th>Date</th>
+            <th>Reference No</th>
+            <th>Type</th>
+            <th>Paid Through</th>
+            @*<th>Category</th>
+                <th>Sub Category</th>*@
+            <th>Customer</th>
+            <th>Supplier</th>
+            <th>Notes</th>
+            <th>Amount</th>
+            @*<th>Paid Amount</th>
+                <th>Due Amount</th>*@
+            @*<th>Payment Status</th>*@
+            @*<th>Attach Document</th>*@
+            @*<th class="hidden">Status</th>
+                <th class="hide">Status</th>*@
+            @*<th>Added By</th>
+                <th>Added On</th>
+                <th>Last Modified By</th>
+                <th>Last Modified On</th>*@
+            @*<th class="hide noPrint">Action</th>*@
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.Expenses)
+        {
+            <tr>
+                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>
+                <td class="noPrint">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-info">Action</button>
+                        <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <div class="dropdown-menu" role="menu">
+                            @if (ViewBag.MenuPermission.IsEdit)
+                            {
+                                if (item.Type == "Expense")
+                                {
+                                    <a class="dropdown-item" href="/expense/edit?ExpenseId=@item.ExpenseId" id="Edit"><i class="fas fa-edit"></i> Edit</a>
+                                }
+                                else
+                                {
+                                    <a class="dropdown-item" href="/expense/mileageedit?ExpenseId=@item.ExpenseId" id="Edit"><i class="fas fa-edit"></i> Edit</a>
+                                }
+                            }
+                            <a class="dropdown-item" href="javascript:void(0)" id="" onclick="View(@item.ExpenseId)"><i class="fas fa-eye"></i> View</a>
+                            @*@if (ViewBag.ExpensePaymentPermission.IsAdd)
+                                {
+                                    if (item.PaymentStatus != "Paid")
+                                    {
+                                        <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openPaymentModal(true,@item.ExpenseId,'Purchase Payment',@item.BranchId)"><i class="fas fa-plus"></i> Add Payment</a>
+                                    }
+                                }*@
+                            @*@if (ViewBag.MenuPermission.IsView)
+                                {
+                                    <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openPaymentModal(false,@item.ExpenseId,'Purchase Payment')"><i class="fas fa-money-bill"></i> View Payments</a>
+                                }*@
+                            @if (ViewBag.MenuPermission.IsDelete)
+                            {
+                                <a class="dropdown-item" href="javascript:void(0)" id="Edit" onclick="Delete(@item.ExpenseId,'@item.ReferenceNo')"><i class="fas fa-trash-alt"></i> Delete</a>
+                            }
+
+                        </div>
+                    </div>
+                </td>
+                <td>@item.Date.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                <td>@item.ReferenceNo</td>
+                <td>@item.Type</td>
+                <td>@item.AccountName</td>
+                @*<td>@item.ExpenseCategory</td>
+                    <td>@item.ExpenseSubCategory</td>*@
+                <td>@item.CustomerName</td>
+                <td>@item.SupplierName</td>
+                <td>@item.Notes</td>
+                <td>
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @*if (item.IsReverseCharge == 1)
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.Subtotal))
+                            }
+                            else
+                            {*@
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.GrandTotal))
+                            //}
+                        }
+                        else
+                        {
+                            @*if (item.IsReverseCharge == 1)
+                            {
+                                @(String.Format("{0:0.##}", item.Subtotal))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                            else
+                            {*@
+                                @(String.Format("{0:0.##}", item.GrandTotal))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            //}
+                        }
+                    }
+                </td>
+
+                @*<td>
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.Paid))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", item.Paid))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </td>
+                    <td>
+
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.Due))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", item.Due))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </td>*@
+                @*<td>
+                        @if (item.PaymentStatus == "Due")
+                        {
+                            <span class='p-1 bg-warning' style='cursor:pointer'>  @item.PaymentStatus</span>
+                        }
+                        else if (item.PaymentStatus == "Partially Paid")
+                        {
+                            <span class='p-1 bg-info' style='cursor:pointer'>  @item.PaymentStatus</span>
+                        }
+                        else
+                        {
+                            <span class='p-1 bg-success' style='cursor:pointer'>  @item.PaymentStatus</span>
+                        }
+                    </td>*@
+
+                @*<td>
+                        @if (item.AttachDocument != "" && item.AttachDocument != null)
+                        {
+                            <a href="@item.AttachDocument" target="_blank">Download </a>
+                        }
+                    </td>*@
+                @*<td class="hidden">@(item.IsActive == true ? "Active" : "Inactive")</td>
+                    <td class="hide">
+                        @if (item.IsActive)
+                        {
+                            if (ViewBag.MenuPermission.IsEdit)
+                            {
+                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.ExpenseId,false)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                            else
+                            {
+                                <input disabled class="chkIsActive" type="checkbox" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+
+                        }
+                        else
+                        {
+                            if (ViewBag.MenuPermission.IsEdit)
+                            {
+                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.ExpenseId,true)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                            else
+                            {
+                                <input disabled class="chkIsActive" type="checkbox" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+
+                        }
+                    </td>*@
+                @*<td>@item.AddedByCode</td>
+                    <td>@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                    <td>@item.ModifiedByCode</td>
+                    <td>@(item.ModifiedOn != null ? item.ModifiedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1]) : "")</td>*@
+                @*<td class="hide noPrint">
+                        @if (ViewBag.MenuPermission.IsEdit)
+                        {
+                            <a href="/expense/edit?ExpenseId=@item.ExpenseId" class="btn btn-success btn-sm" id="Edit" data-toggle="tooltip" data-placement="bottom" title="Edit"> <i class="fas fa-edit"></i></a>
+                        }
+                        @if (ViewBag.MenuPermission.IsDelete)
+                        {
+                            <a href="javascript:void(0)" onclick="Delete(@item.ExpenseId,'@item.ExpenseFor')" class="btn btn-danger btn-sm" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                        }
+
+                    </td>*@
+            </tr>
+            count++;
+        }
+    </tbody>
+    <tbody>
+        <tr>
+            <td colspan="9" data-title="Total" class="text-right"><b>Total</b></td>
+            <td data-title="Due Amount">
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalAmount))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+            @*<td data-title="Due Amount">
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalPaid))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", ViewBag.TotalPaid))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>
+                <td data-title="Due Amount">
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalDue))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", ViewBag.TotalDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>*@
+        </tr>
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="18">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1) + 1) to @(ViewBag.PageSize * ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divAsof').text('Showing Results: (' + @Html.Raw(Json.Encode(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    @*$('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));*@
+</script>
+
+

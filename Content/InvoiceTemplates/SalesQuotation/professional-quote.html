@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Quotation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #1f2937;
+            background: #ffffff;
+        }
+
+        .invoice-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+        }
+
+        /* Header with gradient background */
+        .header-section {
+            background: var(--primary-color, #000000);
+            color: var(--header-text-color, #ffffff);
+            padding: 40px 40px;
+            position: relative;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .company-info {
+            flex: 1;
+        }
+
+        .company-logo {
+            height: 60px;
+            max-width: 200px;
+            object-fit: contain;
+            margin-bottom: 16px;
+            filter: brightness(0) invert(1);
+        }
+
+        .company-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .company-details {
+            font-size: 14px;
+            line-height: 1.8;
+            opacity: 0.95;
+        }
+
+        .quotation-info {
+            text-align: right;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 20px 24px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .quotation-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .quotation-number {
+            font-size: 18px;
+            font-weight: 600;
+            opacity: 0.95;
+        }
+
+        /* Body Content */
+        .invoice-body {
+            padding: 40px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-color, #000000);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-color, #e5e7eb);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Client Information */
+        .client-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+            padding: 24px;
+            background: var(--body-background-color, #f9fafb);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color, #000000);
+        }
+
+        .info-block h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .info-block p {
+            margin-bottom: 4px;
+            color: #374151;
+        }
+
+        /* Items Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .items-table thead {
+            background: var(--table-header-color, #f3f4f6);
+            color: var(--body-text-color, #1f2937);
+        }
+
+        .items-table thead th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .items-table thead th:last-child,
+        .items-table tbody td:last-child {
+            text-align: right;
+        }
+
+        .items-table tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .items-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .items-table tbody td {
+            padding: 16px;
+            color: #374151;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .item-description {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .item-meta {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 6px;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 32px;
+        }
+
+        .summary-table {
+            width: 400px;
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .total-row {
+            background: var(--total-row-color, #000000);
+            color: var(--header-text-color, #ffffff);
+            padding: 16px;
+            margin: 0 -24px -24px -24px;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .total-row .summary-label,
+        .total-row .summary-value {
+            color: var(--header-text-color, #ffffff);
+            font-size: 18px;
+        }
+
+        /* Notes Section */
+        .notes-section {
+            margin-bottom: 32px;
+            padding: 24px;
+            background: #f9fafb;
+            border-left: 4px solid #000000;
+            border-radius: 4px;
+        }
+
+        .notes-section h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #000000;
+        }
+
+        .notes-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .notes-section li {
+            padding: 8px 0;
+            padding-left: 24px;
+            position: relative;
+            color: #1f2937;
+        }
+
+        .notes-section li:before {
+            content: "•";
+            position: absolute;
+            left: 8px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        /* Terms & Conditions */
+        .terms-section {
+            margin-bottom: 32px;
+            padding: 24px;
+            background: #f9fafb;
+            border-left: 4px solid #000000;
+            border-radius: 4px;
+        }
+
+        .terms-section h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #000000;
+        }
+
+        .terms-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .terms-section li {
+            padding: 8px 0;
+            padding-left: 24px;
+            position: relative;
+            color: #1f2937;
+        }
+
+        .terms-section li:before {
+            content: "•";
+            position: absolute;
+            left: 8px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        /* Validity Section */
+        .validity-section {
+            background: #f9fafb;
+            padding: 16px 24px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 32px;
+            border: 2px dashed #000000;
+        }
+
+        .validity-section strong {
+            color: #000000;
+            font-size: 15px;
+        }
+
+        /* Footer */
+        .footer-section {
+            padding: 24px 40px;
+            background: #f3f4f6;
+            text-align: center;
+            border-top: 3px solid var(--primary-color, #000000);
+        }
+
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            padding: 40px 40px 20px 40px;
+        }
+
+        .signature-block {
+            text-align: center;
+        }
+
+        .signature-line {
+            width: 200px;
+            border-top: 2px solid #374151;
+            margin-top: 60px;
+            padding-top: 8px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .footer-note {
+            font-size: 13px;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .invoice-container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="header-content">
+                <div class="company-info">
+                    <img src="/Content/web-assets/images/logo.png" alt="EquiBillBook Logo" class="company-logo">
+                    <div class="company-name">Professional Solutions Inc.</div>
+                    <div class="company-details">
+                        101 Professional Plaza, Tower C<br>
+                        Miami, FL, USA, 33101<br>
+                        Phone: +1 (555) 123-7890<br>
+                        Email: quotes@profsolutions.com<br>
+                        Website: www.profsolutions.com
+                    </div>
+                </div>
+                <div class="quotation-info">
+                    <div class="quotation-title">QUOTATION</div>
+                    <div class="quotation-number">#SQ-2024-8016</div>
+                    <div style="margin-top: 12px; font-size: 14px;">
+                        Date: Dec 2, 2024 6:30 PM
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Body Content -->
+        <div class="invoice-body">
+            <!-- Client Information -->
+            <div class="client-section">
+                <div class="info-block">
+                    <h4>From:</h4>
+                    <p><strong>Professional Solutions Inc.</strong></p>
+                    <p>101 Professional Plaza</p>
+                    <p>Miami, FL, 33101</p>
+                    <p>quotes@profsolutions.com</p>
+                    <p><strong>Tax ID:</strong> 59-8765432</p>
+                </div>
+                <div class="info-block">
+                    <h4>Bill To:</h4>
+                    <p><strong>Thomas Lee</strong></p>
+                    <p>Pacific Enterprises</p>
+                    <p>567 Commerce Drive</p>
+                    <p>Seattle, WA, 98101</p>
+                    <p>thomas@pacificent.com</p>
+                    <p><strong>Tax ID:</strong> 91-2345678</p>
+                </div>
+                <div class="info-block">
+                    <h4>Ship To:</h4>
+                    <p><strong>Thomas Lee</strong></p>
+                    <p>Pacific Enterprises</p>
+                    <p>567 Commerce Drive</p>
+                    <p>Seattle, WA, 98101</p>
+                </div>
+            </div>
+
+            <!-- Quotation Details -->
+            <div class="client-section" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="info-block">
+                    <h4>Quotation #:</h4>
+                    <p><strong>SQ-2024-8016</strong></p>
+                </div>
+                <div class="info-block">
+                    <h4>Date:</h4>
+                    <p>Dec 2, 2024 6:30 PM</p>
+                </div>
+                <div class="info-block">
+                    <h4>Status:</h4>
+                    <p><strong>Pending</strong></p>
+                </div>
+            </div>
+
+            <!-- Items Section -->
+            <h3 class="section-title">Quotation Items</h3>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Item Description</th>
+                        <th style="width: 90px;">SKU</th>
+                        <th style="width: 80px;">Qty</th>
+                        <th style="width: 100px;">Unit Price</th>
+                        <th style="width: 90px;">Discount</th>
+                        <th style="width: 80px;">Tax</th>
+                        <th style="width: 120px;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>
+                            <div class="item-name">Consulting Services Package</div>
+                            <div class="item-description">Strategic business consulting with market analysis</div>
+                            <div class="item-meta">Includes 40 hours of consultation</div>
+                        </td>
+                        <td>CON-201</td>
+                        <td>1 Unit</td>
+                        <td>$8,000.00</td>
+                        <td>$400.00</td>
+                        <td>$1,368.00</td>
+                        <td>$8,968.00</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>
+                            <div class="item-name">Implementation Services</div>
+                            <div class="item-description">Complete system implementation and configuration</div>
+                            <div class="item-meta">Includes planning, setup, configuration, and validation</div>
+                        </td>
+                        <td>IMP-202</td>
+                        <td>1 Unit</td>
+                        <td>$5,500.00</td>
+                        <td>10%</td>
+                        <td>$891.00</td>
+                        <td>$5,841.00</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>
+                            <div class="item-name">Training & Documentation</div>
+                            <div class="item-description">Comprehensive staff training and user documentation</div>
+                            <div class="item-meta">For up to 30 employees</div>
+                        </td>
+                        <td>TRN-203</td>
+                        <td>1 Unit</td>
+                        <td>$3,000.00</td>
+                        <td>$150.00</td>
+                        <td>$513.00</td>
+                        <td>$3,363.00</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Summary Section -->
+            <div class="summary-section">
+                <div class="summary-table">
+                    <div class="summary-row">
+                        <span class="summary-label">Total Qty:</span>
+                        <span class="summary-value">3 Units</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Gross Amount:</span>
+                        <span class="summary-value">$16,500.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Discount:</span>
+                        <span class="summary-value">-$1,100.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Tax (GST 18%):</span>
+                        <span class="summary-value">$2,772.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Net Amount:</span>
+                        <span class="summary-value">$18,172.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Round Off:</span>
+                        <span class="summary-value">$0.00</span>
+                    </div>
+                    <div class="summary-row total-row">
+                        <span class="summary-label">Grand Total:</span>
+                        <span class="summary-value">$18,172.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Validity Period -->
+            <div class="validity-section">
+                <strong>⏰ Please review and confirm this quotation at the earliest convenience</strong>
+            </div>
+
+            <!-- Notes -->
+            <div class="notes-section">
+                <h4>📝 Important Notes:</h4>
+                <ul>
+                    <li>Delivery schedule will be agreed mutually after project confirmation</li>
+                    <li>All work will be completed according to the specifications outlined above</li>
+                    <li>Any additional requirements outside the agreed scope may require additional time and resources</li>
+                </ul>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="terms-section">
+                <h4>📋 Terms & Conditions:</h4>
+                <ul>
+                    <li>Payment terms: 40% advance, 30% at midpoint, 30% on completion</li>
+                    <li>All prices are in USD and include applicable taxes</li>
+                    <li>This quotation is valid for 30 days from the date of issue</li>
+                    <li>Changes requested after approval may incur additional charges</li>
+                    <li>All work remains our property until full payment is received</li>
+                    <li>This quotation is subject to our standard terms and conditions</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer-section">
+            <p class="footer-note">Thank you for your business! We look forward to working with you.</p>
+            <p class="footer-note" style="margin-top: 8px;">This is a computer-generated quotation and does not require a signature.</p>
+        </div>
+    </div>
+</body>
+</html>

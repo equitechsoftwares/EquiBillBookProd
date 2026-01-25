@@ -1,0 +1,104 @@
+﻿@if (ViewBag.SellingPriceGroupPermission.IsExport)
+{
+    <div class="dt-buttons btn-group flex-wrap noPrint">
+        <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+        <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+        <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+        <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+    </div>
+}
+<div class="card card-outline paymentList hide">
+    @*<div class="card-header">
+            <h3 class="card-title">Previous Payment Information</h3>
+        </div>*@
+    <!-- form start -->
+    <div class="card-body">
+        <div class="row table-responsive">
+            <table id="tblAvailableSellingPriceGroups" class="table table-bordered table-striped">
+                @{
+                    var c = 0;
+                    if (ViewBag.ItemDetails != null)
+                    {
+                        foreach (var item in ViewBag.ItemDetails)
+                        {
+                            if (c == 0)
+                            {
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Default Selling Price (Inc. Tax)</th>
+                                        @foreach (var inner in item.SellingPriceGroups)
+                                        {
+                                            <th>
+                                                @inner.SellingPriceGroup <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print " role="button" data-toggle="popover" data-trigger="focus" title="" data-content="If <b>Fixed</b> - the entered price will be used. If <b>Percentage</b> - price will be that much % of selling price" data-original-title=""></i>
+                                            </th>
+                                        }
+                                    </tr>
+                                </thead>
+
+                            }
+
+                            @*<tbody class="rows">*@
+                            <tr id="divAvailableSellingPriceGroups@(c)">
+                                <td>
+                                    @item.ItemName <br />
+                                    @if (item.VariationName != "" && item.VariationName != null)
+                                    {
+                                        @item.VariationName <br />
+                                    }
+                                    @item.SKU
+                                    <input type="hidden" value="@item.ItemId" id="hdnItemId@(c)" />
+                                    <input type="hidden" value="@item.ItemDetailsId" id="hdnItemDetailsId@(c)" />
+
+                                </td>
+                                <td>
+                                    @{
+                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                        {
+                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@item.SalesExcTax
+                                        }
+                                        else
+                                        {
+                                            @item.SalesExcTax@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                        }
+                                    }
+                                </td>
+                                @{
+                                    var d = 1;
+                                    foreach (var inner in item.SellingPriceGroups)
+                                    {
+                                        <td>
+                                            <div class="input-group" style="min-width:200px">
+                                                <input type="number" class="form-control" id="txtSellingPice@(c)@(d)" value="@inner.SellingPrice">
+                                                <select class="form-control" style="min-width: 100px;" id="ddlDiscountType@(c)@(d)">
+                                                    @if (inner.DiscountType == "Fixed")
+                                                    {
+                                                        <option value="Fixed" selected>Fixed</option>
+                                                        <option value="Percentage">Percentage</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="Fixed">Fixed</option>
+                                                        <option value="Percentage" selected>Percentage</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            @*<input type="text" class="form-control" value="@inner.SellingPrice" />*@
+                                            <input type="hidden" value="@inner.SellingPriceGroupId" id="hdnSellingPriceGroupId@(c)@(d)" />
+                                        </td>
+                                        d++;
+                                    }
+                                    <input type="hidden" value="@d" id="hdnSellingPriceGroupsCount@(c)" />
+                                }
+                            </tr>
+                            @*</tbody>*@
+                            c++;
+                        }
+                    }
+                }
+
+            </table>
+
+        </div>
+    </div>
+</div>

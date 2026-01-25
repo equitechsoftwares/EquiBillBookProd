@@ -1,0 +1,282 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KOT - @(ViewBag.Kot != null ? ViewBag.Kot.KotNo : "")</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: white;
+            color: #000;
+            line-height: 1.4;
+            font-size: 12px;
+        }
+
+        .kot-container {
+            max-width: 300px;
+            margin: 0 auto;
+            padding: 10px;
+            background: white;
+        }
+
+        .kot-header {
+            text-align: center;
+            border-bottom: 2px dashed #000;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .kot-header h1 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .kot-header p {
+            font-size: 10px;
+            margin: 2px 0;
+        }
+
+        .kot-info {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #000;
+        }
+
+        .kot-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+            font-size: 11px;
+        }
+
+        .kot-info-label {
+            font-weight: bold;
+        }
+
+        .kot-items {
+            margin-bottom: 10px;
+        }
+
+        .kot-items-header {
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .kot-item {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .kot-item-name {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .kot-item-details {
+            font-size: 10px;
+            margin-left: 10px;
+            color: #333;
+        }
+
+        .kot-item-qty {
+            display: inline-block;
+            background: #000;
+            color: white;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .kot-instructions {
+            margin-top: 5px;
+            font-style: italic;
+            color: #666;
+            font-size: 10px;
+        }
+
+        .kot-footer {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 2px dashed #000;
+            font-size: 10px;
+        }
+
+        .kot-station {
+            background: #f0f0f0;
+            padding: 3px 5px;
+            border-radius: 3px;
+            font-size: 10px;
+            display: inline-block;
+            margin-top: 3px;
+        }
+
+        .kot-time {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 11px;
+        }
+
+        @@media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .kot-container {
+                max-width: 100%;
+                padding: 5px;
+            }
+
+            @@page {
+                size: 80mm auto;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="kot-container">
+        <div class="kot-header">
+            <h1>KITCHEN ORDER TICKET</h1>
+            <p>KOT No: @(ViewBag.Kot != null ? ViewBag.Kot.KotNo : "")</p>
+            <p>@DateTime.Now.ToString("dd-MMM-yyyy HH:mm")</p>
+        </div>
+
+        @if (ViewBag.Kot != null)
+        {
+            var kot = ViewBag.Kot;
+            <div class="kot-info">
+                @if (!string.IsNullOrEmpty(kot.TableNo))
+                {
+                    <div class="kot-info-row">
+                        <span class="kot-info-label">Table:</span>
+                        <span>@kot.TableNo</span>
+                    </div>
+                }
+                <div class="kot-info-row">
+                    <span class="kot-info-label">Order Type:</span>
+                    <span>@kot.OrderType</span>
+                </div>
+                @{
+                    int guestCount = 0;
+                    try { guestCount = Convert.ToInt32(kot.GuestCount ?? 0); } catch { }
+                }
+                @if (guestCount > 0)
+                {
+                    <div class="kot-info-row">
+                        <span class="kot-info-label">Guests:</span>
+                        <span>@guestCount</span>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(kot.WaiterName))
+                {
+                    <div class="kot-info-row">
+                        <span class="kot-info-label">Waiter:</span>
+                        <span>@kot.WaiterName</span>
+                    </div>
+                }
+                <div class="kot-info-row">
+                    <span class="kot-info-label">Status:</span>
+                    <span>@kot.OrderStatus</span>
+                </div>
+            </div>
+
+            if (!string.IsNullOrEmpty(kot.SpecialInstructions))
+            {
+                <div class="kot-instructions" style="background: #fff3cd; padding: 5px; margin-bottom: 10px; border-left: 3px solid #ffc107;">
+                    <strong>Special Instructions:</strong><br />
+                    @kot.SpecialInstructions
+                </div>
+            }
+
+            <div class="kot-items">
+                <div class="kot-items-header">ITEMS</div>
+                @if (ViewBag.KotDetails != null)
+                {
+                    foreach (var item in ViewBag.KotDetails)
+                    {
+                        <div class="kot-item">
+                            <div class="kot-item-name">
+                                <span class="kot-item-qty">@item.Quantity</span>@item.ItemName
+                            </div>
+                            <div class="kot-item-details">
+                                @if (!string.IsNullOrEmpty(item.Unit))
+                                {
+                                    <span>Unit: @item.Unit</span>
+                                }
+                                @if (!string.IsNullOrEmpty(item.KitchenStationName))
+                                {
+                                    <span class="kot-station">@item.KitchenStationName</span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(item.CookingInstructions))
+                            {
+                                <div class="kot-instructions">
+                                    <strong>Note:</strong> @item.CookingInstructions
+                                </div>
+                            }
+                            <div class="kot-item-details" style="margin-top: 3px;">
+                                <span>Status: @item.ItemStatus</span>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="kot-time">
+                @try
+                {
+                    if (kot != null)
+                    {
+                        <div><strong>Order Time:</strong> @kot.OrderTime.ToString("HH:mm")</div>
+                        
+                        var expectedTimeObj = kot.ExpectedTime;
+                        if (expectedTimeObj != null)
+                        {
+                            DateTime? expectedTime = expectedTimeObj as DateTime?;
+                            if (expectedTime.HasValue)
+                            {
+                                <div><strong>Expected:</strong> @expectedTime.Value.ToString("HH:mm")</div>
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Handle dynamic binding errors gracefully
+                }
+            </div>
+        }
+
+        <div class="kot-footer">
+            <p>Thank You!</p>
+            <p>@DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss")</p>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function () {
+            window.print();
+        };
+    </script>
+</body>
+</html>
+

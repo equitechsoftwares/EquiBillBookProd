@@ -1,0 +1,201 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Recurring Bookings";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Recurring Bookings</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl))
+                        {
+                            <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        }
+                        <li class="breadcrumb-item active">Recurring Bookings</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl))
+                {
+                    <a id="btnBack" href="@ViewBag.ReturnUrl" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                }
+                else
+                {
+                    <a id="btnBack" href="/restaurantdashboard/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                }
+                @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsAdd)
+                {
+                    <a id="btnNew" href="/recurringbooking/add" class="btn btn-primary float-sm-right mr-2"><i class="fas fa-plus"></i> Add New</a>
+                }
+            </div>
+            <div class="col-sm-12">
+                <span id="divAsof" class="text-gray"></span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline collapsed-card">
+                    <div class="card-header" data-card-widget="collapse">
+                        <h3 class="card-title">Filter</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.Branchs != null && ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                <div class="form-group">
+                                    <label>Business Location</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlBranch">
+                                        <option value="0">All</option>
+                                        @if (ViewBag.Branchs != null)
+                                        {
+                                            foreach (var item in ViewBag.Branchs)
+                                            {
+                                                <option value="@item.BranchId">@item.Branch</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Recurrence Type</label>
+                                    <select class="form-control" id="ddlRecurrenceType" style="width: 100%;">
+                                        <option value="">All</option>
+                                        <option value="Daily">Daily</option>
+                                        <option value="Weekly">Weekly</option>
+                                        <option value="Monthly">Monthly</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <select class="form-control" id="ddlStatus" style="width: 100%;">
+                                        <option value="">All</option>
+                                        <option value="true">Active</option>
+                                        <option value="false">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Search</label>
+                                    <input type="text" class="form-control" id="txtSearch" placeholder="Recurrence Type">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary float-right mt-2" onclick="fetchList(1)">Search</button>
+                        <button type="submit" class="btn btn-warning float-right mt-2 mr-2" onclick="window.location.reload()">Refresh</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h5>
+                                    <span class="success" id="divTotalCount">
+                                        Total : 0
+                                    </span>
+                                    |
+                                    <span class="primary" id="divActiveCount">
+                                        Active : 0
+                                    </span>
+                                    |
+                                    <span class="danger" id="divInactiveCount">Inactive : 0</span>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                            <div class="dataTables_length noPrint" id="tblUserRole_length">
+                                <label>
+                                    Show
+                                    <select name="tblUserRole_length" aria-controls="tblUserRole" class="custom-select custom-select-sm form-control form-control-sm"
+                                            onchange="fetchList(1)" id="txtPageSize">
+                                        <option value="10">10</option>
+                                        <option value="25" selected>25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="500">500</option>
+                                    </select>
+                                    entries
+                                </label>
+                            </div>
+                            @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsExport)
+                            {
+                                <div class="dt-buttons btn-group flex-wrap noPrint">
+                                    <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+                                    <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+                                    <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+                                    <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+                                </div>
+                            }
+                            <div id="tblUserRole_filter" class="dataTables_filter noPrint invisible"><label>Search:<input type="text" class="form-control form-control-sm" placeholder="" aria-controls="tblUserRole" id="txtSearch" onkeyup="fetchList(1)"></label></div>
+                            <div class="row mt-1">
+                                <div class="col-sm-12 table-responsive">
+                                    <table id="tblData" class="table table-bordered table-striped">
+                                        @Html.Partial("PartialRecurringBooking")
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Customer/Restaurant/RecurringBooking.js"></script>
+<script>
+    $(document).ready(function () {
+        // Check for success message from sessionStorage (after redirect from Add/Edit)
+        var successMessage = sessionStorage.getItem('recurringBookingSuccessMessage');
+        var successType = sessionStorage.getItem('recurringBookingSuccessType');
+        
+        if (successMessage) {
+            // Clear the message from sessionStorage
+            sessionStorage.removeItem('recurringBookingSuccessMessage');
+            sessionStorage.removeItem('recurringBookingSuccessType');
+            
+            // Play sound if enabled
+            if (typeof EnableSound !== 'undefined' && EnableSound == 'True') {
+                if (document.getElementById('success')) {
+                    document.getElementById('success').play();
+                }
+            }
+            
+            // Show the message
+            if (successType === 'success') {
+                if (typeof toastr !== 'undefined') {
+                    toastr.success(successMessage);
+                }
+            } else {
+                if (typeof toastr !== 'undefined') {
+                    toastr.error(successMessage);
+                }
+            }
+        }
+    });
+</script>
+

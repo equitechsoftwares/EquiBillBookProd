@@ -1,0 +1,734 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Stock Adjustment";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Stock Adjustment</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/stockadjust/index">Stock Adjustments</a></li>
+                        <li class="breadcrumb-item active">Edit Stock Adjustment</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/stockadjust" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <div class="card-body">
+                        <div class="card card-outline">
+
+                            @*<div class="card-header">
+                                <h3 class="card-title">Basic Info</h3>
+
+                            </div>*@
+                            <!-- form start -->
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Reference No</label>
+                                            <input disabled type="text" class="form-control" id="txtReferenceNo" value="@ViewBag.StockAdjustment.ReferenceNo">
+                                            <small class="text-red font-weight-bold errorText" id="divReferenceNo"></small>
+                                        </div>
+                                    </div>
+                                    @if (ViewBag.Branchs.Count > 1)
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Business Location <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Business Location from where you want to adjust"></i></label>
+                                                <div class="input-group">
+                                                    <select class="form-control select2" style="width: 100%;" id="ddlBranch" onchange="clearTable()">
+                                                        <option value="0">Select</option>
+                                                        @foreach (var item in ViewBag.Branchs)
+                                                        {
+                                                            if (ViewBag.StockAdjustment.BranchId == item.BranchId)
+                                                            {
+                                                                <option value="@item.BranchId" selected>@item.Branch</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.BranchId">@item.Branch</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                    <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 hidden">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Business Location <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Business Location from where you want to adjust"></i></label>
+                                                <div class="input-group">
+                                                    <select class="form-control select2" style="width: 100%;" id="ddlBranch" onchange="clearTable()">
+                                                        @foreach (var item in ViewBag.Branchs)
+                                                        {
+                                                            if (ViewBag.StockAdjustment.BranchId == item.BranchId)
+                                                            {
+                                                                <option value="@item.BranchId" selected>@item.Branch</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.BranchId">@item.Branch</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                    <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label> Date</label>
+                                            <div class="input-group date" id="_AdjustmentDate" data-target-input="nearest">
+                                                <input id="txtAdjustmentDate" value="@ViewBag.StockAdjustment.AdjustmentDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])" type="text" class="form-control datetimepicker-input divAdjustmentDate_ctrl" data-target="#_AdjustmentDate" />
+                                                <div class="input-group-append" data-target="#_AdjustmentDate" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                            @*<input type="datetime-local" class="form-control" id="txtAdjustmentDate" value="@ViewBag.StockAdjustment.AdjustmentDate.ToString("yyyy-MM-ddTHH:mm")">*@
+                                            <small class="text-red font-weight-bold errorText" id="divAdjustmentDate"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Adjustment Type </label>
+                                            <select class="form-control" id="ddlAdjustmentType" disabled>
+                                                @{
+                                                    if (ViewBag.StockAdjustment.AdjustmentType == "Debit")
+                                                    {
+                                                        <option value="Debit" selected>Debit</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="Debit">Debit</option>
+                                                    }
+                                                    if (ViewBag.StockAdjustment.AdjustmentType == "Credit")
+                                                    {
+                                                        <option value="Credit" selected>Credit</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="Credit">Credit</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divStockDeductionType" style="display:@(ViewBag.StockAdjustment.AdjustmentType == "Credit" ? "hidden":"")">
+            <div class="form-group">
+                <label>Deduction Type <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="<i>Normal</i>: Adjustment for normal reasons like Leakage, Damage etc. <br/><br/> <i>Abnormal</i>: Adjustment for reasons like Fire, Accident etc."></i></label>
+                <select class="form-control" id="ddlStockDeductionType">
+                    @if (ViewBag.StockAdjustment.StockDeductionType == "Normal")
+                    {
+                        <option value="Normal" selected>Normal</option>
+                    }
+                    else
+                    {
+                        <option value="Normal">Normal</option>
+                    }
+                    @if (ViewBag.StockAdjustment.StockDeductionType == "Abnormal")
+                    {
+                        <option value="Abnormal" selected>Abnormal</option>
+                    }
+                    else
+                    {
+                        <option value="Abnormal">Abnormal</option>
+                    }
+                </select>
+            </div>
+        </div>*@
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Reason <span class="danger">*</span></label>
+                                            <div class="input-group divStockAdjustmentReason_ctrl">
+                                                <select class="form-control select2" id="ddlStockAdjustmentReason">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.StockAdjustmentReasons)
+                                                    {
+                                                        if (ViewBag.StockAdjustment.StockAdjustmentReasonId == item.StockAdjustmentReasonId)
+                                                        {
+                                                            <option value="@item.StockAdjustmentReasonId" selected>@item.StockAdjustmentReason</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.StockAdjustmentReasonId">@item.StockAdjustmentReason</option>
+                                                        }
+                                                    }
+                                                </select>
+                                                @if (ViewBag.StockAdjustmentReasonsPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#stockAdjustmentReasonsModal">+ </a>
+                                                    </span>
+                                                }
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divStockAdjustmentReason"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.IsAccountsAddon == true ? "" : "hidden")">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Account <span class="danger">*</span></label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlAccount">
+                                                    @*<option value="0">Select</option>*@
+                                                    @{
+                                                        if (ViewBag.AccountSubTypes != null)
+                                                        {
+                                                            foreach (var item in ViewBag.AccountSubTypes)
+                                                            {
+                                                                if (item.Accounts.Count > 0)
+                                                                {
+                                                                    if (item.Type != "Accounts Receivable" && item.Type != "Accounts Payable")
+                                                                    {
+                                                                        <optgroup label="@item.DisplayAs">
+                                                                            @foreach (var inner in item.Accounts)
+                                                                            {
+                                                                                if (inner.Type != "Opening Balance Adjustments" && inner.Type != "Tag Adjustments")
+                                                                                {
+                                                                                    if (ViewBag.StockAdjustment.AccountId == inner.AccountId)
+                                                                                    {
+                                                                                        <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        </optgroup>
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                </select>
+                                                @*@if (ViewBag.AccountsPermission.IsAdd == true)
+                    {
+                        <span class="input-group-append">
+                            <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#AccountModal">+ </a>
+                        </span>
+                    }*@
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <div class="card card-outline">
+                            <div class="card-header bg-info">
+                                <h3 class="card-title">Search Items</h3>
+                            </div>
+                            <!-- form start -->
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-12 mb-3">
+                                        <div class="input-group ">
+                                            @*<div class="input-group-prepend">
+                                                <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                                            </div>*@
+                                            <input type="text" class="form-control divtags_ctrl" placeholder="Sku Code/ Item Name" id="txttags">
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divtags"></small>
+                                    </div>
+                                </div>
+                                <div class="row" >
+                                    <div class="col-sm-12 table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    @*<th>#</th>*@
+                                                    <th>Item</th>
+                                                    <th class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden")">Lot No</th>
+                                                    <th>Choose Unit</th>
+                                                    <th class="divIsDebit">Available Quantity</th>
+                                                    <th>Adjusted Quantity</th>
+                                                    <th>Unit Cost</th>
+                                                    <th>Amount</th>
+                                                    @*<th style="width:10%" class="@(ViewBag.ItemSetting.EnableLotNo == true ?"":"hidden") divIsLot">Lot No</th>*@
+                                                    @*<th style="width:10%" class="@((ViewBag.ItemSetting.EnableItemExpiry == true && ViewBag.ItemSetting.ExpiryType==2 )?"":"hidden") divIsMfg">Manufacturing Date</th>
+                    <th style="width:10%" class="@(ViewBag.ItemSetting.EnableItemExpiry == true ?"":"hidden") divIsExp">Expiry Date</th>
+                    <th style="width:10%" class="divIsCredit">Unit Selling Price (Inc. tax)</th>*@
+                                                    <th>
+                                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteFullCombo(@ViewBag.StockAdjustment.StockAdjustmentId)">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                        <input type="hidden" id="hdnEnableLotNo" value="@ViewBag.ItemSetting.EnableLotNo.ToString()" />
+                                                        <input type="hidden" id="hdnEnableItemExpiry" value="@(ViewBag.ItemSetting.EnableItemExpiry.ToString())" />
+                                                        <input type="hidden" id="hdnExpiryType" value="@ViewBag.ItemSetting.ExpiryType" />
+                                                        <input type="hidden" id="hdnEnableItemExpiry" value="@(ViewBag.ItemSetting.EnableItemExpiry.ToString())" />
+                                                        <input type="hidden" id="hdnOnItemExpiry" value="@(ViewBag.ItemSetting.OnItemExpiry)" />
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="divCombo">
+                                                @{
+                                                    var count = 100000000;
+                                                    foreach (var item in ViewBag.StockAdjustment.StockAdjustmentDetails)
+                                                    {
+                                                        <tr id="divCombo@(count)">
+                                                            @*<td>@count </td>*@
+                                                            <td style="min-width:200px;">
+                                                                <input type="text" hidden class="form-control" id="txtItemId@(count)" value="@item.ItemId">
+                                                                <input type="text" hidden class="form-control" id="txtItemDetailsId@(count)" value="@item.ItemDetailsId">
+                                                                <input type="text" hidden class="form-control" id="txtSkuCode@(count)" value="@item.SKU">
+                                                                <input type="text" hidden class="form-control" id="txtPurchaseDetailsId@(count)" value="@item.StockAdjustmentDetailsId">
+                                                                @if (item.ItemName.Length > 15)
+                                                                {
+                                                                    <span><b>Name:</b> @item.ItemName.Substring(0, 15)...</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span><b>Name:</b> @item.ItemName</span>
+                                                                }
+
+                                                                @if (item.VariationName != null)
+                                                                {
+                                                                    <br /><span> <b>Variation:</b> @item.VariationName</span>
+                                                                }
+                                                                <br /><span><b>SKU:</b> @item.SKU</span>
+                                                            </td>
+                                                            <td style="min-width:200px" class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden")">
+                                                                @if (item.LotId != 0)
+                                                                {
+                                                                    <select class="form-control" style="min-width: 100px;display:none;" id="ddlLot@(count)" onchange="fetchLotDetails(@(count))">
+                                                                        <option selected value="@item.LotId-@item.LotType"> Lot No: @item.LotNo</option>
+                                                                    </select>
+                                                                    <span><b>Lot No:</b> @item.LotNo</span>
+                                                                    if (item.LotManufacturingDate != null)
+                                                                    {
+                                                                        <br /> <span><b>Mfg Date:</b> @item.LotManufacturingDate.ToString(Request.Cookies["ItemSetting"].Value.Split('&')[0].Split('=')[1])</span>
+                                                                    }
+                                                                    if (item.LotExpiryDate != null)
+                                                                    {
+                                                                        <br /> <span><b>Exp Date:</b> @item.LotExpiryDate.ToString(Request.Cookies["ItemSetting"].Value.Split('&')[0].Split('=')[1])</span>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span style="text-align:center;display:block">-</span>
+                                                                }
+                                                            </td>
+                                                            <td style="min-width:150px">
+                                                                <div class="input-group" style="min-width:180px">
+                                                                    <select disabled class="form-control" style="min-width: 100px" id="ddlUnit@(count)" onchange="toggleUnit(@(count))">
+                                                                        @{
+                                                                            if (item.QuaternaryUnitId != 0)
+                                                                            {
+                                                                                if (item.PriceAddedFor == 1)
+                                                                                {
+                                                                                    <option selected value="@(item.UnitId)-1-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.UnitId)-1-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 2)
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-2-2" selected>@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-2-2">@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 3)
+                                                                                {
+                                                                                    <option value="@(item.TertiaryUnitId)-3-3" selected>@item.TertiaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.TertiaryUnitId)-3-3">@item.TertiaryUnitShortName</option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 4)
+                                                                                {
+                                                                                    <option value="@(item.QuaternaryUnitId)-4-4" selected>@item.QuaternaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.QuaternaryUnitId)-4-4">@item.QuaternaryUnitShortName</option>
+                                                                                }
+                                                                            }
+                                                                            else if (item.TertiaryUnitId != 0)
+                                                                            {
+                                                                                @*<option value="0" hidden>@item.UnitShortName</option>*@
+                                                                                if (item.PriceAddedFor == 2)
+                                                                                {
+                                                                                    <option selected value="@(item.UnitId)-2-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.UnitId)-2-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 3)
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-3-2" selected>@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-3-2">@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 4)
+                                                                                {
+                                                                                    <option value="@(item.TertiaryUnitId)-4-3" selected>@item.TertiaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.TertiaryUnitId)-4-3">@item.TertiaryUnitShortName</option>
+                                                                                }
+                                                                            }
+                                                                            else if (item.SecondaryUnitId != 0)
+                                                                            {
+                                                                                @*<option value="0" hidden>@item.UnitShortName</option>
+                                                <option value="0" hidden>@item.UnitShortName</option>*@
+                                                                                if (item.PriceAddedFor == 3)
+                                                                                {
+                                                                                    <option selected value="@(item.UnitId)-3-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.UnitId)-3-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 4)
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-4-2" selected>@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-4-2">@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                @*<option value="0" hidden>@item.UnitShortName</option>
+                                                <option value="0" hidden>@item.UnitShortName</option>
+                                                <option value="0" hidden>@item.UnitShortName</option>*@
+                                                                                <option selected value="@(item.UnitId)-4-1">@item.UnitShortName </option>
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                    <input type="text" hidden class="form-control" id="hdnPriceAddedFor@(count)" value="@item.PriceAddedFor">
+                                                                    <input type="text" hidden class="form-control" id="hdnUToSValue@(count)" value="@item.UToSValue">
+                                                                    <input type="text" hidden class="form-control" id="hdnSToTValue@(count)" value="@item.SToTValue">
+                                                                    <input type="text" hidden class="form-control" id="hdnTToQValue@(count)" value="@item.TToQValue">
+                                                                    <input type="text" hidden class="form-control" id="hdnUnitCost@(count)" value="@item.UnitCost">
+                                                                    <input type="hidden" class="form-control" id="hdnAllowDecimal@(count)" value="@(item.AllowDecimal.ToString())" />
+                                                                    <input type="hidden" class="form-control" id="hdnSecondaryUnitAllowDecimal@(count)" value="@item.SecondaryUnitAllowDecimal.ToString()" />
+                                                                    <input type="hidden" class="form-control" id="hdnTertiaryUnitAllowDecimal@(count)" value="@item.TertiaryUnitAllowDecimal.ToString()">
+                                                                    <input type="hidden" class="form-control" id="hdnQuaternaryUnitAllowDecimal@(count)" value="@item.QuaternaryUnitAllowDecimal.ToString()">
+                                                                </div>
+                                                            </td>
+                                                            <td style="min-width:150px" class="divIsDebit">
+                                                                <input type="number" disabled class="form-control" value="@(String.Format("{0:0.##}",item.QuantityRemaining))" id="txtStockQuantity@(count)" onchange="ChangeQtyAmount(@count)">
+                                                                <input type="text" hidden class="form-control" id="hdnQuantityRemaining@(count)" value="@item.QuantityRemaining">
+                                                            </td>
+                                                            <td style="min-width:150px">
+                                                                <div class="input-group" style="min-width:180px">
+                                                                    <input type="number" class="form-control divQuantity@(count)_ctrl" value="@(String.Format("{0:0.##}",item.Quantity))" id="txtQuantity@(count)" onkeypress="return toggleDecimal(event,@(count))" onchange="updateQuantity(@count,2)" min="0">
+                                                                </div>
+                                                                <small class="text-red font-weight-bold errorText" id="divQuantity@(count)"></small>
+                                                            </td>
+                                                            <td style="min-width:150px">
+                                                                <input type="number" disabled class="form-control divUnitCost@(count)_ctrl" id="txtUnitCost@(count)" value="@(String.Format("{0:0.##}",item.UnitCost))" onchange="ChangeQtyAmount(@count)">
+                                                                <small class="text-red font-weight-bold errorText" id="divUnitCost@(count)"></small>
+                                                            </td>
+                                                            <td style="min-width:150px">
+                                                                <input type="number" disabled class="form-control" id="txtTotalAmount@(count)" value="@(String.Format("{0:0.##}",item.Amount))">
+                                                            </td>
+                                                            @*<td style="min-width:100px" class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden") divIsLot">
+                                <input type="text" class="form-control" id="txtLotNo@(count)" value="@item.LotNo">
+                            </td>*@
+                                                            @*<td style="min-width:100px" class="@((ViewBag.ItemSetting.EnableItemExpiry == true && ViewBag.ItemSetting.ExpiryType == 2) ? "" : "hidden") divIsMfg">
+                                <input type="date" class="form-control" id="txtManufacturingDate@(count)" value="@(item.ManufacturingDate == null ? null : item.ManufacturingDate.ToString("yyyy-MM-dd"))">
+                            </td>
+                            <td style="min-width:100px" class="@(ViewBag.ItemSetting.EnableItemExpiry == true ? "" : "hidden") divIsExp">
+                                <input type="date" class="form-control" id="txtExpiryDate@(count)" value="@(item.ExpiryDate == null ? null : item.ExpiryDate.ToString("yyyy-MM-dd"))">
+                            </td>
+                            <td style="min-width:100px" class="divIsCredit">
+                                <input type="number" class="form-control" id="txtSalesIncTax@(count)" value="@item.SalesIncTax">
+                            </td>*@
+                                                            <td>
+                                                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteCombo(@count,@item.StockAdjustmentDetailsId)">
+                                                                    <i class="fas fa-times">
+                                                                    </i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        count++;
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>                                   
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <div class="row">
+
+                                            <div class="col-sm-6 mt-2">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-6 col-form-label">Total Amount Recovered <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" data-html="true" title="" data-content="Amount recovered from insurance or selling of scraps or others"></i></label>
+                                                    <div class="col-sm-6">
+                                                        <input type="number" min="0" class="form-control" id="txtTotalAmountRecovered" value="@(String.Format("{0:0.##}",ViewBag.StockAdjustment.TotalAmountRecovered))">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-6 mt-2">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-4 col-form-label">Notes</label>
+                                                    <div class="col-sm-8">
+                                                        <textarea rows="2" class="form-control" id="txtNotes"> @ViewBag.StockAdjustment.StockAdjustmentReason</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="row">
+                                            <div class="col-12" style="display:none;">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right">Total Quantities :</label>
+                                                    <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTotalQty">
+                                                        @(String.Format("{0:0.##}",ViewBag.StockAdjustment.TotalQuantity))
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right">Total Amount:</label>
+                                                    <input type="number" class="form-control" id="hdndivTotalAmount" hidden value="@(String.Format("{0:0.##}",ViewBag.StockAdjustment.TotalAmount))">
+                                                    <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTotalAmount">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}",ViewBag.StockAdjustment.TotalAmount))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}",ViewBag.StockAdjustment.TotalAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <button id="btnUpdate" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                        <button id="btnUpdate_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                        @*<a id="btnBack" href="/stockadjust" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                    </div>
+
+
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="stockAlertModal">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Alert!!</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12" id="divStockAlertMsg">
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="confirmStockAlertUpdate()">Continue</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is stock adjustment?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    A stock adjustment is the increase or reduction made to the stock so that the actual quantity on hand matches the stock shown in the system – basically, a correction in the records so that they agree with the physical count.
+                                    Adjustment reasons vary. Positive inventory quantity adjustments are often due to the simplest: the addition of more inventory from production, or excess inventory that remains saleable, but did not sell. On the other hand, negative inventory quantity adjustments are often required to address:
+                                    Waste: Expired or obsolete inventory (common in food and consumer goods).
+                                    Breakage: Damaged inventory that cannot be legally sold as new.
+                                    Shrinkage: Inventory lost to theft. Also called “stockloss.”
+                                    Write-offs: Inventory lost to other reasons.
+                                    Internal Use: Inventory items put to internal use or consumed by the company instead of being sold to the customer.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Why Inventory Adjustments Matter</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Inventory fluctuations can wreak havoc on more than just your stockroom. When recorded inventory levels are lower than actual inventory counts (understated), the cost of goods sold rises artificially. Conversely, when actual inventory levels are lower than those recorded (overstated), the inverse occurs, and COGS is artificially lowered.
+                                    In both cases, the adjusting entries necessary to reflect the true state of affairs can have a significant impact on your gross and net profits, your income statements, and, by extension, your company’s competitive advantage, financial agility, and overall health. Decision making, reporting, auditing, and budgeting can all be skewed to disastrous levels if your team is operating with incomplete or inaccurate information.
+                                    As a result, inventory adjustments are absolutely crucial to responsible and strategically viable accounting practices.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How to Make Inventory Adjustments</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Imagine your company, Widgets, Inc., had a total cost of inventory (drawn from last year’s ending inventory) of $500,000 at the beginning of the accounting year. This amount is “locked in” until year-end, when a physical inventory count is taken. The physical inventory count reveals an actual cost of $570,000 for inventory.
+                                    As a result, the accounts team makes an entry to adjust inventory as follows:
+                                    The Inventory account is debited for $70,000.
+                                    The Inventory Adjustment account is credited for $70,000.
+                                    Widgets, Inc. also had a debit balance of $3,500,000 in the temporary account called Purchases for the current year.
+                                    The Inventory Adjustment account is a special income statement account—one of the accounts carried forward to the company’s income statement from the general ledger—that, when added to the Purchases account, reveals the company’s cost of goods sold.
+                                    To continue with our example, when the $70,000 credit balance in the Inventory Adjustment account is applied to the debit balance of $3,500,000 in Purchases, the result is a COGS total value of $3,430,000.
+                                    $3,500,000 – $70,000 = $3,430,000
+                                    The next year, Widgets, Inc. conducts another inventory count and finds their actual inventory cost is $320,000. But because their inventory records listed a debit balance of $570,000 last year, another inventory adjustment entry must be made:
+                                    The Inventory account is credited for $250,000.
+                                    The Inventory Adjustment account is debited for $250,000.
+                                    This year, Widgets, Inc. had a debit balance of $3,250,000 in the Purchases account. Adding the debit amount in the Inventory Adjustment to the debit amount in Purchases produces a COGS value of $3,500,000.
+                                    $3,250,000 + $250,000 = $3,500,000
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="stockAdjustmentReasonsModal" style="z-index:1050 !important">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Stock Adjustment Reason</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                        <div class="form-group">
+                            <label>Reason <span class="danger">*</span></label>
+                            <input type="text" class="form-control divStockAdjustmentReason_M_ctrl" id="txtStockAdjustmentReason_M" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divStockAdjustmentReason_M"></small>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-control" id="txtDescription_M" placeholder=""></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertStockAdjustmentReason()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+      rel="stylesheet">
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="~/Content/JQuery/Customer/Items/StockAdjust.js"></script>
+@*<script>
+        CurrencySymbol = @Html.Raw(Json.Encode(ViewBag.StockAdjustment.CurrencySymbol));
+        convertAvailableStock();
+    </script>*@

@@ -1,0 +1,550 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit User Role";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<style>
+    .table td, .table th {
+        text-align: center;
+    }
+</style>
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit User Role</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/usersettings/userrole">User Role</a></li>
+                        <li class="breadcrumb-item active">Edit User Role</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/usersettings/userrole" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+
+                            <div class="row">
+                                @*<div class="col-sm-3">
+                                        <div class="form-group">
+                                            <label> Role Code </label>
+                                            <input disabled type="text" class="form-control" id="txtRoleCode" placeholder="" value="@ViewBag.Role.RoleCode">
+                                        </div>
+                                    </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Role Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divRoleName_ctrl" id="txtRoleName" placeholder="" value="@ViewBag.Role.RoleName">
+                                        <small class="text-red font-weight-bold errorText" id="divRoleName"></small>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="checkbox icheck-emerland">
+                                        <input type="checkbox" id="chkSelectAll" onchange="selectAll()" />
+                                        <label for="chkSelectAll">Select All</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body pt-0">
+
+                            @{
+                                var count = 1;
+                                var divId = 1;
+                                foreach (var outer in ViewBag.Menus)
+                                {
+                                    if (outer.HasChildren == false)
+                                    {
+                                        <div class="card  card-info card-outline ">
+                                            <div class="card-body">
+                                                <div class="row table-responsive">
+                                                    <table id="tblUserRole" class="table ">
+                                                        <thead class="bg-gray-light">
+                                                            <tr>
+                                                                <th>Modules</th>
+                                                                <th>Select All </th>
+                                                                <th>View</th>
+                                                                <th>Add</th>
+                                                                <th>Edit</th>
+                                                                <th>Delete</th>
+                                                                <th>Export</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="divPermissions" id="divPermissions@(divId)">
+                                                            <tr id="divPermission@(count)">
+                                                                <td>@outer.Title</td>
+                                                                <td>
+                                                                    @if (outer.IsView && outer.IsAdd && outer.IsEdit && outer.IsDelete && outer.IsExport)
+                                                                    {
+                                                                        <div class="checkbox icheck-turquoise">
+                                                                            @if (outer.IsAddEnabled && outer.IsEditEnabled && outer.IsDeleteEnabled && outer.IsViewEnabled && outer.IsExportEnabled)
+                                                                            {
+                                                                                <input type="checkbox" checked id="chk@(count)" onchange="selectedSelectAll('chk@(count)')" />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <input type="checkbox" id="chk@(count)" onchange="selectedSelectAll('chk@(count)')" />
+                                                                            }
+
+                                                                            <label for="chk@(count)"></label>
+
+                                                                        </div>
+                                                                    }
+                                                                    <input type="hidden" id="hdnMenuId@(count)" value="@outer.MenuId" />
+                                                                    <input type="hidden" id="hdnMenuPermissionId@(count)" value="@outer.MenuPermissionId" />
+                                                                </td>
+                                                                <td>
+                                                                    @if (outer.IsView)
+                                                                    {
+                                                                        <div class="checkbox icheck-emerland">
+                                                                            @if (outer.IsViewEnabled)
+                                                                            {
+                                                                                <input checked type="checkbox" id="chkIsView@(count)" class="chk@(count)" onchange="toggleView(@count)" />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <input type="checkbox" id="chkIsView@(count)" class="chk@(count)" onchange="toggleView(@count)" />
+                                                                            }
+
+                                                                            <label for="chkIsView@(count)"></label>
+                                                                        </div>
+                                                                    }
+                                                                </td>
+                                                                <td>
+                                                                    @if (outer.IsAdd == true)
+                                                                    {
+                                                                        <div class="checkbox icheck-info">
+
+                                                                            @if (outer.IsAddEnabled)
+                                                                            {
+                                                                                <input checked type="checkbox" id="chkIsAdd@(count)" class="chk@(count)" onchange="toggle(@count)" />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <input type="checkbox" id="chkIsAdd@(count)" class="chk@(count)" onchange="toggle(@count)" />
+                                                                            }
+
+                                                                            <label for="chkIsAdd@(count)"></label>
+
+                                                                        </div>
+                                                                    }
+                                                                </td>
+                                                                <td>
+                                                                    @if (outer.IsEdit == true)
+                                                                    {
+                                                                        <div class="checkbox icheck-sunflower">
+                                                                            @if (outer.IsEditEnabled)
+                                                                            {
+                                                                                <input checked type="checkbox" id="chkIsEdit@(count)" class="chk@(count)" onchange="toggle(@count)" />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <input type="checkbox" id="chkIsEdit@(count)" class="chk@(count)" onchange="toggle(@count)" />
+                                                                            }
+
+                                                                            <label for="chkIsEdit@(count)"></label>
+                                                                        </div>
+                                                                    }
+                                                                </td>
+                                                                <td>
+                                                                    @if (outer.IsDelete)
+                                                                    {
+                                                                        <div class="checkbox icheck-danger">
+                                                                            @if (outer.IsDeleteEnabled)
+                                                                            {
+                                                                                <input checked type="checkbox" id="chkIsDelete@(count)" class="chk@(count)" onchange="toggle(@count)" />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <input type="checkbox" id="chkIsDelete@(count)" class="chk@(count)" onchange="toggle(@count)" />
+                                                                            }
+
+                                                                            <label for="chkIsDelete@(count)"></label>
+                                                                        </div>
+                                                                    }
+
+                                                                </td>
+
+                                                                <td>
+                                                                    @if (outer.IsExport)
+                                                                    {
+                                                                        <div class="checkbox icheck-carrot">
+                                                                            @if (outer.IsExportEnabled)
+                                                                            {
+                                                                                <input checked type="checkbox" id="chkIsExport@(count)" class="chk@(count)" onchange="toggle(@count)" />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <input type="checkbox" id="chkIsExport@(count)" class="chk@(count)" onchange="toggle(@count)" />
+                                                                            }
+
+                                                                            <label for="chkIsExport@(count)"></label>
+                                                                        </div>
+                                                                    }
+                                                                </td>
+                                                            </tr>
+
+
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        count++;
+                                    }
+                                    else
+                                    {
+                                        <div class="card  card-info card-outline collapsed-card">
+                                            <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                                <h3 class="card-title">@outer.Title</h3>
+                                                <div class="card-tools">
+                                                    <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-sm-6">
+                                                        <div class="checkbox icheck-emerland">
+                                                            <input type="checkbox" id="chkSelectAll@(divId)" onchange="selectAllModule('chkSelectAll@(divId)')" />
+                                                            <label for="chkSelectAll@(divId)">Select All</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row table-responsive">
+                                                    <table id="tblUserRole" class="table ">
+                                                        <thead class="bg-gray-light">
+                                                            <tr>
+                                                                <th>Modules</th>
+                                                                <th>Select All </th>
+                                                                <th>View</th>
+                                                                <th>Add</th>
+                                                                <th>Edit</th>
+                                                                <th>Delete</th>
+
+                                                                <th>Export</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="divPermissions" id="divPermissions@(divId)">
+                                                            @foreach (var item in outer.InnerMenus)
+                                                            {
+                                                                if (item.IsView || item.IsAdd || item.IsEdit || item.IsDelete || item.IsExport)
+                                                                {
+                                                                    <tr id="divPermission@(count)">
+                                                                        <td>@item.Title</td>
+                                                                        <td>
+                                                                            @if (item.IsView && item.IsAdd && item.IsEdit && item.IsDelete && item.IsExport)
+                                                                            {
+                                                                                <div class="checkbox icheck-turquoise">
+                                                                                    @if (item.IsAddEnabled && item.IsEditEnabled && item.IsDeleteEnabled && item.IsViewEnabled && item.IsExportEnabled)
+                                                                                    {
+                                                                                        <input type="checkbox" checked id="chk@(count)" class="chkSelectAll@(divId)" onchange="selectedSelectAll('chk@(count)')" />
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <input type="checkbox" id="chk@(count)" class="chkSelectAll@(divId)" onchange="selectedSelectAll('chk@(count)')" />
+                                                                                    }
+
+                                                                                    <label for="chk@(count)"></label>
+
+                                                                                </div>
+                                                                            }
+                                                                            <input type="hidden" id="hdnMenuId@(count)" value="@item.MenuId" />
+                                                                            <input type="hidden" id="hdnMenuPermissionId@(count)" value="@item.MenuPermissionId" />
+                                                                        </td>
+                                                                        <td>
+                                                                            @if (item.IsView)
+                                                                            {
+                                                                                <div class="checkbox icheck-emerland">
+                                                                                    @if (item.IsViewEnabled)
+                                                                                    {
+                                                                                        <input checked type="checkbox" id="chkIsView@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggleView(@count)" />
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <input type="checkbox" id="chkIsView@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggleView(@count)" />
+                                                                                    }
+
+                                                                                    <label for="chkIsView@(count)"></label>
+                                                                                </div>
+                                                                            }
+                                                                        </td>
+                                                                        <td>
+                                                                            @if (item.IsAdd == true)
+                                                                            {
+                                                                                <div class="checkbox icheck-info">
+
+                                                                                    @if (item.IsAddEnabled)
+                                                                                    {
+                                                                                        <input checked type="checkbox" id="chkIsAdd@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" />
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <input type="checkbox" id="chkIsAdd@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" />
+                                                                                    }
+
+                                                                                    <label for="chkIsAdd@(count)"></label>
+
+                                                                                </div>
+                                                                            }
+                                                                        </td>
+                                                                        <td>
+                                                                            @if (item.IsEdit == true)
+                                                                            {
+                                                                                <div class="checkbox icheck-sunflower">
+                                                                                    @if (item.IsEditEnabled)
+                                                                                    {
+                                                                                        <input checked type="checkbox" id="chkIsEdit@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" />
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <input type="checkbox" id="chkIsEdit@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" />
+                                                                                    }
+
+                                                                                    <label for="chkIsEdit@(count)"></label>
+                                                                                </div>
+                                                                            }
+                                                                        </td>
+                                                                        <td>
+                                                                            @if (item.IsDelete)
+                                                                            {
+                                                                                <div class="checkbox icheck-danger">
+                                                                                    @if (item.IsDeleteEnabled)
+                                                                                    {
+                                                                                        <input checked type="checkbox" id="chkIsDelete@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" />
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <input type="checkbox" id="chkIsDelete@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" />
+                                                                                    }
+
+                                                                                    <label for="chkIsDelete@(count)"></label>
+                                                                                </div>
+                                                                            }
+
+                                                                        </td>
+
+                                                                        <td>
+                                                                            @if (item.IsExport)
+                                                                            {
+                                                                                <div class="checkbox icheck-carrot">
+                                                                                    @if (item.IsExportEnabled)
+                                                                                    {
+                                                                                        <input checked type="checkbox" id="chkIsExport@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" />
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <input type="checkbox" id="chkIsExport@(count)" class="chk@(count) chkSelectAll@(divId)" onchange="toggle(@count)" />
+                                                                                    }
+
+                                                                                    <label for="chkIsExport@(count)"></label>
+                                                                                </div>
+                                                                            }
+                                                                        </td>
+                                                                    </tr>
+                                                                    count++;
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    divId++;
+                                }
+                            }
+                        </div>
+                        <!-- /.card-body -->
+
+                        <div class="card-footer">
+                            <button id="btnUpdate" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                            <button id="btnUpdate_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                            @*<a id="btnBack" href="/permission/userrole" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">I want other users to add and edit content for my website. Is it possible?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Yes, you can add users to add and edit content for your website. For that, you need to share the relevant stack with other users.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">I want to add new users to the stack but cannot see anything in the “Menu” section. How do I do this?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    If you do not see the Users option under “Menu”, you do not have the permission to add new users to your stack. Please contact the stack owner to get the users added or to get adequate permissions to add users.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How many users can I add?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can add as much user added while subscribing.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can I control access to content for users and groups?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Yes, you can control access to content for users and groups by assigning them specific roles. We recommend you to go through the Roles section in order to achieve this functionality.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Are all the roles editable?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    No. The Owner and the Admin roles are not editable. Other roles are editable.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What are the benefits of creating a Custom role?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    The Custom Role gives you the provision to apply permissions at entry, field, and asset levels.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can a stack have multiple owners?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    No, each stack can have only one Owner, who has complete rights to the content and settings of a stack. In addition to that, the Owner has the right to delete a stack as well as transfer the ownership of the stack to another user.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Who can add users to a stack?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Only the Owner, Admin role can add users to a stack.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can a user with a Custom Role view the settings of a stack?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    No, users with Custom role and Content Manager role cannot view the Stack settings.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Settings/UserSettings/UserRole.js"></script>

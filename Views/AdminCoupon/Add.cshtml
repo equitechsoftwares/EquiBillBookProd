@@ -1,0 +1,278 @@
+@{
+    ViewBag.Title = "Admin | Add Coupon";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .form-section {
+        border: 1px solid #dee2e6;
+        border-radius: .5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        background-color: #ffffff;
+        box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
+    }
+    .form-section legend {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    .term-length-checkbox {
+        margin-bottom: 10px;
+    }
+</style>
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Coupon</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/admindashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/admincoupon/index">Coupon List</a></li>
+                        <li class="breadcrumb-item active">Add Coupon</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/admincoupon/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div id="quickForm">
+                        <div class="card-body">
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-info-circle mr-2"></i>Basic Information</legend>
+                                <div class="row">
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <label>Coupon Code <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control divCouponCode_ctrl" id="txtCouponCode" placeholder="Enter coupon code">
+                                            <small class="text-red font-weight-bold errorText" id="divCouponCode"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <label>Discount Type <span class="text-danger">*</span></label>
+                                            <select class="form-control divDiscountType_ctrl" id="ddlDiscountType">
+                                                <option value="0">Select Discount Type</option>
+                                                <option value="1">Fixed Amount</option>
+                                                <option value="2">Percentage</option>
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divDiscountType"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <label>Discount <span class="text-danger">*</span></label>
+                                            <input type="number" step="0.01" min="0" class="form-control divDiscount_ctrl" id="txtDiscount" placeholder="Enter discount value">
+                                            <small class="text-red font-weight-bold errorText" id="divDiscount"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <label>Usage Type <span class="text-danger">*</span></label>
+                                            <select class="form-control divUsageType_ctrl" id="ddlUsageType" onchange="toggleNoOfTimes()">
+                                                <option value="0">Select Usage Type</option>
+                                                <option value="1">Unlimited</option>
+                                                <option value="2">Once Per User</option>
+                                                <option value="3">Limited Times</option>
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divUsageType"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4" id="divNoOfTimes" style="display:none;">
+                                        <div class="form-group">
+                                            <label>Number of Times <span class="text-danger">*</span></label>
+                                            <input type="number" min="1" class="form-control divNoOfTimes_ctrl" id="txtNoOfTimes" placeholder="Enter number of times">
+                                            <small class="text-red font-weight-bold errorText" id="divNoOfTimes"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <label>Start Date <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control divStartDate_ctrl" id="txtStartDate">
+                                            <small class="text-red font-weight-bold errorText" id="divStartDate"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <label>End Date <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control divEndDate_ctrl" id="txtEndDate">
+                                            <small class="text-red font-weight-bold errorText" id="divEndDate"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-check mt-4">
+                                                <input class="form-check-input" type="checkbox" id="chkNeverExpires" onchange="toggleNeverExpires()">
+                                                <label class="form-check-label" for="chkNeverExpires">
+                                                    <strong>Never Expires</strong>
+                                                </label>
+                                            </div>
+                                            <small class="text-muted">Check this if the coupon should never expire</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Description</label>
+                                            <textarea class="form-control" id="txtCouponDescription" rows="3" placeholder="Enter coupon description"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <label>Minimum Purchase Amount</label>
+                                            <input type="number" step="0.01" min="0" class="form-control" id="txtMinimumPurchaseAmount" placeholder="0.00 (No minimum)">
+                                            <small class="text-muted">Minimum order amount required to use this coupon. Leave 0 for no minimum.</small>
+                                            <small class="text-red font-weight-bold errorText" id="divMinimumPurchaseAmount"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <label>Maximum Discount Amount</label>
+                                            <input type="number" step="0.01" min="0" class="form-control" id="txtMaximumDiscountAmount" placeholder="0.00 (No cap)">
+                                            <small class="text-muted">Maximum discount cap (mainly for percentage discounts). Leave 0 for no cap.</small>
+                                            <small class="text-red font-weight-bold errorText" id="divMaximumDiscountAmount"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <label>Order Number</label>
+                                            <input type="number" min="0" class="form-control" id="txtOrderNo" placeholder="Enter order number">
+                                            <small class="text-muted">Order number for sorting/display purposes</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-tags mr-2"></i>Discount Application</legend>
+                                <div class="row">
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="chkApplyToBasePlan" checked onchange="toggleAddonSelection()">
+                                                <label class="form-check-label" for="chkApplyToBasePlan">
+                                                    <strong>Apply to Base Plan</strong>
+                                                </label>
+                                            </div>
+                                            <small class="text-muted">Discount will apply to the base subscription plan price</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="chkApplyToAddons" onchange="toggleAddonSelection()">
+                                                <label class="form-check-label" for="chkApplyToAddons">
+                                                    <strong>Apply to Addons</strong>
+                                                </label>
+                                            </div>
+                                            <small class="text-muted">Discount will apply to selected addons (or all addons if none selected)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <small class="text-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            <strong>Tip:</strong> You can apply discount to base plan only, addons only, or both. At least one option must be selected.
+                                        </small>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <div class="col-12" id="divAddonSelection" style="display:none;">
+                                <fieldset class="form-section">
+                                    <legend><i class="fas fa-puzzle-piece mr-2"></i>Addon Restrictions (Optional)</legend>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label>Select Specific Addons</label>
+                                                <small class="text-muted d-block mb-2">Leave all unchecked to apply coupon to <strong>all addons</strong>. Select specific addons to restrict coupon to only those addons.</small>
+                                                <div class="row">
+                                                    @if (ViewBag.AllAddons != null)
+                                                    {
+                                                        bool hasItems = false;
+                                                        foreach (var addon in ViewBag.AllAddons)
+                                                        {
+                                                            hasItems = true;
+                                                            <div class="col-md-3 term-length-checkbox">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input chkAddon" type="checkbox" value="@addon.PlanAddonsId" id="chkAddon@(addon.PlanAddonsId)">
+                                                                    <label class="form-check-label" for="chkAddon@(addon.PlanAddonsId)">
+                                                                        @addon.Title
+                                                                        @if (!string.IsNullOrEmpty(addon.Type))
+                                                                        {
+                                                                            <span class="badge badge-info">@addon.Type</span>
+                                                                        }
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                        if (!hasItems)
+                                                        {
+                                                            <div class="col-12">
+                                                                <p class="text-muted">No addons available. Coupon will apply to all addons (when Apply to Addons is checked) or base plan only.</p>
+                                                            </div>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="col-12">
+                                                            <p class="text-muted">No addons available. Coupon will apply to all addons (when Apply to Addons is checked) or base plan only.</p>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-calendar-alt mr-2"></i>Plan Duration Restrictions</legend>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Select Plan Durations</label>
+                                            <small class="text-muted d-block mb-2">Leave all unchecked to apply coupon to all plan durations. Select specific durations to restrict coupon usage.</small>
+                                            <div class="row">
+                                                @if (ViewBag.TermLengths != null)
+                                                {
+                                                    foreach (var termLength in ViewBag.TermLengths)
+                                                    {
+                                                        <div class="col-md-3 term-length-checkbox">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input chkTermLength" type="checkbox" value="@termLength.TermLengthId" id="chkTermLength@(termLength.TermLengthId)">
+                                                                <label class="form-check-label" for="chkTermLength@(termLength.TermLengthId)">
+                                                                    @termLength.Title (@termLength.Months @(termLength.Months == 1 ? "Month" : "Months")@(termLength.Months >= 12 ? " (" + (termLength.Months / 12) + " " + ((termLength.Months / 12) == 1 ? "Year" : "Years") + ")" : ""))
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                        <div class="card-footer">
+                            <button id="btnSave" type="button" class="btn btn-primary float-right" onclick="insert(1)"><i class="fas fa-save"></i> Save</button>
+                            <button id="btnSave_AddAnother" type="button" class="btn btn-success float-right mr-2" onclick="insert(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Admin/AdminCoupon.js"></script>
+

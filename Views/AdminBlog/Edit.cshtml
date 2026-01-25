@@ -1,0 +1,158 @@
+@using System;
+@using System.Web;
+@{
+    ViewBag.Title = "Admin | Edit Blog";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var blog = ViewBag.Blog;
+}
+
+<style>
+    .form-section {
+        border: 1px solid #dee2e6;
+        border-radius: .5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        background-color: #ffffff;
+        box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
+    }
+    .form-section legend {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Blog</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/admindashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/adminblog/index">Blog List</a></li>
+                        <li class="breadcrumb-item active">Edit Blog</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/adminblog/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div id="quickForm">
+                        <div class="card-body">
+                            <input type="hidden" id="txtBlogId" value="@(blog?.BlogId ?? 0)">
+                            <input type="hidden" id="txtIsActive" value="@(blog != null && blog.IsActive == true ? "true" : "false")">
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-info-circle mr-2"></i>Basic Information</legend>
+                                <div class="row">
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <label>Title <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control divTitle_ctrl" id="txtTitle" value="@(blog?.Title ?? "")" placeholder="Enter blog title">
+                                            <small class="text-red font-weight-bold errorText" id="divTitle"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <label>Category</label>
+                                            <select class="form-control select2" style="width: 100%;" id="ddlBlogCategory" data-placeholder="Select category">
+                                                <option value="">Select category</option>
+                                            </select>
+                                            <small class="text-muted">Select a category from the master list</small>
+                                            <input type="hidden" id="txtBlogCategoryId" value="@(blog?.BlogCategoryId ?? 0)">
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Short Description</label>
+                                            <textarea class="form-control" id="txtShortDescription" rows="3" placeholder="Enter a brief description (shown in blog listing)">@(blog?.ShortDescription ?? "")</textarea>
+                                            <small class="text-muted">Brief summary shown in blog listing page</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Description <span class="text-danger">*</span></label>
+                                            <textarea class="form-control divDescription_ctrl" id="txtDescription" rows="10" placeholder="Enter full blog content">@(blog?.Description ?? "")</textarea>
+                                            <small class="text-red font-weight-bold errorText" id="divDescription"></small>
+                                            <small class="text-muted">Full blog post content (HTML supported)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <label>Choose Image</label>
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input" id="BlogImage" accept=".png,.jpg,.jpeg" onchange="getBlogImageBase64()">
+                                                <label class="custom-file-label" for="BlogImage">Choose file</label>
+                                            </div>
+                                            <input type="hidden" id="txtImage" value="@(blog?.Image ?? "")" />
+                                            <input type="hidden" id="txtFileExtensionImage" />
+                                            <img id="blahBlogImage" src="@(blog?.Image ?? "")" alt="" height="150" style="padding-top:10px; @(string.IsNullOrEmpty(blog?.Image) ? "display:none;" : "")">
+                                            <small class="text-muted">Upload featured image for this blog post (Max 2MB)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <label>Slug</label>
+                                            <input type="text" class="form-control" id="txtUniqueSlug" value="@(blog?.UniqueSlug ?? "")" placeholder="Auto-generated from title">
+                                            <small class="text-muted">URL-friendly identifier (auto-generated from title if left empty)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Tags</label>
+                                            <input type="text" class="form-control" id="txtTaglist" value="@(blog?.Taglist ?? "")" placeholder="Enter tags separated by commas (e.g., GST, Billing, Software)">
+                                            <small class="text-muted">Comma-separated tags for better SEO and organization</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="form-section">
+                                <legend><i class="fas fa-search mr-2"></i>SEO Settings</legend>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Meta Title</label>
+                                            <input type="text" class="form-control" id="txtMetaTitle" value="@(blog?.MetaTitle ?? "")" placeholder="Enter meta title for SEO">
+                                            <small class="text-muted">SEO title (defaults to blog title if empty)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Meta Description</label>
+                                            <textarea class="form-control" id="txtMetaDescription" rows="2" placeholder="Enter meta description for SEO">@(blog?.MetaDescription ?? "")</textarea>
+                                            <small class="text-muted">SEO description (defaults to short description if empty)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Meta Keywords</label>
+                                            <input type="text" class="form-control" id="txtMetaKeywords" value="@(blog?.MetaKeywords ?? "")" placeholder="Enter keywords separated by commas">
+                                            <small class="text-muted">SEO keywords for better search engine visibility</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                        <div class="card-footer">
+                            <button id="btnUpdate" type="button" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                            <button id="btnUpdate_AddAnother" type="button" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Admin/AdminBlog.js"></script>
+

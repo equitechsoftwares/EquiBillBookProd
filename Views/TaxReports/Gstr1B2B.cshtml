@@ -1,0 +1,303 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | B2B Invoices-4A,4B,6B,6C";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>
+                    B2B Invoices-4A,4B,6B,6C
+                </h1>
+
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/reports/index">Reports</a></li>
+                        <li class="breadcrumb-item"><a href="/taxreports/gstr1">GSTR-1</a></li>
+                        <li class="breadcrumb-item active">B2B Invoices-4A,4B,6B,6C</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/taxreports/gstr1" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+            @*<div class="col-sm-3">
+
+                    <a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>
+                </div>*@
+            <div class="col-sm-12">
+                <span id="divAsof" class="text-gray"></span>
+            </div>
+        </div>
+
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <!-- /.card -->
+                <div class="card  card-primary card-outline">
+
+                    <div class="card-body">
+                        <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                            @*<div class="dataTables_length noPrint" id="tblUserRole_length">
+                                    <label>
+                                        Show
+                                        <select name="tblUserRole_length" aria-controls="tblUserRole" class="custom-select custom-select-sm form-control form-control-sm"
+                                                onchange="fetchList(1)" id="txtPageSize">
+                                            @{
+                                                if (ViewBag.PageSize == 10)
+                                                {
+                                                    <option value="10" selected>10</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="10">10</option>
+                                                }
+                                                if (ViewBag.PageSize == 25)
+                                                {
+                                                    <option value="25" selected>25</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="25">25</option>
+                                                }
+                                                if (ViewBag.PageSize == 50)
+                                                {
+                                                    <option value="50" selected>50</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="50">50</option>
+                                                }
+                                                if (ViewBag.PageSize == 100)
+                                                {
+                                                    <option value="100" selected>100</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="100">100</option>
+                                                }
+                                                if (ViewBag.PageSize == 500)
+                                                {
+                                                    <option value="500" selected>500</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="500">500</option>
+                                                }
+                                            }
+                                        </select> entries
+                                    </label>
+                                </div>*@
+                            @if (ViewBag.MenuPermission.IsExport)
+                            {
+                                <div class="dt-buttons btn-group flex-wrap noPrint">
+                                    <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+                                    <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+                                    <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+                                    @*<button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>*@
+                                    <a href="/taxreports/B2BJson?Title=@ViewBag.Title" class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button"><span>JSON</span></a>
+                                </div>
+                            }
+                            <div id="tblUserRole_filter" class="dataTables_filter noPrint" style="visibility:hidden"><label>Search:<input type="text" class="form-control form-control-sm" placeholder="" aria-controls="tblUserRole" id="txtSearch" onkeyup="fetchList(1)"></label></div>
+                            <div class="row mt-1">
+                                <div class="col-sm-12 table-responsive">
+                                    @*<table class="table table-bordered ">
+                                        <thead id="thead">
+                                            <tr>
+                                                <th>No. of Recipients</th>
+                                                <th> </th>
+                                                <th>No. of Invoices</th>
+                                                <th></th>
+                                                <th>Total Invoice Value</th>
+                                                <th></th>
+                                                <th></th>
+                                                <th></th>
+                                                <th></th>
+                                                <th>Total Taxable Value</th>
+                                                <th>Total IGST </th>
+                                                <th>Total CGST</th>
+                                                <th>Total SGST/ UTGST</th>
+                                                <th>Total CESS </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="table-body">
+                                            @{
+                                                var NoOfRecipients = 0,;
+                                                foreach (var item in ViewBag.Sales)
+                                                {
+
+                                                }
+                                            }
+
+                                            <tr>
+                                                <td>@item.BusinessRegistrationNo </td>
+                                                <td>@item.CustomerName </td>
+                                                <td>@item.InvoiceNo </td>
+                                                <td> @item.SalesDate</td>
+                                                <td> @(String.Format("{0:0.##}", item.GrandTotal))</td>
+                                                <td>@item.StateCode-@item.PlaceOfSupply </td>
+                                                <td> @(item.IsReverseCharge == 1 ? "Y" : "N")</td>
+                                                <td> @item.InvoiceType</td>
+                                                <td>@(String.Format("{0:0.##}", item1.TaxPercent)) </td>
+                                                <td>@(String.Format("{0:0.##}", item1.AmountExcTax)) </td>
+                                                <td>@(String.Format("{0:0.##}", igst)) </td>
+                                                <td>@(String.Format("{0:0.##}", cgst)) </td>
+                                                <td> @(String.Format("{0:0.##}", sgst))</td>
+                                                <td>@(String.Format("{0:0.##}", cess)) </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>*@
+                                    <table id="tblData" class="table table-bordered ">
+                                        <thead id="thead">
+                                            <tr>
+                                                <th>GSTIN/UIN </th>
+                                                <th>Receiver Name </th>
+                                                <th>Invoice Number </th>
+                                                <th>Invoice Date</th>
+                                                <th>Invoice Value</th>
+                                                <th>Place Of Supply</th>
+                                                <th>Reverse Charge</th>
+                                                <th>Invoice Type</th>
+                                                <th>Rate</th>
+                                                <th>Taxable Amount</th>
+                                                <th>IGST </th>
+                                                <th>CGST</th>
+                                                <th>SGST/ UTGST</th>
+                                                <th>CESS </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="table-body">
+                                            @foreach (var item in ViewBag.Sales)
+                                            {
+
+                                                foreach (var item1 in item.SalesDetails)
+                                                {
+                                                    decimal cgst = 0, sgst = 0, igst = 0, cess = 0;
+
+                                                    foreach (var inner in item1.TaxTypes)
+                                                    {
+                                                        if (inner.TaxType == "CGST")
+                                                        {
+                                                            cgst = inner.TaxAmount;
+                                                        }
+                                                        else if (inner.TaxType == "SGST" || inner.TaxType == "UTGST")
+                                                        {
+                                                            sgst = sgst + inner.TaxAmount;
+                                                        }
+                                                        else if (inner.TaxType == "IGST")
+                                                        {
+                                                            igst = inner.TaxAmount;
+                                                        }
+                                                        else if (inner.TaxType == "CESS")
+                                                        {
+                                                            cess = inner.TaxAmount;
+                                                        }
+                                                    }
+                                                    <tr>
+                                                        <td>@item.BusinessRegistrationNo </td>
+                                                        <td>@item.CustomerName </td>
+                                                        <td>@item.InvoiceNo </td>
+                                                        <td> @item.SalesDate</td>
+                                                        <td> @(String.Format("{0:0.##}", item.GrandTotal))</td>
+                                                        <td>@item.StateCode-@item.PlaceOfSupply </td>
+                                                        <td> @(item.IsReverseCharge == 1 ? "Y" : "N")</td>
+                                                        <td> @item.InvoiceType</td>
+                                                        <td>@(String.Format("{0:0.##}", item1.TaxPercent)) </td>
+                                                        <td>@(String.Format("{0:0.##}", item1.AmountExcTax)) </td>
+                                                        <td>@(String.Format("{0:0.##}", igst)) </td>
+                                                        <td>@(String.Format("{0:0.##}", cgst)) </td>
+                                                        <td> @(String.Format("{0:0.##}", sgst))</td>
+                                                        <td>@(String.Format("{0:0.##}", cess)) </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is called a trial balance?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    A trial balance is a report that lists the balances of all general ledger accounts of a company at a certain point in time. The accounts reflected on a trial balance are related to all major accounting items, including assets, liabilities, equity, revenues, expenses, gains, and losses.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">
+                                        Why is trial balance important?
+                                    </h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Trial balance helps in locating errors by providing a starting point for the location of errors committed if any. Trial balance provides a basis for the preparation of final accounts. It ensures that the transactions recorded in the books of accounts have identical debit and credit amount.
+                                    Trial balance has several advantages :
+                                    •	To check the debits equal the credits
+                                    •	To find the uncover errors in journalizing
+                                    •	To find the uncover errors in posting
+                                    •	To locate the errors in ledger accounts
+                                    •	To make financial statements
+                                    •	To list the accounts at a single place
+                                    •	To know the ending balance of each account at a glance
+                                    •	To make the adjustments for unrecorded transactions
+                                    •	To find the missing amount of an account in the special case
+                                    •	To test the mathematical accuracy of recording process
+                                    In short, the trial balance is an essential tool to verify the accuracy of the recording process.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Reports/TaxReports/Gstr1.js"></script>

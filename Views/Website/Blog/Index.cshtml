@@ -1,0 +1,216 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Inner Banner -->
+<section class="banner pt-3 pb-0" style="background: #6c3fb5;">
+    <div class="container">
+        <div class="row justify-content-between align-items-center">
+            <div class="col-md-6 text-md-start text-center wow zoomInLeft">
+                <h2 class="mb-3">Blog</h2>
+                <h5 class="text-white">Track your business anytime, anywhere</h5>
+            </div>
+            <div class="col-md-3 wow zoomInRight">
+                <img src="~/Content/web-assets/images/innerbanner.png" class="img-fluid" alt="">
+            </div>
+        </div>
+    </div>
+</section>
+<!-- // -->
+<!-- Blog Panel -->
+<section>
+    <div class="container">
+        <!-- Category Filter Section -->
+        @if (ViewBag.BlogCategories != null && ((System.Collections.IEnumerable)ViewBag.BlogCategories).Cast<object>().Any())
+        {
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="category-filter-section">
+                        <h5 class="mb-3">Filter by Category:</h5>
+                        <div class="category-buttons">
+                            <button type="button" class="btn btn-outline-primary category-filter-btn active" data-category="" onclick="filterBlogsByCategory('')">
+                                All Categories
+                            </button>
+                            @foreach (dynamic category in ViewBag.BlogCategories)
+                            {
+                                <button type="button" class="btn btn-outline-primary category-filter-btn" data-category="@HttpUtility.HtmlAttributeEncode(category.CategoryName.ToString())" onclick="filterBlogsByCategory('@Html.Raw(HttpUtility.JavaScriptStringEncode(category.CategoryName.ToString()))')">
+                                    @category.CategoryName
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Blog List Container -->
+        <div id="blogListContainer">
+            @if (ViewBag.Blogs != null && ((System.Collections.IEnumerable)ViewBag.Blogs).Cast<object>().Any())
+            {
+                <div class="row" id="blogRow">
+                    @foreach (dynamic item in ViewBag.Blogs)
+                    {
+                        <div class="col-md-4 mb-4 blog-item" data-category="@(item.CategoryName != null ? HttpUtility.HtmlAttributeEncode(item.CategoryName.ToString()) : "")">
+                            <div class="single-blog-card card border-0 shadow-sm h-100">
+                                @if (!string.IsNullOrWhiteSpace(item.CategoryName?.ToString()))
+                                {
+                                    <span class="category position-absolute badge badge-pill badge-primary" style="top: 10px; right: 10px; z-index: 1;">@item.CategoryName</span>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(item.Image?.ToString()))
+                                {
+                                    <img src="@item.Image" class="card-img-top position-relative" alt="@item.Title" style="height: 200px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <img src="/Content/web-assets/images/hero-bg-2.jpg" class="card-img-top position-relative" alt="@item.Title" style="height: 200px; object-fit: cover;">
+                                }
+                                <div class="card-body">
+                                    <div class="post-meta mb-2">
+                                        <ul class="list-inline meta-list">
+                                            <li class="list-inline-item">
+                                                <i class="far fa-calendar-alt mr-1"></i>
+                                                @if (item.PublishedDate != null)
+                                                {
+                                                    @(((DateTime)item.PublishedDate).ToString("MMMM dd, yyyy"))
+                                                }
+                                                else if (item.AddedOn != null)
+                                                {
+                                                    @(((DateTime)item.AddedOn).ToString("MMMM dd, yyyy"))
+                                                }
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <h5 class="card-title mb-3">
+                                        <a href="/blog/@(item.UniqueSlug ?? item.BlogId)" class="text-dark">@item.Title</a>
+                                    </h5>
+                                    @if (!string.IsNullOrWhiteSpace(item.ShortDescription?.ToString()))
+                                    {
+                                        <p class="card-text text-muted">@(item.ShortDescription.Length > 150 ? item.ShortDescription.Substring(0, 150) + "..." : item.ShortDescription)</p>
+                                    }
+                                    <div class="text-right mt-3">
+                                        <a href="/blog/@(item.UniqueSlug ?? item.BlogId)" class="btn btn-primary btn-sm read-more-btn">Read More <i class="fas fa-arrow-right"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div id="noBlogsMessage" class="row" style="display: none;">
+                    <div class="col-12 text-center py-5">
+                        <h3 class="text-muted">No blog posts found in this category.</h3>
+                        <p class="text-muted">Try selecting a different category.</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col-12 text-center py-5">
+                        <h3 class="text-muted">No blog posts available yet.</h3>
+                        <p class="text-muted">Check back soon for updates!</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+<!-- // -->
+
+<style>
+    .category-filter-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+
+    .category-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .category-filter-btn {
+        transition: all 0.3s ease;
+        border-radius: 20px;
+        padding: 8px 20px;
+    }
+
+    .category-filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .category-filter-btn.active {
+        background-color: #6c3fb5 !important;
+        border-color: #6c3fb5 !important;
+        color: white !important;
+    }
+
+    .blog-item {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .blog-item.hidden {
+        display: none;
+    }
+
+    .blog-item.fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .read-more-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        // Initialize - ensure all blogs are visible on page load
+        filterBlogsByCategory('');
+    });
+
+    function filterBlogsByCategory(categoryName) {
+        // Update active button
+        $('.category-filter-btn').removeClass('active');
+        var targetButton = categoryName === '' 
+            ? $('.category-filter-btn[data-category=""]') 
+            : $('.category-filter-btn[data-category="' + categoryName.replace(/"/g, '&quot;') + '"]');
+        targetButton.addClass('active');
+
+        // Filter blog items
+        var visibleCount = 0;
+        $('.blog-item').each(function() {
+            var itemCategory = $(this).attr('data-category') || '';
+            if (categoryName === '' || itemCategory.toLowerCase() === categoryName.toLowerCase()) {
+                $(this).removeClass('hidden').addClass('fade-in');
+                visibleCount++;
+            } else {
+                $(this).addClass('hidden').removeClass('fade-in');
+            }
+        });
+
+        // Show/hide no blogs message
+        if (visibleCount === 0 && $('.blog-item').length > 0) {
+            $('#noBlogsMessage').show();
+            $('#blogRow').hide();
+        } else {
+            $('#noBlogsMessage').hide();
+            $('#blogRow').show();
+        }
+    }
+</script>
+

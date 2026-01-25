@@ -1,0 +1,204 @@
+﻿
+
+
+@{
+    if (ViewBag.Contra != null)
+    {
+        <div class="modal-header">
+            <h4 class="modal-title">Contra Details</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="card-body">
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-sm-3 @(ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Business Location </label>
+                                        <div class="input-group">
+                                            @foreach (var item in ViewBag.Branchs)
+                                            {
+                                                if (ViewBag.Contra.BranchId == item.BranchId)
+                                                {
+                                                    <span>@item.Branch</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Reference No</label>
+                                        <span class="input-group">@ViewBag.Contra.ReferenceNo</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label> Type </label>
+                                        <div class="input-group">
+                                            @{
+                                                if (ViewBag.Contra.Type == "Fund Transfer")
+                                                {
+                                                    <span>Fund Transfer</span>
+                                                }
+                                                if (ViewBag.Contra.Type == "Deposit")
+                                                {
+                                                    <span>Deposit</span>
+                                                }
+                                                if (ViewBag.Contra.Type == "Withdraw")
+                                                {
+                                                    <span>Withdraw</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group" id="divFTAccount">
+                                        <label> From Account</label>
+                                        <div class="input-group">
+                                            @{
+                                                if (ViewBag.AccountSubTypes != null)
+                                                {
+                                                    foreach (var item in ViewBag.AccountSubTypes)
+                                                    {
+                                                        if (item.Accounts.Count > 0)
+                                                        {
+                                                            foreach (var inner in item.Accounts)
+                                                            {
+                                                                if (ViewBag.Contra.FromAccountId == inner.AccountId)
+                                                                {
+                                                                    <span>@inner.DisplayAs</span>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group" id="divFTAccount">
+                                        <label> To Account </label>
+                                        <div class="input-group">
+                                            @{
+                                                if (ViewBag.AccountSubTypes != null)
+                                                {
+                                                    foreach (var item in ViewBag.AccountSubTypes)
+                                                    {
+                                                        if (item.Accounts.Count > 0)
+                                                        {
+                                                            foreach (var inner in item.Accounts)
+                                                            {
+                                                                if (ViewBag.Contra.ToAccountId == inner.AccountId)
+                                                                {
+                                                                    <span>@inner.DisplayAs</span>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Amount</label>
+                                        <span class="input-group">@ViewBag.Contra.Amount</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Date</label>
+                                        <div class="input-group date" id="_PaymentDate" data-target-input="nearest">
+                                            <span class="input-group">@ViewBag.Contra.PaymentDate</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 divpaymentMethod @(ViewBag.Contra.Type == "Deposit"?"":"hidden")">
+                                    <div class="form-group">
+                                        <label>Deposit Via </label>
+                                            @foreach (var item in ViewBag.PaymentTypes)
+                                            {
+                                                if (ViewBag.Contra.PaymentTypeId == item.PaymentTypeId)
+                                                {
+                                                    <span class="input-group">@item.PaymentType</span>
+                                                }
+                                            }
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Notes</label>
+                                        <span class="input-group">@ViewBag.Contra.Notes</span>
+                                    </div>
+                                </div>
+                             
+                                    <div class="col-sm-3">
+                                        <div class="form-group">
+                                            <label id="lblProductImage">Attach Document </label>
+                                            <img class="input-group" id="blahAttachDocument" src="@ViewBag.Contra.AttachDocument" alt="" height="60" style="padding-top:10px;width:auto !important">
+                                        </div>
+                                    </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title font-weight-bold">Journal Details</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row table-responsive">
+                            <table class="table table-bordered table-striped">
+                                @{
+                                    <thead id="thead">
+                                        <tr>
+                                            <th>Account Name</th>
+                                            <th>Debit</th>
+                                            <th>Credit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="table-body">
+                                        @foreach (var item in ViewBag.BankPayments)
+                                        {
+                                            <tr>
+                                                <td>@item.AccountName</td>
+                                                <td>@(String.Format("{0:0.##}", item.Debit))</td>
+                                                <td>@(String.Format("{0:0.##}", item.Credit))</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="1" data-title="Total" class="text-right"><b>Total</b></td>
+                                            <td data-title="Due Amount" class="text-bold">@(String.Format("{0:0.##}", ViewBag.TotalDebit))</td>
+                                            <td data-title="Due Amount" class="text-bold">@(String.Format("{0:0.##}", ViewBag.TotalCredit))</td>
+                                        </tr>
+                                    </tbody>
+
+                                }
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    }
+}
+

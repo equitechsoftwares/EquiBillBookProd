@@ -1,0 +1,737 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Upgrade Addons";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Upgrade Addons</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/subscription/index">My Current Plan</a></li>
+                        <li class="breadcrumb-item active">Upgrade Addons</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/Subscription/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            @*<div class="col-12 noPrint">
+                    <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                        <h5><i class="fas fa-info"></i> Note:</h5>
+                        This page has been enhanced for printing. Click the print button at the bottom of the invoice to test.
+                    </div>
+                </div>*@
+            <div class="col-md-8">
+                <div class="card card-widget widget-user-2 card-primary card-outline " id="divAddons">
+                    <div class="widget-user-header">
+                        <h3 class="">
+                            Addons
+                            @*<span onclick="next(3, false)" class="float-right div33 hidden" style="font-size:1rem">
+                                    <i class="fas fa-minus text-success" aria-hidden="true"></i>
+                                </span>
+                                <span onclick="next(3, true)" class="float-right div11" style="font-size:1rem">
+                                    <i class="fas fa-plus text-success" aria-hidden="true"></i>
+                                </span>*@
+                        </h3>
+                        <h6 class="danger">
+                            Addons Pricing is based on the current active plan. If the current active plan is for 1 year and you
+                            have only 8 months left. Then addon pricing is calculated for the number of months left to complete the current 1 year plan
+                        </h6>
+                    </div>
+                    <div class="p-0 div3">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                @{
+                                    <input type="hidden" value="@ViewBag.MonthsLeft" id="hdnMonths" />
+                                    <input type="hidden" value="@ViewBag.Country.CountryId" id="hdnCountryId" />
+                                    <input type="hidden" value="@ViewBag.MainCountry.CountryId" id="hdnMainCountryId" />
+                                    <input type="hidden" value="@ViewBag.MainCountry.CurrencySymbol" id="hdnCurrencySymbol" />
+                                    var count = 1;
+                                    foreach (var item in ViewBag.PlanAddons)
+                                    {
+                                        if (item.Type == "Sms")
+                                        {
+                                            if (ViewBag.Country.CountryId == 2)
+                                            {
+                                                <input type="hidden" value="@item.SellingPrice.ToString("0.00")" id="hdnUnitCost@(count)" />
+                                                <input type="hidden" value="@item.MRP.ToString("0.00")" id="hdnMRP@(count)" />
+                                                <input type="hidden" value="@item.DiscountPercentage" id="hdnDiscountPercentage@(count)" />
+                                                <input type="hidden" value="@item.Title" id="hdnPlanAddon@(count)" />
+                                                <input type="hidden" value="@item.PricingType" id="hdnPricingType@(count)" />
+                                                if (item.IsCheckbox)
+                                                {
+                                                    if (item.IsTaken == false)
+                                                    {
+                                                        <div class="form-group nav-link">
+                                                            <div class="checkbox icheck-turquoise">
+                                                                <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                                                <label for="chkPlanAddon@(count)" class="font-weight-normal">
+                                                                    @item.Title
+                                                                    @if (item.DiscountPercentage != 0)
+                                                                    {
+                                                                        <span class="badge bg-warning" style="position: absolute;bottom:10px;">@(String.Format("{0:0.##}", item.DiscountPercentage))% OFF</span>
+                                                                    }
+                                                                </label>
+                                                                <span class="float-right text-bold" id="lblPlanAddonSellingPrice@(count)">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(((decimal)item.SellingPrice).ToString("0.00"))/@item.PricingPer</span><br />
+                                                                @*<span class="float-right danger" style="text-decoration:line-through;font-size:0.9rem" id="lblPlanAddonSellingPrice@(count)">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(((decimal)item.MRP).ToString("0.00"))/@item.PricingPer</span>*@
+                                                                <input type="hidden" id="txtPlanAddonQuantity@(count)" value="1" />
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <div class="nav-link" style="padding-left:1.5rem;">
+                                                        <div class="form-group row">
+
+                                                            @if (Request.Url.AbsoluteUri.ToString().Split('=').Count() > 1 && Request.Url.AbsoluteUri.ToString().Split('=')[1].ToLower() == item.Title.ToLower())
+                                                            {
+                                                                <div class="col-sm-6 checkbox icheck-turquoise">
+                                                                    <input checked type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                                                    <label for="chkPlanAddon@(count)" class="font-weight-normal">
+                                                                        @item.Title
+                                                                        @if (item.DiscountPercentage != 0)
+                                                                        {
+                                                                            <span class="badge bg-warning" style="position: absolute;bottom:10px;">@(String.Format("{0:0.##}", item.DiscountPercentage))% OFF</span>
+                                                                        }
+                                                                    </label>
+                                                                </div>
+                                                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                                    <input min="1" value="1" type="number" class="form-control" id="txtPlanAddonQuantity@(count)" placeholder="" onchange="calculatePrice()">
+                                                                </div>
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="col-sm-6 checkbox icheck-turquoise">
+                                                                    <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                                                    <label for="chkPlanAddon@(count)" class="font-weight-normal">
+                                                                        @item.Title
+                                                                        @if (item.DiscountPercentage != 0)
+                                                                        {
+                                                                            <span class="badge bg-warning" style="position: absolute;bottom:10px;">@(String.Format("{0:0.##}", item.DiscountPercentage))% OFF</span>
+                                                                        }
+                                                                    </label>
+                                                                </div>
+                                                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                                    <input disabled min="1" type="number" class="form-control" id="txtPlanAddonQuantity@(count)" placeholder="" onchange="calculatePrice()">
+                                                                </div>
+                                                            }
+
+                                                            <div class="col-sm-4">
+                                                                @if (item.PricingType == 1)
+                                                                {
+                                                                    <span class="float-right text-bold" id="lblPlanAddonSellingPrice@(count)">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(((decimal)item.SellingPrice).ToString("0.00"))/@item.PricingPer</span><br />
+                                                                    @*<span class="float-right danger" style="text-decoration:line-through;font-size:0.9rem" id="lblPlanAddonSellingPrice@(count)">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(((decimal)item.MRP).ToString("0.00"))/@item.PricingPer</span>*@
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="float-right text-bold" id="lblPlanAddonSellingPrice@(count)">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(((decimal)item.SellingPrice).ToString("0.00"))/@item.PricingPer</span><br />
+                                                                    @*<span class="float-right danger" style="text-decoration:line-through;font-size:0.9rem" id="lblPlanAddonSellingPrice@(count)">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(((decimal)item.MRP).ToString("0.00"))/@item.PricingPer</span>*@
+                                                                }
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" value="@item.SellingPrice.ToString("0.00")" id="hdnUnitCost@(count)" />
+                                            <input type="hidden" value="@item.MRP.ToString("0.00")" id="hdnMRP@(count)" />
+                                            <input type="hidden" value="@item.DiscountPercentage" id="hdnDiscountPercentage@(count)" />
+                                            <input type="hidden" value="@item.Title" id="hdnPlanAddon@(count)" />
+                                            <input type="hidden" value="@item.PricingType" id="hdnPricingType@(count)" />
+                                            if (item.IsCheckbox)
+                                            {
+                                                if (item.IsTaken == false)
+                                                {
+                                                    <div class="form-group nav-link">
+                                                        <div class="checkbox icheck-turquoise">
+                                                            <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                                            <label for="chkPlanAddon@(count)" class="font-weight-normal">
+                                                                @item.Title
+                                                                @if (item.DiscountPercentage != 0)
+                                                                {
+                                                                    <span class="badge bg-warning" style="position: absolute;bottom:10px;">@(String.Format("{0:0.##}", item.DiscountPercentage))% OFF</span>
+                                                                }
+                                                            </label>
+                                                            <span class="float-right text-bold" id="lblPlanAddonSellingPrice@(count)">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(((decimal)item.SellingPrice).ToString("0.00"))/@item.PricingPer</span><br />
+                                                            @*<span class="float-right danger" style="text-decoration:line-through;font-size:0.9rem" id="lblPlanAddonSellingPrice@(count)">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(((decimal)item.MRP).ToString("0.00"))/@item.PricingPer</span>*@
+                                                            <input type="hidden" id="txtPlanAddonQuantity@(count)" value="1" />
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div class="nav-link" style="padding-left:1.5rem;">
+                                                    <div class="form-group row">
+
+                                                        @if (Request.Url.AbsoluteUri.ToString().Split('=').Count() > 1 && Request.Url.AbsoluteUri.ToString().Split('=')[1].ToLower() == item.Title.ToLower())
+                                                        {
+                                                            <div class="col-sm-6 checkbox icheck-turquoise">
+                                                                <input checked type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                                                <label for="chkPlanAddon@(count)" class="font-weight-normal">
+                                                                    @item.Title
+                                                                    @if (item.DiscountPercentage != 0)
+                                                                    {
+                                                                        <span class="badge bg-warning" style="position: absolute;bottom:10px;">@(String.Format("{0:0.##}", item.DiscountPercentage))% OFF</span>
+                                                                    }
+                                                                </label>
+                                                            </div>
+                                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                                <input min="1" value="1" type="number" class="form-control" id="txtPlanAddonQuantity@(count)" placeholder="" onchange="calculatePrice()">
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="col-sm-6 checkbox icheck-turquoise">
+                                                                <input type="checkbox" id="chkPlanAddon@(count)" value="@item.PlanAddonsId" onchange="calculatePrice()" />
+                                                                <label for="chkPlanAddon@(count)" class="font-weight-normal">
+                                                                    @item.Title
+                                                                    @if (item.DiscountPercentage != 0)
+                                                                    {
+                                                                        <span class="badge bg-warning" style="position: absolute;bottom:10px;">@(String.Format("{0:0.##}", item.DiscountPercentage))% OFF</span>
+                                                                    }
+                                                                </label>
+                                                            </div>
+                                                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                                <input disabled min="1" type="number" class="form-control" id="txtPlanAddonQuantity@(count)" placeholder="" onchange="calculatePrice()">
+                                                            </div>
+                                                        }
+
+                                                        <div class="col-sm-4">
+                                                            @if (item.PricingType == 1)
+                                                            {
+                                                                <span class="float-right text-bold" id="lblPlanAddonSellingPrice@(count)">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(((decimal)item.SellingPrice).ToString("0.00"))/@item.PricingPer</span><br />
+                                                                @*<span class="float-right danger" style="text-decoration:line-through;font-size:0.9rem" id="lblPlanAddonSellingPrice@(count)">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(((decimal)item.MRP).ToString("0.00"))/@item.PricingPer</span>*@
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="float-right text-bold" id="lblPlanAddonSellingPrice@(count)">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(((decimal)item.SellingPrice).ToString("0.00"))/@item.PricingPer</span><br />
+                                                                @*<span class="float-right danger" style="text-decoration:line-through;font-size:0.9rem" id="lblPlanAddonSellingPrice@(count)">@(ViewBag.Country.CountryId== ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(((decimal)item.MRP).ToString("0.00"))/@item.PricingPer</span>*@
+                                                            }
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+                                            }
+                                        }
+
+                                        count++;
+                                    }
+                                }
+
+                            </li>
+                            @*<li class="nav-item">
+                                    <div class="card-footer nav-link">
+                                        <button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="next(4,true)">Next</button>
+                                    </div>
+                                </li>*@
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- /.widget-user -->
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-widget widget-user-2 card-primary card-outline " id="divOrderSummary">
+                    <div class="widget-user-header card-footer">
+                        <h3 class="">Order Summary <span onclick="next(4)" class="float-right div44 hidden" style="font-size:1rem"><i class="fas fa-pen text-success" aria-hidden="true"></i></span></h3>
+                        <h6 class="danger">Price is calculated for @ViewBag.MonthsLeft months</h6>
+                    </div>
+                    <div class=" p-0 div4">
+                        <ul class="nav flex-column divSummary">
+                        </ul>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <div class="card-footer nav-link">
+                                    @foreach (var item in ViewBag.OnlinePaymentSettings)
+                                    {
+                                        if (item.OnlinePaymentService == 1)
+                                        {
+                                            <div id="divPaypal" style="float: right; margin-left: 10px;">
+                                                @*<div class="" id="paypal-button-container"></div>*@
+                                            </div>
+                                        }
+                                        else if (item.OnlinePaymentService == 2)
+                                        {
+                                            @*<button id="btnRazorPay" type="submit" class="btn btn-primary hidden float-right" onclick="InitRazorPayPrice()">Pay Now</button>*@
+                                            <button id="btnRazorPay" type="submit" class="btn btn-primary hidden float-right" onclick="insert(2)">Pay Now</button>
+                                        }
+                                    }
+                                    <button id="btnSave" type="button" class="btn btn-warning float-right mr-2" onclick="insert(1)">Save Invoice </button>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="card-body">
+                            @*@if (ViewBag.ShowCoupon == true)*@
+                            @if (ViewBag.Coupons != null)
+                            {
+                                <ul class="nav flex-column">
+                                    <li class="nav-item divCoupon border-0">
+                                        <div class="nav-link">
+                                            <label class="text-danger font-weight-normal">
+                                                <a onclick="openCoupon()" href="javascript:void(0)" class="font-weight-bold warning">
+                                                    <i class="fas fa-tag"></i> SHOW ALL COUPON CODES
+                                                </a>
+                                            </label>
+                                            @*<button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="next(2)">Next</button>*@
+                                        </div>
+                                    </li>
+                                    @*<li class="nav-item divCoupon"><h4 class="nav-link"><a onclick="openCoupon()" href="javascript:void(0)">Show all coupon codes</a></h4></li>*@
+                                    <li class="nav-item divApplyCoupon" style="display:none">
+                                        <div class="nav-link" style="padding-left:1rem;">
+                                            <div class="form-group row">
+                                                <div class="col-sm-12">
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" id="txtCouponCode" />
+                                                        <span class="input-group-append">
+                                                            <a id="btnApplyCoupon" href="javascript:void(0)" class="btn btn-info" onclick="ApplyCoupon()">Apply Coupon </a>
+                                                            <a id="btnRemoveCoupon" href="javascript:void(0)" class="btn btn-danger hidden" onclick="RemoveCoupon()">Remove Coupon </a>
+                                                        </span>
+                                                        <input type="hidden" id="hdnCouponId" />
+                                                        <input type="hidden" id="hdnDiscountType" />
+                                                        <input type="hidden" id="hdnDiscount" />
+                                                        <input type="hidden" id="hdnCalculatedDiscount" />
+                                                    </div>
+                                                    <small class="text-red font-weight-bold errorText" id="divCouponCode"></small>
+                                                    <small class="text-green font-weight-bold errorText" id="divCouponSuccessMsg"></small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+
+                                <div class="divApplyCoupon" style="display:none">
+                                    @foreach (var item in ViewBag.Coupons)
+                                    {
+                                        <strong class="warning">
+                                            @item.CouponCode <a href="javascript:void(0)" class="float-right badge badge-danger" onclick="ApplyCoupon('@item.CouponCode')">Apply</a>
+                                        </strong>
+                                        <p class="text-muted" style="font-size:0.9rem;margin-bottom:0">
+                                            @item.CouponDescription
+                                        </p>
+                                        <div class="mt-0 mb-2">
+                                            <a href="javascript:void(0)" class="text-primary toggle-conditions" style="font-size: 0.85rem; text-decoration: underline;">
+                                                <span class="toggle-text">Read more</span>
+                                            </a>
+                                            <div class="conditions-section" style="display: none;">
+                                                <small class="text-muted d-block mb-1 mt-2">
+                                                    <strong>Conditions:</strong>
+                                                </small>
+                                                <ul class="mb-0 pl-3 conditions-list" style="font-size: 0.85rem; color: #6c757d;">
+                                                @if (item.DiscountType == 1)
+                                                {
+                                                    <li>Discount: @(ViewBag.Country.CountryId == ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(String.Format("{0:0.##}", item.Discount)) off</li>
+                                                }
+                                                else
+                                                {
+                                                    <li>Discount: @(String.Format("{0:0.##}", item.Discount))% off</li>
+                                                }
+                                                @if (item.MaximumDiscountAmount > 0)
+                                                {
+                                                    <li>Maximum discount: @(ViewBag.Country.CountryId == ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(String.Format("{0:0.##}", item.MaximumDiscountAmount))</li>
+                                                }
+                                                @if (item.MinimumPurchaseAmount > 0)
+                                                {
+                                                    <li>Minimum purchase: @(ViewBag.Country.CountryId == ViewBag.MainCountry.CountryId ? ViewBag.MainCountry.CurrencySymbol : "$")@(String.Format("{0:0.##}", item.MinimumPurchaseAmount))</li>
+                                                }
+                                                @if (item.ApplyToBasePlan && item.ApplyToAddons)
+                                                {
+                                                    <li>Applies to: Base Plan & Addons</li>
+                                                }
+                                                else if (item.ApplyToBasePlan)
+                                                {
+                                                    <li>Applies to: Base Plan only</li>
+                                                }
+                                                else if (item.ApplyToAddons)
+                                                {
+                                                    <li>Applies to: Addons only</li>
+                                                }
+                                                @if (item.UsageType == 1)
+                                                {
+                                                    <li>Usage: Unlimited</li>
+                                                }
+                                                else if (item.UsageType == 2)
+                                                {
+                                                    <li>Usage: Once per user</li>
+                                                }
+                                                else if (item.UsageType == 3)
+                                                {
+                                                    <li>Usage: Limited to @item.NoOfTimes time(s)</li>
+                                                }
+                                                @if (item.IsNeverExpires)
+                                                {
+                                                    <li>Valid from: @item.StartDate.ToString("MMM dd, yyyy") - Never expires</li>
+                                                }
+                                                else
+                                                {
+                                                    <li>Valid from: @item.StartDate.ToString("MMM dd, yyyy") to @item.EndDate.ToString("MMM dd, yyyy")</li>
+                                                }
+                                                @{
+                                                    var termLengths = item.TermLengths as System.Collections.IEnumerable;
+                                                    if (termLengths != null)
+                                                    {
+                                                        var termLengthList = new List<string>();
+                                                        foreach (dynamic tl in termLengths)
+                                                        {
+                                                            string title = tl.Title ?? "";
+                                                            int months = tl.Months ?? 0;
+                                                            if (months >= 12)
+                                                            {
+                                                                int years = months / 12;
+                                                                title += " (" + years + " " + (years == 1 ? "Year" : "Years") + ")";
+                                                            }
+                                                            termLengthList.Add(title);
+                                                        }
+                                                        if (termLengthList.Count > 0)
+                                                        {
+                                                            <li>Plan durations: @string.Join(", ", termLengthList)</li>
+                                                        }
+                                                    }
+                                                }
+                                                @{
+                                                    var addons = item.Addons as System.Collections.IEnumerable;
+                                                    if (addons != null)
+                                                    {
+                                                        var addonList = new List<string>();
+                                                        foreach (dynamic a in addons)
+                                                        {
+                                                            if (a.Title != null)
+                                                            {
+                                                                addonList.Add(a.Title.ToString());
+                                                            }
+                                                        }
+                                                        if (addonList.Count > 0)
+                                                        {
+                                                            <li>Specific addons: @string.Join(", ", addonList)</li>
+                                                        }
+                                                    }
+                                                }
+                                            </ul>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                @*<div class="card card-widget widget-user-2 ">
+                        <div class="widget-user-header">
+                            <h3 class="">Frequently Asked Questions</h3>
+                        </div>
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] is an online cloud based accounting software. Few advantages are below :
+                                    <ul>
+                                        <li>Pay As You Go</li>
+                                        <li>Watertight security and no time-consuming back-ups</li>
+                                        <li>Accessibility Anywhere, Anytime and on any Device</li>
+                                        <li>Multi-Location Accounting with Real-Time Consolidation and Reporting</li>
+                                        <li>Ease of Communication between locations</li>
+                                        <li>Reduces paperwork and is more sustainable</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How will @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] help me in getting my account ready?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] is all set to provide you with a content-rich platform, designed just the way you want it.
+                                    Visit our website, and then create an account by uploading the necessary credentials.
+                                    Once done, update your business name and logo and then you are all set to start and create your first invoice.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How much time does it take to create my account at @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1]?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Creating your account at @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] will not take more than 2 minutes since it involves entering just a
+                                    few basic details.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Will I be charged for this service?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    No, not at all. We provide 30 days of an extensive free trial of our base plan, where users can use it
+                                    and if the user is satisfied with our service then only they can buy it.<br />
+                                    However, if the user wants to see the full software demo they can click the <a href="/home/demo">demo link</a>
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How safe is my data with you?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Please relax, your data has been securely put into code by our experts and stowed
+                                    carefully in our system. Information that you share online through @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] also has an extra
+                                    fortification of HTTPs layer, giving it a shield against every sort of cyber threat.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How can I share my invoices with my customers?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    There are plenty of ways through which you can share your invoice to your customers,
+                                    like you can WhatsApp, email, or SMS it.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">I am facing trouble in using the software, what should I do?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    No problem, at @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] we are always set to assist you. Hence, if you are stuck,
+                                    please communicate with our support team, they will guide you accordingly.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">I believe my account has been hacked, what should I do now?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Please keep in mind, your password must be kept private to rule out any case of cybercrime,
+                                    hence kindly adhere to this. Instances of cyber theft are not uncommon nowadays.
+                                    Though at @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1], we do our best to create awareness amongst our clients, so that they
+                                    can avoid such issues, but incontrovertibly, such things do happen. Although we rarely
+                                    have such instances in our record, still if you contemplate your account has been hacked,
+                                    kindly convey the matter to our support executive, so that requisite action can be taken on time.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What about Support ?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    If you have any queries, then you can get in touch with our Support Team via email.
+                                    Our Support Team tries their best to reply within the same working day, else they will reply within 24
+                                    working hours. Support Team works between 10 AM to 8 PM IST.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Why choose a @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] over another service?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] is built specifically for all business categories ranging from small to medium size.
+                                    Its a initiative to bring people online at a very low cost. We dont believe in predefined subscription
+                                    plans, rather we prefer giving the control to you so that you can create your own plan. Just select the modules
+                                    which you need. Never pay extra when you have the option to pay for what and how much you need. <br />
+                                    It’s simple, secure, quick and easy to use.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What happens after my free trial?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Once your free trial is expired, you need to buy our paid plan to enjoy continuing our service.<br />
+                                    You can choose from 1 month to 5 years depending on your requirement.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can I customise my plan?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Yes, @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] prefers giving the control to you so that you can create and customise
+                                    your own plan. Just select the term length for the base plan and then select the modules/ addons
+                                    which you need. Never pay extra when you have the option to pay for what and how much you need.
+                                    It’s simple, secure, quick and easy to use.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can I upgrade my existing plan to any other plan?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    We do not have plan system, rather we have modules/ addons. You can always go to addon menu from
+                                    your dashboard and add the extra modules or features which you need. Pricing will depend accordingly.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is the billing cycle of @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1]?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] offers billing in both monthly and annually, ranging from 1 month upto 5 years.<br />
+                                    All our pricings are very affordable compared to other billing software available in the market.
+                                    Choose the one which suits you the best.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can I cancel my subscription?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Yes, you are allowed to cancel your subscription at any time. However, no refund requests are entertained. Kindly refer to our
+                                    <a href="/refundpolicy" target="_blank">Refund Policy</a> for more details
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can I use this product in my country?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    @Request.Cookies["data"].Value.Split('&')[9].Split('=')[1] can be used in any country. You can customise the taxes as per your requirements.
+                                    Also we have multiple languages support and multiple timezone.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What will happen if i dont renew after my current plan gets expired?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You will get notifications in email/ whatsapp and reminder message in your dasboard from 1 month before
+                                    your next renewal date. However, if still the renewal is not done then from the date of expiry all
+                                    menus will be hidden and you won't be able to use the software until and unless the renewal is done.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">I got more questions. How can i reach out to you?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    We want our users to clarify all doubts before they start using our service. Kindly get in touch
+                                    with our support team anytime through emails. Our team will get back to you and clear all your doubts.
+                                </div>
+                            </div>
+                        </div>
+                    </div>*@
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+@foreach (var item in ViewBag.OnlinePaymentSettings)
+{
+    if (item.OnlinePaymentService == 1)
+    {
+        <script src="https://www.paypal.com/sdk/js?client-id=@(item.PaypalClientId)&currency=@(item.PaypalCurrencyCode)"></script>
+    }
+}
+<script src="~/Content/JQuery/Customer/Billing/UpgradeAddons.js"></script>

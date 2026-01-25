@@ -1,0 +1,77 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Kitchen Display";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Kitchen Display System</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/kot/index">KOT List</a></li>
+                        <li class="breadcrumb-item active">Kitchen Display System</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="float-sm-right d-flex align-items-center">
+                    <div class="form-group mb-0 mr-2">
+                        <select class="form-control select2" id="ddlStation" style="width: 200px;" onchange="filterByStation()">
+                            <option value="0">All Stations</option>
+                            @if (ViewBag.Stations != null)
+                            {
+                                foreach (var item in ViewBag.Stations)
+                                {
+                                    <option value="@item.KitchenStationId" @(ViewBag.StationId != null && ViewBag.StationId == item.KitchenStationId ? "selected" : "")>@item.StationName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <button id="btnRefresh" onclick="loadKitchenDisplay()" class="btn btn-info mr-2" title="Refresh"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <a id="btnBack" href="/restaurantdashboard/index" class="btn btn-warning"><i class="fas fa-arrow-left"></i> Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row" id="kotDisplayContainer">
+            <!-- KOTs will be displayed here dynamically -->
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Customer/Restaurant/Kot.js"></script>
+<script>
+    // Store previous KOT state for sound notifications
+    var previousKots = [];
+    var EnableSound = typeof Cookies !== 'undefined' && Cookies.get('SystemSetting') ? Cookies.get('SystemSetting').split('&')[4].split('=')[1] : 'False';
+    
+    $(document).ready(function () {
+        $('.select2').select2();
+        loadKitchenDisplay();
+    });
+    
+    function playKotNotificationSound() {
+        if (EnableSound == 'True') {
+            try {
+                var audio = document.getElementById('success');
+                if (audio) {
+                    audio.play().catch(function(e) {
+                        // Ignore autoplay restrictions
+                        console.log('Sound play prevented:', e);
+                    });
+                }
+            } catch (e) {
+                console.log('Sound notification error:', e);
+            }
+        }
+    }
+</script>
+

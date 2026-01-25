@@ -1,0 +1,107 @@
+@model IEnumerable<EquiBillBook.Models.ClsInvoiceTemplate>
+@using System.Web
+
+@{
+    ViewBag.Title = "Invoice Templates";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Invoice Templates</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/admindashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/admintemplatemaster/index">Template Masters</a></li>
+                        <li class="breadcrumb-item active">Invoice Templates</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <a href="@Url.Action("CreateInvoiceTemplate", "AdminTemplateMaster")" class="btn btn-primary float-sm-right">
+                    <i class="fas fa-plus"></i> New Template
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        @Html.AntiForgeryToken()
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+
+        <div class="card card-primary card-outline">
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th class="hide noPrint" style="width:120px;">Actions</th>
+                            <th>Invoice Type</th>
+                            <th>Name</th>
+                            <th>Key</th>
+                            <th>Default</th>
+                            <th class="hidden">Status</th>
+                            <th class="hide">Status</th>
+                            <th>Deleted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var t in Model)
+                            {
+                                <tr>
+                                    <td>@t.InvoiceTemplateId</td>
+                                    <td class="hide noPrint">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-info">Action</button>
+                                            <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                                <span class="sr-only">Toggle Dropdown</span>
+                                            </button>
+                                            <div class="dropdown-menu" role="menu">
+                                                <a class="dropdown-item" href="@Url.Action("EditInvoiceTemplate", "AdminTemplateMaster", new { id = t.InvoiceTemplateId })"><i class="fas fa-edit"></i> Edit</a>
+                                                <a class="dropdown-item" href="javascript:void(0)" onclick="Delete(@t.InvoiceTemplateId,'@Html.Raw(HttpUtility.JavaScriptStringEncode(t.TemplateName))')"><i class="far fa-trash-alt"></i> Delete</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@t.InvoiceType</td>
+                                    <td>@t.TemplateName</td>
+                                    <td>@t.TemplateKey</td>
+                                    <td>@(t.IsDefault ? "Yes" : "No")</td>
+                                    <td class="hidden">@(t.IsActive == true ? "Active" : "Inactive")</td>
+                                    <td class="hide">
+                                        @if (t.IsActive)
+                                        {
+                                            <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@t.InvoiceTemplateId,false)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                                        }
+                                        else
+                                        {
+                                            <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@t.InvoiceTemplateId,true)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                                        }
+                                    </td>
+                                    <td>@(t.IsDeleted ? "Yes" : "No")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8">No templates found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Admin/AdminTemplateMaster.js"></script>
+

@@ -1,0 +1,468 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add Stock Transfer";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Stock Transfer</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/stocktransfer/index">Stock Transfer List</a></li>
+                        <li class="breadcrumb-item active">Add Stock Transfer</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/stocktransfer/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <div class="card-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Reference No <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                                            <input type="text" class="form-control" id="txtReferenceNo">
+                                            <small class="text-red font-weight-bold errorText" id="divReferenceNo"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Date <span class="danger">*</span></label>
+                                            <div class="input-group date" id="_Date" data-target-input="nearest">
+                                                <input id="txtDate" type="text" class="form-control datetimepicker-input divDate_ctrl" data-target="#_Date" />
+                                                <div class="input-group-append" data-target="#_Date" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                            @*<input type="datetime-local" class="form-control" id="txtDate" placeholder="Enter SKU">*@
+                                            <small class="text-red font-weight-bold errorText" id="divDate"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Status <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Stock transfer will not be editable if status is completed"></i></label>
+                                            <select class="form-control" style="width: 100%;" id="ddlStatus">
+                                                <option value="1">Pending</option>
+                                                <option value="2">In Transit</option>
+                                                <option value="3">Completed</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>From Business Location <span class="danger">*</span></label>
+                                            <div class="input-group divFromBranch_ctrl">
+                                                <select class="form-control select2" style="width: 100%;" id="ddlFromBranch" onchange="clearTable()">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.Branchs)
+                                                    {
+                                                        <option value="@item.BranchId">@item.Branch</option>
+                                                    }
+                                                </select>
+                                                @*<span class="input-group-append">
+                                                        <a href="customers/add" target="_blank" class="btn btn-info">+ </a>
+                                                    </span>*@
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divFromBranch"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>To Business Location <span class="danger">*</span></label>
+                                            <div class="input-group divToBranch_ctrl">
+                                                <select class="form-control select2" style="width: 100%;" id="ddlToBranch" onchange="clearTable()">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.Branchs)
+                                                    {
+                                                        <option value="@item.BranchId">@item.Branch</option>
+                                                    }
+                                                </select>
+                                                @*<span class="input-group-append">
+                                                        <a href="customers/add" target="_blank" class="btn btn-info">+ </a>
+                                                    </span>*@
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divToBranch"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Reason <span class="danger">*</span></label>
+                                            <div class="input-group divStockTransferReason_ctrl">
+                                                <select class="form-control select2" id="ddlStockTransferReason">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.StockTransferReasons)
+                                                    {
+                                                        <option value="@item.StockTransferReasonId">@item.StockTransferReason</option>
+                                                    }
+                                                </select>
+                                                @if (ViewBag.StockTransferReasonsPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#stockTransferReasonsModal">+ </a>
+                                                    </span>
+                                                }
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divStockTransferReason"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card card-outline">
+                            <div class="card-header bg-info">
+                                <h3 class="card-title">Search Items</h3>
+                            </div>
+                            <!-- form start -->
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-12 mb-3">
+                                        <div class="input-group">
+                                            @*<div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                                                </div>*@
+                                            <input type="text" class="form-control divtags_ctrl" placeholder="Sku Code/ Item Name" id="txttags">
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divtags"></small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12 table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    @*<th>#</th>*@
+                                                    <th style="width:20%">Item Name</th>
+                                                    <th class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden") + '">Lot</th>
+                                                    <th style="width:10%">Choose Unit</th>
+                                                    <th>Avl Qty</th>
+                                                    <th>Qty</th>
+
+                                                    <th style="width:10%">Unit Cost</th>
+                                                    <th style="width:10%">Amount</th>
+                                                    <th style="width:5%">
+                                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteFullCombo()">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                        @*<input type="hidden" id="hdnSalePriceIsMinSellingPrice" value="@(ViewBag.SaleSetting.SalePriceIsMinSellingPrice.ToString())" />*@
+                                                        <input type="hidden" id="hdnEnableLotNo" value="@(ViewBag.ItemSetting.EnableLotNo.ToString())" />
+                                                        <input type="hidden" id="hdnEnableItemExpiry" value="@(ViewBag.ItemSetting.EnableItemExpiry.ToString())" />
+                                                        <input type="hidden" id="hdnOnItemExpiry" value="@(ViewBag.ItemSetting.OnItemExpiry)" />
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="divCombo">
+
+                                                @* <tr id="tr_1">
+                                                        <td>1</td>
+                                                        <td>
+                                                            <input type="text" class="form-control" id="txtPrice" placeholder="Enter Name">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" class="form-control" id="txtPrice">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" class="form-control" id="txtPrice" placeholder="Enter Name">
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control" style="width: 100%;">
+                                                                <option selected="selected">GST</option>
+                                                                <option>IGST</option>
+
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" disabled class="form-control" id="txtPrice" placeholder="Enter Name">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" class="form-control" id="txtPrice" placeholder="Enter Name">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" disabled class="form-control" id="txtPrice" placeholder="Enter Name">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" disabled class="form-control" id="txtPrice" placeholder="Enter Name">
+                                                        </td>
+                                                        <td>
+                                                            <a href="/sales/delete" class="btn btn-danger" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                                                        </td>
+                                                    </tr>*@
+                                            </tbody>
+
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <div class="row">
+                                            @*<div class="col-sm-6 mt-2">
+                                                <div class="form-group row">
+                                                    <label class="col-sm-5 col-form-label">Shipping Charge</label>
+                                                    <div class="input-group col-sm-7">
+                                                        <input type="number" class="form-control" id="txtShippingCharge" placeholder="" onchange="updateAmount()">                                                       
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label">Packaging Charge</label>
+                                                    <div class="col-sm-7">
+                                                        <input type="number" class="form-control" id="txtPackagingCharge" placeholder="" onchange="updateAmount()">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 ">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label">Other Charges</label>
+                                                    <div class="col-sm-7">
+                                                        <input type="number" class="form-control" id="txtOtherCharges" placeholder="" onchange="updateAmount()">
+                                                    </div>
+                                                </div>
+                                            </div>*@
+
+                                            <div class="col-sm-12">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label">Notes</label>
+                                                    <div class="col-sm-12">
+                                                        <textarea rows="2" class="form-control" id="txtNotes"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right">Net Total Amount :</label>
+                                                    <input type="number" class="form-control" id="hdndivTotalAmount" hidden>
+                                                    <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTotalAmount">
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12" style="display:none;">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right">Total Quantities :</label>
+                                                    <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTotalQty"></label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right">Total Amount:</label>
+                                                    @*<input type="email" class="form-control" id="hdndivTotalAmount" hidden>*@
+                                                    <label for="inputEmail3" class="col-4 col-form-label text-left" id="divGrandTotal">
+
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card-footer">
+                        <button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="insert(1)"><i class="fas fa-save"></i> Save</button>
+                        <button id="btnSave_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="insert(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                        @*<a id="btnBack" href="/stocktransfer/index" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can I track my stock in multiple locations?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Yes, you can track your inventory levels at multiple locations through this software. Besides checking the system, the software also notifies you about any disruption in the supply chain so you can resolve the problem efficiently.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What are various types of stock transfer?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    •	Stock transfers can occur at three different levels:
+                                    •	Stock transfer from company code to company code.
+                                    •	Stock transfer from plant to plant.
+                                    •	Stock transfer from storage location to storage location (in the plant)
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What does it mean to transfer stock?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Stock transfer is the act of moving goods from one part of the distribution chain to another. An internal purchase order is created for stock transfer between branches and warehouses.<br />
+                                    A stock transport order, generated by converting a stock transport requisition, exists in SAP ERP. The goods issue for delivery is posted to the issuing plant. The booked-out quantity is then managed in the stock in transit of the receiving plant.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is the difference between transfer posting and stock transfer?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Transfer postings differ from stock transfers, in that transfer postings are not connected with a physical goods movement. They usually involve a change in stock type, batch number, or material number. An example of transfer posting is the release from inspection into the company's own stock.
+                                    Types of stock transfer:
+                                    Intercompany transfer
+                                    In this process, inventory is transferred between two companies with the involvement of many departments in both parties such as sales, logistics or procurement. The process may become more complicated if identification codes used by the two parties are different.
+                                    Intra-company transfer
+                                    In this type of stock transferring process, two particular locations belonging to the same company participate in the inventory transferring process. The intra-company transfer is considered less complicated than intercompany transfer thanks to the involvement of departments in only one entity.
+                                    One-step transferring process
+                                    In this process, inventory is transferred from one to another location through a single Stock Transfer Order (STO). Companies are recommended to use this method only in case it is an intra-company transferring process and the locations should not be too far from each other.
+                                    Two-step transferring process
+                                    This is a more efficient process in terms of tracking stock transferring and inventory management since STO is issued by both ends.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Why should retail businesses document stock transfer?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Retail businesses have to annually carry out stock transfers numerous times. And following are highlight benefits that retailers may get from an efficient transferring process.
+                                    Stock transfers enable businesses to maintain their inventory records through documentation.
+                                    Businesses can also manage unexpected damage which may be caused by improper transferring processes.
+                                    With transferring documentation, retailers can assure their audit processes are accurate and reliable.
+                                    Transferring documentation also supports retailers to keep their businesses on track.
+                                    STOs document used in transferring processes simplifies the intercompany transfer.
+                                    Companies can also aid taxation and compliance audits
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="stockTransferReasonsModal" style="z-index:1050 !important">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Stock Transfer Reason</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                        <div class="form-group">
+                            <label>Reason <span class="danger">*</span></label>
+                            <input type="text" class="form-control divStockTransferReason_M_ctrl" id="txtStockTransferReason_M" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divStockTransferReason_M"></small>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-control" id="txtDescription_M" placeholder=""></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertStockTransferReason()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+      rel="stylesheet">
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="~/Content/JQuery/Customer/Items/StockTransfer.js"></script>

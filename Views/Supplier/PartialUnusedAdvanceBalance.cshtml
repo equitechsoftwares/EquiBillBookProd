@@ -1,0 +1,81 @@
+﻿
+
+<div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer paymentList hide">
+    @if (ViewBag.SupplierPaymentPermission.IsExport)
+    {
+        <div class="dt-buttons btn-group flex-wrap noPrint">
+            <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+            <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+            <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+            <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+        </div>
+    }
+    <div id="tblUserRole_filter" class="dataTables_filter noPrint invisible">
+        <label>
+            Search:<input type="text" class="form-control form-control-sm" placeholder="" aria-controls="tblUserRole" id="txtSearch" onkeyup="fetchList(1)">
+        </label>
+    </div>
+    <div class="row mt-2">
+        <div class="col-sm-12 table-responsive">
+            <div id="tblData_wrapper" class="dataTables_wrapper no-footer">
+                <table id="tblPayments" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            @*<th>#</th>*@
+                            <th>Credited Date</th>
+                            <th>Credit Info</th>
+                            <th>Amount</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="order_item_table" class="rows">
+                        @{
+                            if (ViewBag.SupplierPayments != null)
+                            {
+                                var index = 1;
+                                foreach (var item in ViewBag.SupplierPayments)
+                                {
+                                    <tr id="tr_@(item.SupplierPaymentId)">
+                                        @*<td>@index</td>*@
+                                        <td>
+                                            @item.PaymentDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                                        </td>
+                                        <td>
+                                            @if (item.ParentId == 0)
+                                            {
+                                                @item.ReferenceNo
+                                            }
+                                            else
+                                            {
+                                                @item.ParentReferenceNo
+                                            }
+
+                                        </td>
+                                        <td>
+                                            @{
+                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                {
+                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.AmountRemaining))
+                                                }
+                                                else
+                                                {
+                                                    @(String.Format("{0:0.##}", item.AmountRemaining))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                }
+                                            }
+                                        </td>
+                                        <td>
+                                            <a id="btnNew" href="javascript:void(0)" onclick="openUnpaidInvoicesModal(@item.SupplierId,@item.SupplierPaymentId)" class="btn btn-primary">Apply To Invoices</a>
+                                        </td>
+                                    </tr>
+                                    index++;
+                                }
+                            }
+                        }
+
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

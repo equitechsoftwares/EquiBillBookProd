@@ -1,0 +1,128 @@
+@{
+    var kots = ViewBag.Kots as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var currentPageIndex = ViewBag.CurrentPageIndex ?? 1;
+    var pageCount = ViewBag.PageCount ?? 0;
+}
+
+@{
+    // Group KOTs by hour
+    var hourGroups = kots
+        .Where(k => k.OrderTime != null)
+        .GroupBy(k => {
+            var orderTime = (DateTime)k.OrderTime;
+            return orderTime.Hour;
+        })
+        .Select(g => new {
+            Hour = g.Key,
+            HourLabel = g.Key.ToString("00") + ":00 - " + (g.Key + 1).ToString("00") + ":00",
+            TotalKots = g.Count(),
+            TotalRevenue = g.Where(k => k.SalesId != null && k.SalesId > 0).Sum(k => (decimal?)(k.SalesTotal ?? 0)) ?? 0,
+            AvgGuestCount = g.Average(k => (int?)(k.GuestCount ?? 0)) ?? 0
+        })
+        .OrderByDescending(h => h.TotalKots)
+        .ToList();
+    
+    var maxKots = hourGroups.Count > 0 ? hourGroups.Max(h => h.TotalKots) : 1;
+}
+
+<thead id="thead">
+    <tr>
+        <th>Time Slot</th>
+        <th>Total KOTs</th>
+        <th>Total Revenue</th>
+        <th>Avg Guest Count</th>
+        <th>Revenue per KOT</th>
+        <th>Volume %</th>
+        <th>Trend</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (hourGroups.Count > 0)
+    {
+        foreach (var hour in hourGroups.OrderBy(h => h.Hour))
+        {
+            var revenuePerKot = hour.TotalKots > 0 ? hour.TotalRevenue / hour.TotalKots : 0;
+            var volumePercent = maxKots > 0 ? Math.Round((hour.TotalKots / (double)maxKots) * 100, 1) : 0;
+            var barWidth = volumePercent;
+            
+            <tr>
+                <td><strong>@hour.HourLabel</strong></td>
+                <td>@hour.TotalKots</td>
+                <td><strong>@hour.TotalRevenue.ToString("N2")</strong></td>
+                <td>@Math.Round(hour.AvgGuestCount, 1)</td>
+                <td>@revenuePerKot.ToString("N2")</td>
+                <td>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar @(volumePercent >= 80 ? "bg-danger" : volumePercent >= 60 ? "bg-warning" : "bg-info")" 
+                             role="progressbar" style="width: @barWidth%" aria-valuenow="@barWidth" aria-valuemin="0" aria-valuemax="100">
+                            @volumePercent%
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    @if (volumePercent >= 80)
+                    {
+                        <span class="badge badge-danger"><i class="fas fa-fire"></i> Peak</span>
+                    }
+                    else if (volumePercent >= 60)
+                    {
+                        <span class="badge badge-warning"><i class="fas fa-arrow-up"></i> High</span>
+                    }
+                    else if (volumePercent >= 40)
+                    {
+                        <span class="badge badge-info"><i class="fas fa-minus"></i> Medium</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-secondary"><i class="fas fa-arrow-down"></i> Low</span>
+                    }
+                </td>
+            </tr>
+        }
+    }
+</tbody>
+<tbody class="hide noPrint">
+    <tr></tr>
+    <tr>
+        <td colspan="7">
+            <div class="dataTables_info" id="tblPeakHoursAnalysis_info_custom" role="status" aria-live="polite">Showing @((currentPageIndex - 1) * pageSize + 1) to @(Math.Min(currentPageIndex * pageSize, totalCount)) of @totalCount entries</div>
+            @if (pageCount > 1)
+            {
+                int j = 0;
+                <div class="dataTables_paginate paging_simple_numbers" id="tblPeakHoursAnalysis_paginate_custom" style="float:right">
+                    <ul class="pagination">
+                        @if (currentPageIndex > 1)
+                        {
+                            <li class="paginate_button page-item previous" id="tblPeakHoursAnalysis_previous">
+                                <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblPeakHoursAnalysis" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                            </li>
+                            <li class="paginate_button page-item previous" id="tblPeakHoursAnalysis_previous">
+                                <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblPeakHoursAnalysis" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                            </li>
+                        }
+                        @for (int i = currentPageIndex; i <= pageCount; i++)
+                        {
+                            <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblPeakHoursAnalysis" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                            </li>
+                            if (j == 10)
+                            {
+                                i = pageCount + 1;
+                            }
+                            j++;
+                        }
+                        @if (currentPageIndex < pageCount)
+                        {
+                            <li class="paginate_button page-item next" id="tblPeakHoursAnalysis_next">
+                                <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblPeakHoursAnalysis" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </td>
+    </tr>
+</tbody>
+

@@ -1,0 +1,278 @@
+@using System.Collections.Generic
+@using System.Web
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th class="hide noPrint">Action</th>
+            <th>Branch</th>
+            <th class="hidden">Status</th>
+            <th class="hide">Status</th>
+            <th>Enable Kitchen Display</th>
+            <th>Auto Print KOT</th>
+            <th>Enable Table Booking</th>
+            <th>Enable Recurring Booking</th>
+            <th>Booking Advance Days</th>
+            <th>Default Booking Duration (min)</th>
+            <th>Require Deposit</th>
+            <th>Deposit</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @if (ViewBag.RestaurantSettingsList != null)
+        {
+            foreach (Dictionary<string, object> setting in ViewBag.RestaurantSettingsList)
+            {
+                var branch = setting.ContainsKey("Branch") ? setting["Branch"]?.ToString() : null;
+                var enableKitchenDisplay = setting.ContainsKey("EnableKitchenDisplay") && setting["EnableKitchenDisplay"] != null ? Convert.ToBoolean(setting["EnableKitchenDisplay"]) : false;
+                var autoPrintKot = setting.ContainsKey("AutoPrintKot") && setting["AutoPrintKot"] != null ? Convert.ToBoolean(setting["AutoPrintKot"]) : false;
+                var enableTableBooking = setting.ContainsKey("EnableTableBooking") && setting["EnableTableBooking"] != null ? Convert.ToBoolean(setting["EnableTableBooking"]) : false;
+                var enableRecurringBooking = setting.ContainsKey("EnableRecurringBooking") && setting["EnableRecurringBooking"] != null ? Convert.ToBoolean(setting["EnableRecurringBooking"]) : false;
+                var bookingAdvanceDays = setting.ContainsKey("BookingAdvanceDays") && setting["BookingAdvanceDays"] != null ? Convert.ToInt32(setting["BookingAdvanceDays"]) : 0;
+                var defaultBookingDuration = setting.ContainsKey("DefaultBookingDuration") && setting["DefaultBookingDuration"] != null ? Convert.ToInt32(setting["DefaultBookingDuration"]) : 0;
+                var requireDeposit = setting.ContainsKey("RequireDeposit") && setting["RequireDeposit"] != null ? Convert.ToBoolean(setting["RequireDeposit"]) : false;
+                var depositMode = setting.ContainsKey("DepositMode") && setting["DepositMode"] != null ? setting["DepositMode"].ToString() : "Fixed";
+                var depositFixedAmount = setting.ContainsKey("DepositFixedAmount") && setting["DepositFixedAmount"] != null ? Convert.ToDecimal(setting["DepositFixedAmount"]) : 0;
+                var depositPerGuestAmount = setting.ContainsKey("DepositPerGuestAmount") && setting["DepositPerGuestAmount"] != null ? Convert.ToDecimal(setting["DepositPerGuestAmount"]) : 0;
+                var isActive = setting.ContainsKey("IsActive") && setting["IsActive"] != null ? Convert.ToBoolean(setting["IsActive"]) : false;
+                var enablePublicBooking = setting.ContainsKey("EnablePublicBooking") && setting["EnablePublicBooking"] != null ? Convert.ToBoolean(setting["EnablePublicBooking"]) : false;
+                var publicBookingSlug = setting.ContainsKey("PublicBookingSlug") && setting["PublicBookingSlug"] != null ? setting["PublicBookingSlug"].ToString() : null;
+                var restaurantSettingsId = setting.ContainsKey("RestaurantSettingsId") && setting["RestaurantSettingsId"] != null ? Convert.ToInt64(setting["RestaurantSettingsId"]) : 0;
+                var branchId = setting.ContainsKey("BranchId") && setting["BranchId"] != null ? Convert.ToInt64(setting["BranchId"]) : 0;
+                var qrCodeImage = setting.ContainsKey("QRCodeImage") && setting["QRCodeImage"] != null ? setting["QRCodeImage"].ToString() : null;
+                var safeSlug = !string.IsNullOrEmpty(publicBookingSlug) ? HttpUtility.JavaScriptStringEncode(publicBookingSlug) : "";
+                <tr>
+                    <td class="hide noPrint">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-info">Action</button>
+                            <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                <span class="sr-only">Toggle Dropdown</span>
+                            </button>
+                            <div class="dropdown-menu" role="menu">
+                                <a class="dropdown-item" href="/restaurantsettings/edit?RestaurantSettingsId=@restaurantSettingsId"><i class="fas fa-edit"></i> Edit</a>
+                                @if (enablePublicBooking && !string.IsNullOrEmpty(publicBookingSlug))
+                                {
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="/book/@publicBookingSlug" target="_blank"><i class="fas fa-external-link-alt"></i> View Public Booking</a>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="copyPublicBookingUrl('@safeSlug')"><i class="fas fa-copy"></i> Copy Public URL</a>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="sharePublicBooking('@safeSlug')"><i class="fas fa-share-alt"></i> Share</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="generateRestaurantSettingsQRCode(@restaurantSettingsId, '@safeSlug')"><i class="fas fa-qrcode"></i> View QR Code</a>
+                                    if (!string.IsNullOrEmpty(qrCodeImage))
+                                    {
+                                        var qrImageUrl = qrCodeImage.StartsWith("~") ? qrCodeImage.Substring(1) : qrCodeImage;
+                                        if (!qrImageUrl.StartsWith("/"))
+                                        {
+                                            qrImageUrl = "/" + qrImageUrl;
+                                        }
+                                        var safeQrImageUrl = HttpUtility.JavaScriptStringEncode(qrImageUrl);
+                                        var safeBranch = HttpUtility.JavaScriptStringEncode(branch ?? "Restaurant");
+                                        var safeFilename = HttpUtility.JavaScriptStringEncode("Restaurant_" + (branch ?? "Restaurant") + "_QRCode.png");
+                                        <a class="dropdown-item" href="javascript:void(0)" onclick="downloadQRCode('@safeQrImageUrl', '@safeFilename')"><i class="fas fa-download"></i> Download QR Code</a>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </td>
+                    <td><strong>@(branch ?? "N/A")</strong></td>
+                    <td class="hidden">@(isActive == true ? "Active" : "Inactive")</td>
+                    <td class="hide text-center">
+                        @if (isActive)
+                        {
+                            if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsEdit)
+                            {
+                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@restaurantSettingsId, false)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                            else
+                            {
+                                <input disabled class="chkIsActive" type="checkbox" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                        }
+                        else
+                        {
+                            if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsEdit)
+                            {
+                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@restaurantSettingsId, true)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                            else
+                            {
+                                <input disabled class="chkIsActive" type="checkbox" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (enableKitchenDisplay)
+                        {
+                            <span class="badge badge-success">Yes</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">No</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (autoPrintKot)
+                        {
+                            <span class="badge badge-success">Yes</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">No</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (enableTableBooking)
+                        {
+                            <span class="badge badge-success">Yes</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">No</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (enableRecurringBooking)
+                        {
+                            <span class="badge badge-success">Yes</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">No</span>
+                        }
+                    </td>
+                    <td class="text-center">@bookingAdvanceDays</td>
+                    <td class="text-center">@defaultBookingDuration</td>
+                    <td class="text-center">
+                        @if (requireDeposit)
+                        {
+                            <span class="badge badge-success">Yes</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">No</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (requireDeposit)
+                        {
+                            @(depositMode == "PerGuest" ? $"₹{depositPerGuestAmount.ToString("0.00")}/guest" : $"₹{depositFixedAmount.ToString("0.00")}")
+                        }
+                        else
+                        {
+                            <text>-</text>
+                        }
+                    </td>
+                </tr>
+                count++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="13" class="text-center">No restaurant settings found.</td>
+            </tr>
+        }
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="16">
+                @{
+                    var pageSize = ViewBag.PageSize != null ? ViewBag.PageSize : 25;
+                    var pageIndex = ViewBag.PageIndex != null ? ViewBag.PageIndex : 1;
+                    var currentPageIndex = ViewBag.CurrentPageIndex != null ? ViewBag.CurrentPageIndex : 1;
+                    var totalCount = ViewBag.TotalCount != null ? ViewBag.TotalCount : (ViewBag.RestaurantSettingsList != null ? ((List<Dictionary<string, object>>)ViewBag.RestaurantSettingsList).Count : 0);
+                    var pageCount = ViewBag.PageCount != null ? ViewBag.PageCount : 1;
+                }
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(pageSize * (pageIndex - 1) + 1) to @(pageSize * currentPageIndex) of @totalCount entries</div>
+                @if (pageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (currentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = currentPageIndex; i <= pageCount; i++)
+                            {
+                                <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = pageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (currentPageIndex < pageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    $('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));
+    
+    if (typeof window.copyPublicBookingUrl !== 'function') {
+        window.copyPublicBookingUrl = function (slug) {
+            if (!slug || slug.trim() === '') {
+                toastr.error('Public booking is not enabled or slug is not set');
+                return;
+            }
+            
+            var url = window.location.origin + '/book/' + slug;
+
+            var tempInput = document.createElement('input');
+            tempInput.value = url;
+            document.body.appendChild(tempInput);
+            tempInput.focus();
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            toastr.success('Public booking URL copied to clipboard: ' + url);
+        };
+    }
+
+    if (typeof window.sharePublicBooking !== 'function') {
+        window.sharePublicBooking = function (slug) {
+            if (!slug || slug.trim() === '') {
+                toastr.error('Public booking is not enabled or slug is not set');
+                return;
+            }
+            
+            var shareUrl = window.location.origin + '/book/' + slug;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: document.title,
+                    text: 'Book a table at our restaurant',
+                    url: shareUrl
+                }).catch(function (error) {
+                    if (error && error.name !== 'AbortError') {
+                        copyPublicBookingUrl(slug);
+                    }
+                });
+            }
+            else {
+                copyPublicBookingUrl(slug);
+            }
+        };
+    }
+</script>
+

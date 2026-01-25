@@ -1,0 +1,144 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Table Booking";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Table Booking</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        <li class="breadcrumb-item active">Table Booking</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <a id="btnBack" href="/restaurantdashboard/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsAdd)
+                {
+                    <a id="btnNew" href="/tablebooking/add" class="btn btn-primary float-sm-right mr-2"><i class="fas fa-plus"></i> New Booking</a>
+                    <a id="btnCalendar" href="/tablebooking/list" class="btn btn-info float-sm-right mr-2"><i class="fas fa-list"></i> List View</a>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                @* <h3 class="card-title mb-0">Booking Calendar</h3> *@
+                                <div class="d-flex align-items-center flex-wrap mt-2" style="gap: 12px;">
+                                    @* <span class="font-weight-bold mb-0" style="font-size: 14px;">Table Status:</span> *@
+                                    <div class="d-flex align-items-center">
+                                        <div style="width: 20px; height: 15px; background-color: #28a745; border: 1px solid #1e7e34; border-radius: 3px; margin-right: 5px;"></div>
+                                        <span style="font-size: 14px;">Available</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div style="width: 20px; height: 15px; background-color: #dc3545; border: 1px solid #c82333; border-radius: 3px; margin-right: 5px;"></div>
+                                        <span style="font-size: 14px;">Occupied</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div style="width: 20px; height: 15px; background-color: #ffc107; border: 1px solid #e0a800; border-radius: 3px; margin-right: 5px;"></div>
+                                        <span style="font-size: 14px;">Reserved</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div style="width: 20px; height: 15px; background-color: #6f42c1; border: 1px solid #5a32a3; border-radius: 3px; margin-right: 5px;"></div>
+                                        <span style="font-size: 14px;">Booked</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div style="width: 20px; height: 15px; background-color: #6c757d; border: 1px solid #5a6268; border-radius: 3px; margin-right: 5px;"></div>
+                                        <span style="font-size: 14px;">Maintenance</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card-tools float-right">
+                                    <div class="form-group mb-0" style="min-width: 200px;">
+                                        <select class="form-control select2" id="ddlBranch" style="width: 100%;">
+                                            <option value="">All Branches</option>
+                                            @if (ViewBag.Branchs != null)
+                                            {
+                                                foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    <option value="@item.BranchId">@item.Branch</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="bookingCalendar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js"></script>
+<script src="~/Content/JQuery/Customer/Restaurant/TableBooking.js"></script>
+<script>
+    $(document).ready(function () {
+        initializeCalendar();
+        
+        // Initialize Select2 for branch dropdown
+        $('#ddlBranch').select2({
+            placeholder: 'All Branches',
+            allowClear: true
+        });
+        
+        // Refresh calendar when branch filter changes
+        $('#ddlBranch').on('change', function () {
+            if (calendar) {
+                calendar.refetchEvents();
+            }
+        });
+        
+        // Set referrer when clicking "New Booking" button from calendar view
+        $('#btnNew').on('click', function() {
+            sessionStorage.setItem('tableBookingReferrer', 'calendar');
+        });
+        
+        // Check for success message from sessionStorage
+        var successMessage = sessionStorage.getItem('bookingSuccessMessage');
+        var successType = sessionStorage.getItem('bookingSuccessType');
+        
+        if (successMessage) {
+            // Clear the message from sessionStorage
+            sessionStorage.removeItem('bookingSuccessMessage');
+            sessionStorage.removeItem('bookingSuccessType');
+            
+            // Show the message
+            if (successType === 'success') {
+                if (typeof EnableSound !== 'undefined' && EnableSound == 'True') { 
+                    if (document.getElementById('success')) {
+                        document.getElementById('success').play(); 
+                    }
+                }
+                toastr.success(successMessage);
+            } else {
+                if (typeof EnableSound !== 'undefined' && EnableSound == 'True') { 
+                    if (document.getElementById('error')) {
+                        document.getElementById('error').play(); 
+                    }
+                }
+                toastr.error(successMessage);
+            }
+        }
+    });
+</script>
+

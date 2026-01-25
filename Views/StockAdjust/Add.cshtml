@@ -1,0 +1,519 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add Stock Adjustment";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Stock Adjustment</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/stockadjust/index">Stock Adjustments</a></li>
+                        <li class="breadcrumb-item active">Add Stock Adjustment</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/stockadjust" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <div class="card-body">
+                        <div class="card card-outline">
+
+                            @*<div class="card-header">
+                                    <h3 class="card-title">Basic Info</h3>
+
+                                </div>*@
+                            <!-- form start -->
+                            <div class="card-body">
+                                <div class="row">
+                                    <!--<div class="col-sm-4">-->
+                                    <!-- text input -->
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Reference No <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                                            <input type="text" class="form-control" id="txtReferenceNo">
+                                            <small class="text-red font-weight-bold errorText" id="divReferenceNo"></small>
+                                        </div>
+                                    </div>
+                                    @if (ViewBag.Branchs.Count > 1)
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Business Location <span class="danger">*</span> <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Business Location from where you want to adjust"></i></label>
+                                                <div class="input-group divBranch_ctrl">
+                                                    <select class="form-control select2" style="width: 100%;" id="ddlBranch" onchange="clearTable()">
+                                                        <option value="0">Select</option>
+                                                        @foreach (var item in ViewBag.Branchs)
+                                                        {
+                                                            <option value="@item.BranchId">@item.Branch</option>
+                                                        }
+                                                    </select>
+                                                    <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 hidden">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <label>Business Location <span class="danger">*</span> <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Business Location from where you want to adjust"></i></label>
+                                                <div class="input-group divBranch_ctrl">
+                                                    <select class="form-control select2" style="width: 100%;" id="ddlBranch" onchange="clearTable()">
+                                                        @foreach (var item in ViewBag.Branchs)
+                                                        {
+                                                            <option selected value="@item.BranchId">@item.Branch</option>
+                                                        }
+                                                    </select>
+                                                    <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label> Date <span class="danger">*</span></label>
+                                            <div class="input-group date" id="_AdjustmentDate" data-target-input="nearest">
+                                                <input id="txtAdjustmentDate" type="text" class="form-control datetimepicker-input divAdjustmentDate_ctrl" data-target="#_AdjustmentDate" />
+                                                <div class="input-group-append" data-target="#_AdjustmentDate" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                            @*<input type="datetime-local" class="form-control" id="txtAdjustmentDate">*@
+                                            <small class="text-red font-weight-bold errorText" id="divAdjustmentDate"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Adjustment Type </label>
+                                            <div class="input-group">
+                                                <select class="form-control" id="ddlAdjustmentType" onchange="checkAdjustmentType()">
+                                                    <option value="Debit">Debit</option>
+                                                    <option value="Credit">Credit</option>
+                                                </select>                                              
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divStockDeductionType">
+                                            <div class="form-group">
+                                                <label>Deduction Type <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="<i>Normal</i>: Adjustment for normal reasons like Leakage, Damage etc. <br/><br/> <i>Abnormal</i>: Adjustment for reasons like Fire, Accident etc."></i></label>
+                                                <select class="form-control" id="ddlStockDeductionType">
+                                                    <option value="Normal">Normal</option>
+                                                    <option value="Abnormal">Abnormal</option>
+                                                </select>
+                                            </div>
+                                        </div>*@
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Reason <span class="danger">*</span></label>
+                                            <div class="input-group divStockAdjustmentReason_ctrl">
+                                                <select class="form-control select2" id="ddlStockAdjustmentReason">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.StockAdjustmentReasons)
+                                                    {
+                                                        <option value="@item.StockAdjustmentReasonId">@item.StockAdjustmentReason</option>
+                                                    }
+                                                </select>
+                                                @if (ViewBag.StockAdjustmentReasonsPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#stockAdjustmentReasonsModal">+ </a>
+                                                    </span>
+                                                }
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divStockAdjustmentReason"></small>                                            
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.IsAccountsAddon == true ? "" : "hidden")">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Account </label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlAccount">
+                                                    @*<option value="0">Select</option>*@
+                                                    @{
+                                                        if (ViewBag.AccountSubTypes != null)
+                                                        {
+                                                            foreach (var item in ViewBag.AccountSubTypes)
+                                                            {
+                                                                if (item.Accounts.Count > 0)
+                                                                {
+                                                                    if (item.Type != "Accounts Receivable" && item.Type != "Accounts Payable")
+                                                                    {
+                                                                        <optgroup label="@item.DisplayAs">
+                                                                            @foreach (var inner in item.Accounts)
+                                                                            {
+                                                                                if (inner.Type != "Opening Balance Adjustments" && inner.Type != "Tag Adjustments")
+                                                                                {
+                                                                                    if (inner.Type == "Cost of Goods Sold")
+                                                                                    {
+                                                                                        <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        </optgroup>
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                </select>
+                                                @*@if (ViewBag.AccountsPermission.IsAdd == true)
+                                                    {
+                                                        <span class="input-group-append">
+                                                            <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#AccountModal">+ </a>
+                                                        </span>
+                                                    }*@
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+
+                        </div>
+
+                        <div class="card card-outline">
+                            <div class="card-header bg-info">
+                                <h3 class="card-title">Search Items</h3>
+                            </div>
+                            <!-- form start -->
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-12 mb-3">
+                                        <div class="input-group ">
+                                            @*<div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                                                </div>*@
+                                            <input type="text" class="form-control divtags_ctrl" placeholder="Sku Code/ Item Name" id="txttags">
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divtags"></small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12 table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    @*<th>#</th>*@
+                                                    <th style="width:20%">Item</th>
+                                                    <th style="width:20%" class="@(ViewBag.ItemSetting.EnableLotNo == true ?"":"hidden")">Lot No</th>
+                                                    <th style="width:10%">Choose Unit</th>
+                                                    <th class="divIsDebit">Available Quantity</th>
+
+                                                    <th>Adjusted Quantity</th>
+                                                    <th style="width:10%">Unit Cost</th>
+                                                    <th style="width:10%">Amount</th>
+                                                    @*<th style="width:10%" class="@(ViewBag.ItemSetting.EnableLotNo == true ?"":"hidden") divIsLot">Lot No</th>*@
+                                                    @*<th style="width:10%" class="@((ViewBag.ItemSetting.EnableItemExpiry == true && ViewBag.ItemSetting.ExpiryType==2 )?"":"hidden") divIsMfg">Manufacturing Date</th>
+                                                        <th style="width:10%" class="@(ViewBag.ItemSetting.EnableItemExpiry == true ?"":"hidden") divIsExp">Expiry Date</th>
+                                                        <th style="width:10%" class="divIsCredit">Unit Selling Price (Inc. tax)</th>*@
+                                                    <th style="width:5%">
+                                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteFullCombo()">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                        <input type="hidden" id="hdnEnableLotNo" value="@ViewBag.ItemSetting.EnableLotNo.ToString()" />
+                                                        <input type="hidden" id="hdnEnableItemExpiry" value="@(ViewBag.ItemSetting.EnableItemExpiry.ToString())" />
+                                                        <input type="hidden" id="hdnExpiryType" value="@ViewBag.ItemSetting.ExpiryType" />
+                                                        <input type="hidden" id="hdnEnableItemExpiry" value="@(ViewBag.ItemSetting.EnableItemExpiry.ToString())" />
+                                                        <input type="hidden" id="hdnOnItemExpiry" value="@(ViewBag.ItemSetting.OnItemExpiry)" />
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="divCombo">
+
+                                                @* <tr id="tr_1">
+                                                        <td>1</td>
+                                                        <td>
+                                                            <input type="text" class="form-control" id="txtPrice" placeholder="Enter Name">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" class="form-control" id="txtPrice">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" class="form-control" id="txtPrice" placeholder="Enter Name">
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control" style="width: 100%;">
+                                                                <option selected="selected">GST</option>
+                                                                <option>IGST</option>
+
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" disabled class="form-control" id="txtPrice" placeholder="Enter Name">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" class="form-control" id="txtPrice" placeholder="Enter Name">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" disabled class="form-control" id="txtPrice" placeholder="Enter Name">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" disabled class="form-control" id="txtPrice" placeholder="Enter Name">
+                                                        </td>
+                                                        <td>
+                                                            <a href="/sales/delete" class="btn btn-danger" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                                                        </td>
+                                                    </tr>*@
+                                            </tbody>
+
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <div class="row">
+
+                                            <div class="col-sm-6 mt-2">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-6 col-form-label">Total Amount Recovered <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" data-html="true" title="" data-content="Amount recovered from insurance or selling of scraps or others"></i></label>
+                                                    <div class="col-sm-6">
+                                                        <input type="number" min="0" class="form-control" id="txtTotalAmountRecovered">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-6 mt-2">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-4 col-form-label">Notes</label>
+                                                    <div class="col-sm-8">
+                                                        <textarea rows="2" class="form-control" id="txtNotes"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="row">
+                                            <div class="col-12" style="display:none;">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right">Total Quantities :</label>
+                                                    <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTotalQty"></label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right">Total Amount:</label>
+                                                    <input type="number" class="form-control" id="hdndivTotalAmount" hidden>
+                                                    <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTotalAmount">
+
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="insert(1)"><i class="fas fa-save"></i> Save</button>
+                        <button id="btnSave_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="insert(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                        @*<a id="btnBack" href="/stockadjust" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                    </div>
+
+
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="stockAlertModal">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Alert!!</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12" id="divStockAlertMsg">
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="confirmStockAlertInsert()">Continue</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is stock adjustment?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    A stock adjustment is the increase or reduction made to the stock so that the actual quantity on hand matches the stock shown in the system – basically, a correction in the records so that they agree with the physical count.
+                                    Adjustment reasons vary. Positive inventory quantity adjustments are often due to the simplest: the addition of more inventory from production, or excess inventory that remains saleable, but did not sell. On the other hand, negative inventory quantity adjustments are often required to address:
+                                    Waste: Expired or obsolete inventory (common in food and consumer goods).
+                                    Breakage: Damaged inventory that cannot be legally sold as new.
+                                    Shrinkage: Inventory lost to theft. Also called “stockloss.”
+                                    Write-offs: Inventory lost to other reasons.
+                                    Internal Use: Inventory items put to internal use or consumed by the company instead of being sold to the customer.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Why Inventory Adjustments Matter</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Inventory fluctuations can wreak havoc on more than just your stockroom. When recorded inventory levels are lower than actual inventory counts (understated), the cost of goods sold rises artificially. Conversely, when actual inventory levels are lower than those recorded (overstated), the inverse occurs, and COGS is artificially lowered.
+                                    In both cases, the adjusting entries necessary to reflect the true state of affairs can have a significant impact on your gross and net profits, your income statements, and, by extension, your company’s competitive advantage, financial agility, and overall health. Decision making, reporting, auditing, and budgeting can all be skewed to disastrous levels if your team is operating with incomplete or inaccurate information.
+                                    As a result, inventory adjustments are absolutely crucial to responsible and strategically viable accounting practices.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How to Make Inventory Adjustments</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Imagine your company, Widgets, Inc., had a total cost of inventory (drawn from last year’s ending inventory) of $500,000 at the beginning of the accounting year. This amount is “locked in” until year-end, when a physical inventory count is taken. The physical inventory count reveals an actual cost of $570,000 for inventory.
+                                    As a result, the accounts team makes an entry to adjust inventory as follows:
+                                    The Inventory account is debited for $70,000.
+                                    The Inventory Adjustment account is credited for $70,000.
+                                    Widgets, Inc. also had a debit balance of $3,500,000 in the temporary account called Purchases for the current year.
+                                    The Inventory Adjustment account is a special income statement account—one of the accounts carried forward to the company’s income statement from the general ledger—that, when added to the Purchases account, reveals the company’s cost of goods sold.
+                                    To continue with our example, when the $70,000 credit balance in the Inventory Adjustment account is applied to the debit balance of $3,500,000 in Purchases, the result is a COGS total value of $3,430,000.
+                                    $3,500,000 – $70,000 = $3,430,000
+                                    The next year, Widgets, Inc. conducts another inventory count and finds their actual inventory cost is $320,000. But because their inventory records listed a debit balance of $570,000 last year, another inventory adjustment entry must be made:
+                                    The Inventory account is credited for $250,000.
+                                    The Inventory Adjustment account is debited for $250,000.
+                                    This year, Widgets, Inc. had a debit balance of $3,250,000 in the Purchases account. Adding the debit amount in the Inventory Adjustment to the debit amount in Purchases produces a COGS value of $3,500,000.
+                                    $3,250,000 + $250,000 = $3,500,000
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="stockAdjustmentReasonsModal" style="z-index:1050 !important">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Stock Adjustment Reason</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                        <div class="form-group">
+                            <label>Reason <span class="danger">*</span></label>
+                            <input type="text" class="form-control divStockAdjustmentReason_M_ctrl" id="txtStockAdjustmentReason_M" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divStockAdjustmentReason_M"></small>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-control" id="txtDescription_M" placeholder=""></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertStockAdjustmentReason()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+      rel="stylesheet">
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="~/Content/JQuery/Customer/Items/StockAdjust.js"></script>

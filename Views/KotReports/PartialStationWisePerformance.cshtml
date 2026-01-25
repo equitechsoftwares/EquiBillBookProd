@@ -1,0 +1,126 @@
+@{
+    var kots = ViewBag.Kots as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var currentPageIndex = ViewBag.CurrentPageIndex ?? 1;
+    var pageCount = ViewBag.PageCount ?? 0;
+    var kitchenStationId = ViewBag.KitchenStationId ?? 0L;
+}
+
+@{
+    // Group KOTs by station from KOT details
+    var stationGroups = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<dynamic>>();
+    
+    foreach (var kot in kots)
+    {
+        if (kot.KotDetails != null)
+        {
+            foreach (var detail in kot.KotDetails)
+            {
+                var stationName = detail.KitchenStationName ?? "Unknown Station";
+                if (!stationGroups.ContainsKey(stationName))
+                {
+                    stationGroups[stationName] = new System.Collections.Generic.List<dynamic>();
+                }
+                stationGroups[stationName].Add(new { Kot = kot, Detail = detail });
+            }
+        }
+    }
+}
+
+<thead id="thead">
+    <tr>
+        <th>Kitchen Station</th>
+        <th>Total Orders</th>
+        <th>Total Items</th>
+        <th>Pending</th>
+        <th>Preparing</th>
+        <th>Ready</th>
+        <th>Served</th>
+        <th>Avg Prep Time (min)</th>
+        <th>Efficiency %</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (stationGroups.Count > 0)
+    {
+        foreach (var stationGroup in stationGroups)
+        {
+            var stationOrders = stationGroup.Value;
+            var totalItems = stationOrders.Count;
+            var pending = stationOrders.Count(o => o.Detail.ItemStatus == "Pending");
+            var preparing = stationOrders.Count(o => o.Detail.ItemStatus == "Preparing");
+            var ready = stationOrders.Count(o => o.Detail.ItemStatus == "Ready");
+            var served = stationOrders.Count(o => o.Detail.ItemStatus == "Served");
+            
+            var prepTimes = stationOrders
+                .Where(o => o.Detail.ReadyAt != null && o.Kot.OrderTime != null)
+                .Select(o => {
+                    var orderTime = (DateTime)o.Kot.OrderTime;
+                    var readyAt = (DateTime?)o.Detail.ReadyAt;
+                    return readyAt.HasValue ? (readyAt.Value - orderTime).TotalMinutes : (double?)null;
+                })
+                .Where(t => t.HasValue)
+                .Select(t => t.Value)
+                .ToList();
+            
+            var avgPrepTime = prepTimes.Count > 0 ? prepTimes.Average() : (double?)null;
+            var efficiency = totalItems > 0 ? Math.Round((served / (double)totalItems) * 100, 2) : 0;
+            
+            <tr>
+                <td><strong>@stationGroup.Key</strong></td>
+                <td>@stationOrders.Select(o => o.Kot.KotId).Distinct().Count()</td>
+                <td>@totalItems</td>
+                <td><span class="badge badge-secondary">@pending</span></td>
+                <td><span class="badge badge-warning">@preparing</span></td>
+                <td><span class="badge badge-info">@ready</span></td>
+                <td><span class="badge badge-success">@served</span></td>
+                <td>@(avgPrepTime.HasValue ? Math.Round(avgPrepTime.Value, 1).ToString() : "-")</td>
+                <td><span class="badge badge-@(efficiency >= 80 ? "success" : efficiency >= 60 ? "warning" : "danger")">@efficiency%</span></td>
+            </tr>
+        }
+    }
+</tbody>
+<tbody class="hide noPrint">
+    <tr></tr>
+    <tr>
+        <td colspan="9">
+            <div class="dataTables_info" id="tblStationWisePerformance_info_custom" role="status" aria-live="polite">Showing @((currentPageIndex - 1) * pageSize + 1) to @(Math.Min(currentPageIndex * pageSize, totalCount)) of @totalCount entries</div>
+            @if (pageCount > 1)
+            {
+                int j = 0;
+                <div class="dataTables_paginate paging_simple_numbers" id="tblStationWisePerformance_paginate_custom" style="float:right">
+                    <ul class="pagination">
+                        @if (currentPageIndex > 1)
+                        {
+                            <li class="paginate_button page-item previous" id="tblStationWisePerformance_previous">
+                                <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblStationWisePerformance" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                            </li>
+                            <li class="paginate_button page-item previous" id="tblStationWisePerformance_previous">
+                                <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblStationWisePerformance" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                            </li>
+                        }
+                        @for (int i = currentPageIndex; i <= pageCount; i++)
+                        {
+                            <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblStationWisePerformance" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                            </li>
+                            if (j == 10)
+                            {
+                                i = pageCount + 1;
+                            }
+                            j++;
+                        }
+                        @if (currentPageIndex < pageCount)
+                        {
+                            <li class="paginate_button page-item next" id="tblStationWisePerformance_next">
+                                <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblStationWisePerformance" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </td>
+    </tr>
+</tbody>
+

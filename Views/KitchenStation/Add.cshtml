@@ -1,0 +1,149 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add Kitchen Station";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Kitchen Station</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/kitchenstation/index">Kitchen Stations</a></li>
+                        <li class="breadcrumb-item active">Add Station</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/kitchenstation/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <form id="stationForm">
+                        <input type="hidden" id="KitchenStationId" name="KitchenStationId" value="0" />
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Station Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control divStationName_ctrl" id="txtStationName" name="StationName" required>
+                                        <small class="text-red font-weight-bold errorText" id="divStationName" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Station Type</label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlStationType" name="StationType">
+                                                <option value="">Select Station Type</option>
+                                                @if (ViewBag.StationTypes != null)
+                                                {
+                                                    foreach (var item in ViewBag.StationTypes)
+                                                    {
+                                                        <option value="@item.StationTypeName">@item.StationTypeName</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <span class="input-group-append">
+                                                <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#stationTypeModal">+</a>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Categories</label>
+                                        <select class="form-control select2" id="ddlCategories" name="CategoryIdList" multiple style="width: 100%;">
+                                            @if (ViewBag.Categories != null)
+                                            {
+                                                foreach (var item in ViewBag.Categories)
+                                                {
+                                                    <option value="@item.CategoryId">@item.Category</option>
+                                                }
+                                            }
+                                        </select>
+                                        <small>Select categories that this station handles</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button id="btnSave" type="button" class="btn btn-primary float-right" onclick="insertStation(1)"><i class="fas fa-save"></i> Save</button>
+                            <button id="btnSave_AddAnother" type="button" class="btn btn-success float-right mr-2" onclick="insertStation(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Station Type Modal -->
+<div class="modal fade" id="stationTypeModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Station Type</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group divStationTypeName_M_ctrl">
+                            <label>Station Type Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="txtStationTypeName_M" placeholder="e.g., Main, Cold, Hot, Dessert, Beverage, etc.">
+                            <small class="text-red font-weight-bold errorText" id="divStationTypeName_M" style="display: none;"></small>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group divDescription_M_ctrl">
+                            <label>Description</label>
+                            <textarea class="form-control" id="txtDescription_M" rows="3" placeholder="Optional description"></textarea>
+                            <small class="text-red font-weight-bold errorText" id="divDescription_M" style="display: none;"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertStationTypeFromModal()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script src="~/Content/JQuery/Customer/Restaurant/KitchenStation.js"></script>
+<script>
+    $(document).ready(function () {
+        // Initialize select2 for categories dropdown with proper configuration
+        $('#ddlCategories').select2({
+            placeholder: 'Select categories',
+            allowClear: true,
+            width: '100%',
+            minimumResultsForSearch: 0,
+            dropdownParent: $('#ddlCategories').parent()
+        });
+
+        // Clear modal form when modal is closed
+        $('#stationTypeModal').on('hidden.bs.modal', function () {
+            $('#txtStationTypeName_M').val('');
+            $('#txtDescription_M').val('');
+            $('.errorText').hide();
+            $('[style*="border: 2px"]').css('border', '');
+        });
+    });
+</script>

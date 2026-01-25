@@ -1,0 +1,496 @@
+@using EquiBillBook.Controllers.Website
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var article = ViewBag.Article as KnowledgeBaseArticle;
+    var relatedArticles = ViewBag.RelatedArticles as List<KnowledgeBaseArticle>;
+    
+    // Prepare structured data
+    string articleUrl = Request.Url != null ? Request.Url.AbsoluteUri : "";
+    string articleImage = Request.Url != null ? Request.Url.Scheme + "://" + Request.Url.Host + "/Content/web-assets/images/innerbanner.png" : "";
+    string publishedDate = article != null ? article.LastUpdated.ToString("yyyy-MM-ddTHH:mm:ssZ") : DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ");
+    string modifiedDate = article != null ? article.LastUpdated.ToString("yyyy-MM-ddTHH:mm:ssZ") : DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ");
+}
+
+<style>
+    .kb-article-content {
+        background: white;
+        border-radius: 10px;
+        padding: 3rem;
+        position: relative;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        margin-bottom: 3rem;
+    }
+    
+    .kb-article-content h2 {
+        color: #6c3fb5;
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .kb-article-content h3 {
+        color: #495057;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .kb-article-content h4 {
+        color: #6c757d;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-top: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .kb-article-content p {
+        color: #495057;
+        line-height: 1.8;
+        margin-bottom: 1rem;
+    }
+    
+    .kb-article-content ul,
+    .kb-article-content ol {
+        margin-bottom: 1.5rem;
+        padding-left: 2rem;
+    }
+    
+    .kb-article-content li {
+        color: #495057;
+        line-height: 1.8;
+        margin-bottom: 0.5rem;
+    }
+    
+    .kb-article-content a {
+        color: #6c3fb5;
+        text-decoration: underline;
+    }
+    
+    .kb-article-content a:hover {
+        color: #5a32a0;
+    }
+    
+    .kb-tag {
+        display: inline-block;
+        background: #e9ecef;
+        color: #495057;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .kb-sidebar {
+        position: sticky;
+        top: 20px;
+    }
+    
+    .kb-sidebar-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .kb-sidebar-card.categories-card {
+        /* Scroll removed for all article pages */
+    }
+    
+    .kb-sidebar-card h5 {
+        color: #6c3fb5;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .kb-related-article {
+        padding: 1rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .kb-related-article:last-child {
+        border-bottom: none;
+    }
+    
+    .kb-related-article a {
+        color: #495057;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .kb-related-article a:hover {
+        color: #6c3fb5;
+    }
+    
+    .kb-navigation {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-top: 3rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        border: 1px solid #e9ecef;
+    }
+    
+    .kb-nav-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.875rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        white-space: nowrap;
+    }
+    
+    .kb-nav-btn-back {
+        background: #f8f9fa;
+        color: #495057;
+        border-color: #e9ecef;
+    }
+    
+    .kb-nav-btn-back:hover {
+        background: #e9ecef;
+        color: #6c3fb5;
+        border-color: #6c3fb5;
+        transform: translateX(-2px);
+        text-decoration: none;
+    }
+    
+    .kb-nav-btn-forward {
+        background: #6c3fb5;
+        color: white;
+        border-color: #6c3fb5;
+        margin-left: auto;
+    }
+    
+    .kb-nav-btn-forward:hover {
+        background: #5a32a0;
+        border-color: #5a32a0;
+        transform: translateX(2px);
+        text-decoration: none;
+        color: white;
+    }
+    
+    .kb-nav-btn i {
+        transition: transform 0.3s ease;
+    }
+    
+    .kb-nav-btn-back:hover i {
+        transform: translateX(-3px);
+    }
+    
+    .kb-nav-btn-forward:hover i {
+        transform: translateX(3px);
+    }
+    
+    @@media (max-width: 767px) {
+        .kb-navigation {
+            padding: 1.5rem;
+        }
+        
+        .kb-nav-wrapper {
+            flex-direction: column;
+        }
+        
+        .kb-nav-btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .kb-nav-btn-forward {
+            margin-left: 0;
+        }
+    }
+    
+    .kb-article-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5rem;
+    }
+    
+    .kb-article-content table th,
+    .kb-article-content table td {
+        padding: 0.75rem;
+        border: 1px solid #dee2e6;
+        text-align: left;
+    }
+    
+    .kb-article-content table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .kb-article-content code {
+        background: #f8f9fa;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+        color: #e83e8c;
+    }
+    
+    .kb-article-content blockquote {
+        border-left: 4px solid #6c3fb5;
+        padding-left: 1rem;
+        margin: 1.5rem 0;
+        color: #6c757d;
+        font-style: italic;
+    }
+    
+    .kb-breadcrumb {
+        background: transparent;
+        padding: 1rem 0;
+    }
+    
+    .kb-breadcrumb-item {
+        display: inline-block;
+    }
+    
+    .kb-breadcrumb-item:not(:last-child)::after {
+        content: "/";
+        margin: 0 0.5rem;
+        color: #6c757d;
+    }
+    
+    .kb-breadcrumb-item a {
+        color: #6c757d;
+        text-decoration: none;
+    }
+    
+    .kb-breadcrumb-item a:hover {
+        color: #6c3fb5;
+        text-decoration: underline;
+    }
+    
+    .kb-breadcrumb-item.active {
+        color: #495057;
+        font-weight: 500;
+    }
+</style>
+
+@if (article != null)
+{
+    <!-- Article Structured Data (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "Article",
+      "headline": "@Html.Raw(article.Title.Replace("\"", "\\\""))",
+      "description": "@Html.Raw(article.Description.Replace("\"", "\\\""))",
+      "image": "@articleImage",
+      "datePublished": "@publishedDate",
+      "dateModified": "@modifiedDate",
+      "author": {
+        "@@type": "Organization",
+        "name": "EquiBillBook",
+        "url": "https://equibillbook.com"
+      },
+      "publisher": {
+        "@@type": "Organization",
+        "name": "EquiBillBook",
+        "logo": {
+          "@@type": "ImageObject",
+          "url": "https://equibillbook.com/Content/web-assets/images/logo.png"
+        }
+      },
+      "mainEntityOfPage": {
+        "@@type": "WebPage",
+        "@@id": "@articleUrl"
+      },
+      "articleSection": "@Html.Raw(article.Category.Replace("\"", "\\\""))",
+      "keywords": "@string.Join(", ", article.Tags)",
+      "url": "@articleUrl"
+    }
+    </script>
+    
+    <!-- Breadcrumb Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://equibillbook.com"
+        },
+        {
+          "@@type": "ListItem",
+          "position": 2,
+          "name": "Knowledge Base",
+          "item": "https://equibillbook.com/knowledgebase"
+        },
+        {
+          "@@type": "ListItem",
+          "position": 3,
+          "name": "@Html.Raw(article.Category.Replace("\"", "\\\""))",
+          "item": "https://equibillbook.com/knowledgebase/category/@article.Category.ToLower().Replace(" ", "-")"
+        },
+        {
+          "@@type": "ListItem",
+          "position": 4,
+          "name": "@Html.Raw(article.Title.Replace("\"", "\\\""))",
+          "item": "@articleUrl"
+        }
+      ]
+    }
+    </script>
+}
+
+@if (article != null)
+{
+    <!-- Article wrapper with slug for CSS targeting -->
+    <div class="kb-article-wrapper" data-article-slug="@article.Slug.ToLower()">
+    <!-- Inner Banner -->
+    <section class="banner pt-3 pb-0" style="background: #6c3fb5;">
+        <div class="container">
+            <div class="row justify-content-between align-items-center">
+                <div class="col-md-6 text-md-start text-center wow zoomInLeft">
+                    <h1 class="mb-3 text-white">@article.Title</h1>
+                    <h5 class="text-white">@article.Category</h5>
+                </div>
+                <div class="col-md-3 wow zoomInRight">
+                    <img src="~/Content/web-assets/images/innerbanner.png" class="img-fluid" alt="@article.Title - EquiBillBook Knowledge Base">
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- // -->
+    
+    <!-- Breadcrumb Navigation -->
+    <section class="py-2" style="background: #f8f9fa;">
+        <div class="container">
+            <nav class="kb-breadcrumb" aria-label="breadcrumb">
+                <div class="kb-breadcrumb-item">
+                    <a href="/">Home</a>
+                </div>
+                <div class="kb-breadcrumb-item">
+                    <a href="/knowledgebase">Knowledge Base</a>
+                </div>
+                <div class="kb-breadcrumb-item">
+                    <a href="/knowledgebase/category/@article.Category.ToLower().Replace(" ", "-")">@article.Category</a>
+                </div>
+                <div class="kb-breadcrumb-item active">
+                    @article.Title
+                </div>
+            </nav>
+        </div>
+    </section>
+
+    <!-- Article Content -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <!-- Main Content -->
+                <div class="col-lg-9">
+                    <div class="kb-article-content">
+                        <div class="mb-3 text-muted" style="font-size: 0.9rem;">
+                            <i class="far fa-clock me-1"></i>
+                            Updated @article.LastUpdated.ToString("MMMM dd, yyyy")
+                        </div>
+                        @Html.Raw(article.Content)
+                    </div>
+
+                    <!-- Tags -->
+                    @if (article.Tags != null && article.Tags.Count > 0)
+                    {
+                        <div class="mb-4">
+                            <h5 class="mb-3">Tags:</h5>
+                            @foreach (var tag in article.Tags)
+                            {
+                                <span class="kb-tag">@tag</span>
+                            }
+                        </div>
+                    }
+
+                    <!-- Navigation -->
+                    <div class="kb-navigation">
+                        <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between kb-nav-wrapper">
+                            <a href="/knowledgebase" class="kb-nav-btn kb-nav-btn-back mb-3 mb-md-0">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                <span>Back to Knowledge Base</span>
+                            </a>
+                            <a href="/knowledgebase/category/@article.Category.ToLower().Replace(" ", "-")" class="kb-nav-btn kb-nav-btn-forward">
+                                <span>More @article.Category Articles</span>
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-3">
+                    <div class="kb-sidebar">
+                        <!-- Related Articles -->
+                        @if (relatedArticles != null && relatedArticles.Count > 0)
+                        {
+                            <div class="kb-sidebar-card">
+                                <h5>Related Articles</h5>
+                                @foreach (var related in relatedArticles)
+                                {
+                                    <div class="kb-related-article">
+                                        <a href="/knowledgebase/article/@related.Slug">
+                                            <i class="fas fa-file-alt me-2 text-muted"></i>@related.Title
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <!-- Categories -->
+                        @if (ViewBag.Categories != null)
+                        {
+                            <div class="kb-sidebar-card categories-card">
+                                <h5>Browse Categories</h5>
+                                @foreach (string category in ViewBag.Categories)
+                                {
+                                    <div class="mb-2">
+                                        <a href="/knowledgebase/category/@category.ToLower().Replace(" ", "-")" class="text-decoration-none">
+                                            <i class="fas fa-folder me-2 text-muted"></i>@category
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <!-- Help Section -->
+                        <div class="kb-sidebar-card">
+                            <h5>Need More Help?</h5>
+                            <p class="text-muted small">Can't find what you're looking for?</p>
+                            <a href="/contact" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-envelope me-2"></i>Contact Support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    </div>
+}
+else
+{
+    <!-- Article Not Found -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2>Article Not Found</h2>
+                    <p>The article you're looking for doesn't exist or has been moved.</p>
+                    <a href="/knowledgebase" class="btn btn-primary">Back to Knowledge Base</a>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+

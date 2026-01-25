@@ -1,0 +1,116 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Link Booking to KOT";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Link Booking to KOT</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/tablebooking/index">Table Booking</a></li>
+                        <li class="breadcrumb-item"><a href="/tablebooking/list">Booking List</a></li>
+                        <li class="breadcrumb-item"><a href="/tablebooking/details/@(ViewBag.Booking != null ? ViewBag.Booking.BookingId : 0)">Booking Details</a></li>
+                        <li class="breadcrumb-item active">Link to KOT</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/tablebooking/details/@(ViewBag.Booking != null ? ViewBag.Booking.BookingId : 0)" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Booking Information</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (ViewBag.Booking != null)
+                        {
+                            var booking = ViewBag.Booking;
+                            <input type="hidden" id="BookingId" value="@booking.BookingId" />
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="alert alert-info">
+                                        <strong>Booking No:</strong> @booking.BookingNo<br />
+                                        <strong>Table:</strong> @(booking.TableNo ?? "Not Assigned")<br />
+                                        <strong>Customer:</strong> @booking.CustomerName<br />
+                                        <strong>Date:</strong> @booking.BookingDate.ToString("dd-MMM-yyyy") @booking.BookingTime.ToString(@"hh\:mm")
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Available KOTs (Without Booking)</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (ViewBag.Kots != null && ViewBag.Kots.Count > 0)
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>KOT No</th>
+                                            <th>Table</th>
+                                            <th>Order Type</th>
+                                            <th>Order Status</th>
+                                            <th>Order Time</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var kot in ViewBag.Kots)
+                                        {
+                                            <tr>
+                                                <td>@kot.KotNo</td>
+                                                <td>@(kot.TableNo ?? "Not Assigned")</td>
+                                                <td>@kot.OrderType</td>
+                                                <td>
+                                                    <span class="badge badge-@(kot.OrderStatus == "Served" ? "success" : kot.OrderStatus == "Ready" ? "info" : kot.OrderStatus == "Preparing" ? "warning" : "secondary")">
+                                                        @kot.OrderStatus
+                                                    </span>
+                                                </td>
+                                                <td>@kot.OrderTime.ToString("dd-MMM-yyyy HH:mm")</td>
+                                                <td>
+                                                    <a href="javascript:void(0)" onclick="linkKot(@kot.KotId)" class="btn btn-sm btn-success"><i class="fas fa-link"></i> Link</a>
+                                                    <a href="/kot/details/@kot.KotId" class="btn btn-sm btn-info"><i class="fas fa-eye"></i> View</a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i> No standalone KOTs available to link. You can create a new KOT from this booking.
+                            </div>
+                            <a href="/kot/add?bookingId=@(ViewBag.Booking != null ? ViewBag.Booking.BookingId : 0)" class="btn btn-primary"><i class="fas fa-plus"></i> Create New KOT</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Customer/TableBooking/LinkKot.js"></script>
+

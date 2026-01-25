@@ -1,0 +1,128 @@
+@using System;
+@using System.Web;
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th>Sln</th>
+            <th class="hide noPrint">Action</th>
+            <th>Category Name</th>
+            <th>Added On</th>
+            <th class="hidden">Status</th>
+            <th class="hide">Status</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @if (ViewBag.BlogCategories != null)
+        {
+            foreach (var item in ViewBag.BlogCategories)
+            {
+                <tr>
+                    <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>
+                    <td class="hide noPrint">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-info">Action</button>
+                            <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                <span class="sr-only">Toggle Dropdown</span>
+                            </button>
+                            <div class="dropdown-menu" role="menu">
+                                @if (ViewBag.MenuPermission == null || ViewBag.MenuPermission.IsEdit)
+                                {
+                                    <a class="dropdown-item" href="/adminblogcategory/edit?BlogCategoryId=@item.BlogCategoryId"><i class="fas fa-edit"></i> Edit</a>
+                                }
+                                @if (ViewBag.MenuPermission == null || ViewBag.MenuPermission.IsDelete)
+                                {
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="Delete(@item.BlogCategoryId,'@Html.Raw(HttpUtility.JavaScriptStringEncode(item.CategoryName))')"><i class="far fa-trash-alt"></i> Delete</a>
+                                }
+                            </div>
+                        </div>
+                    </td>
+                    <td>@item.CategoryName</td>
+                    <td>@(item.AddedOn != null ? ((DateTime)item.AddedOn).ToString("dd-MM-yyyy") : "")</td>
+                    <td class="hidden">@(item.IsActive == true ? "Active" : "Inactive")</td>
+                    <td class="hide">
+                        @if (item.IsActive)
+                        {
+                            if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsEdit)
+                            {
+                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.BlogCategoryId,false)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                            else if (ViewBag.MenuPermission == null)
+                            {
+                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.BlogCategoryId,false)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                            else
+                            {
+                                <input disabled class="chkIsActive" type="checkbox" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                        }
+                        else
+                        {
+                            if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsEdit)
+                            {
+                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.BlogCategoryId,true)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                            else if (ViewBag.MenuPermission == null)
+                            {
+                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.BlogCategoryId,true)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                            else
+                            {
+                                <input disabled class="chkIsActive" type="checkbox" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                        }
+                    </td>
+                </tr>
+                count++;
+            }
+        }
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="6">
+                <div class="dataTables_info" id="tblBlogCategory_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1) + 1) to @(ViewBag.PageSize * ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblBlogCategory_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblBlogCategory_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblBlogCategory" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblBlogCategory_previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblBlogCategory" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblBlogCategory" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblBlogCategory_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblBlogCategory" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    $('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));
+</script>
+

@@ -1,0 +1,240 @@
+﻿
+@{
+    Layout = null;
+}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invoice | @ViewBag.Sale.Payment.ReferenceNo</title>
+<link rel="shortcut icon" href="favicon.jpeg" type="image/x-icon">
+<link rel="stylesheet" href="~/Content/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="~/Content/assets/css/adminlte.min.css">
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<style>
+    @@media print {
+        .noPrint {
+            display: none;
+        }
+    }
+    @@page {
+        size: auto;
+    }
+</style>
+@*<section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Invoice </h1>
+                    <div class="float-left">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="/sales/index">Sales List</a></li>
+                            <li class="breadcrumb-item active">Invoice</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>*@
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="printableArea">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5>
+                                        <img src="@ViewBag.BusinessSetting.BusinessLogo" height="60" />
+                                        @*<i class="fas fa-globe"></i> AdminLTE, Inc.*@
+                                        <small class="float-right" style="line-height:24px">
+                                            <b>Payment Date: </b>@ViewBag.Sale.Payment.PaymentDate.ToString(ViewBag.BusinessSetting.DateFormat + " " + ViewBag.BusinessSetting.TimeFormat)<br>
+                                            <b>Reference No: </b>@ViewBag.Sale.Payment.ReferenceNo<br>
+                                            <b>Payment Mode: </b>@ViewBag.Sale.Payment.PaymentType<br>
+                                        </small>
+                                    </h5>
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                            <!-- info row -->
+                            <div class="row invoice-info">
+                                <div class="col-sm-4 invoice-col">
+                                    @*<i>From</i>*@
+                                    <address>
+                                        <strong>@ViewBag.BusinessSetting.BusinessName @*(@ViewBag.Sale.Branch.Branch)*@</strong><br>
+                                        @ViewBag.Sale.Branch.Address<br />@ViewBag.Sale.Branch.City, @ViewBag.Sale.Branch.State,
+                                        @ViewBag.Sale.Branch.Country, @ViewBag.Sale.Branch.Zipcode <br />
+                                        Phone: @ViewBag.Sale.Branch.Mobile<span class="@(ViewBag.Sale.Branch.AltMobileNo == null?"hidden":"")">,@ViewBag.Sale.Branch.AltMobileNo</span><br />
+                                        @if (ViewBag.Sale.Branch.Email != null)
+                                        {
+                                            <span>Email: @ViewBag.Sale.Branch.Email</span><br>
+                                        }
+                                        @if (ViewBag.Sale.Branch.Tax != null)
+                                        {
+                                            <span>@ViewBag.Sale.Branch.Tax: @ViewBag.Sale.Branch.TaxNo</span><br />
+                                        }
+                                    </address>
+                                </div>
+                                <div class="col-sm-4 invoice-col">
+                                    <i>Payment From<br></i>
+                                    @if (ViewBag.Sale.User.Addresses.Count > 0)
+                                    {
+                                        <address>
+                                            <strong>@ViewBag.Sale.User.Addresses[0].Name</strong><br>
+                                            @if (ViewBag.Sale.User.Addresses[0].Address != null && ViewBag.Sale.User.Addresses[0].Address != "")
+                                            {
+                                                @ViewBag.Sale.User.Addresses[0].Address<br>
+                                                <span>
+                                                    @ViewBag.Sale.User.Addresses[0].City, @ViewBag.Sale.User.Addresses[0].State,
+                                                    @ViewBag.Sale.User.Addresses[0].Country, @ViewBag.Sale.User.Addresses[0].Zipcode
+                                                </span><br />
+                                            }
+                                            @if (ViewBag.Sale.User.Addresses[0].MobileNo != null && ViewBag.Sale.User.Addresses[0].MobileNo != "")
+                                            {
+                                                <span> Phone: @ViewBag.Sale.User.Addresses[0].MobileNo</span><br />
+                                            }
+                                        </address>
+                                    }
+                                </div>
+
+                                @*<div class="col-sm-4 invoice-col">
+                                        <b>Invoice#: </b>@ViewBag.Sale.InvoiceNo<br>
+                                        <b>Status :</b>@ViewBag.Sale.Status<br>
+                                    </div>*@
+                                <!-- /.col -->
+                            </div>
+                            <!-- /.row -->
+                            <!-- Table row -->
+                            <div class="row">
+                                <div class="col-xs-12 table-responsive">
+                                    <table class="table table-striped records_table table-bordered">
+                                        <thead class="bg-gray-active">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Invoice No</th>
+                                                <th>Invoice Date</th>
+                                                <th>Invoice Amount</th>
+                                                <th>Payment Amount</th>
+                                                <th>Balance Due</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                <tr>
+                                                    <td>1</td>
+                                                    <td>
+                                                        @ViewBag.Sale.InvoiceNo
+                                                    </td>
+                                                    <td>@ViewBag.Sale.SalesDate.ToString(ViewBag.BusinessSetting.DateFormat + " " + ViewBag.BusinessSetting.TimeFormat)</td>
+                                                    <td>
+                                                        @{
+                                                            if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                                            {
+                                                                @ViewBag.BusinessSetting.CurrencySymbol@ViewBag.Sale.GrandTotal
+                                                            }
+                                                            else
+                                                            {
+                                                                @ViewBag.Sale.GrandTotal@ViewBag.BusinessSetting.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @{
+                                                            if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                                            {
+                                                                @ViewBag.BusinessSetting.CurrencySymbol@ViewBag.Sale.Payment.Amount
+                                                            }
+                                                            else
+                                                            {
+                                                                @ViewBag.Sale.Payment.Amount@ViewBag.BusinessSetting.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @{
+                                                            if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                                            {
+                                                                @ViewBag.BusinessSetting.CurrencySymbol@ViewBag.Sale.Due
+                                                            }
+                                                            else
+                                                            {
+                                                                @ViewBag.Sale.Due@ViewBag.BusinessSetting.CurrencySymbol
+                                                            }
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        @*<tfoot class="text-right text-bold bg-gray">
+                                                <tr>
+                                                    <td colspan="2" class="text-center">Total</td>
+                                                    <td>₹ @ViewBag.TotalUnitPrice</td>
+                                                    <td class="text-left">@(String.Format("{0:0.##}",ViewBag.TotalQuantity))</td>
+                                                    <td>₹ @ViewBag.TotalAmount</td>
+                                                </tr>
+                                            </tfoot>*@
+                                    </table>
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                            <!-- /.row -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p class="text-muted well well-sm shadow-none text-center" style="margin-top: 10px;">
+                                        This is computer generated invoice no signature required.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer noPrint">
+                        <a href="javacript:void(0)" onclick="printInvoice()" class="btn btn-warning float-right ml-2">
+                            <i class="fa fa-print"></i>
+                            Print
+                        </a>
+                        <a href="javascript:void(0)" onclick="exportInvoiceToPdf()" class="btn btn-primary float-right ml-2 d-none d-md-block">
+                            <i class="fa fa-file-pdf"></i>
+                            PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.22/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+
+<script>
+    function printInvoice() {
+        //$('.noPrint').css('display', 'none');
+        //$('.content-wrapper').css('background-color', '#fff');
+        window.print();
+        //$('.noPrint').css('display', 'block');
+        //$('.content-wrapper').css('background-color', '#f4f6f9');
+    }
+
+    function exportInvoiceToPdf() {
+        $('.hidden').show();
+        $('.hide').hide();
+        $('.responsive-table').css('height', '100%');
+        html2canvas($('.printableArea')[0], {
+            onrendered: function (canvas) {
+                var data = canvas.toDataURL();
+                var docDefinition = {
+                    content: [{
+                        image: data,
+                        width: 500
+                    }]
+                };
+
+                pdfMake.createPdf(docDefinition).download("Payment Receipt.pdf");
+                $('.responsive-table').css('height', '400px');
+                $('.hide').show();
+                $('.hidden').hide();
+            }
+        });
+    }
+</script>

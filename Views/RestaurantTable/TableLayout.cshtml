@@ -1,0 +1,100 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Table Layout";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Table Layout</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/restauranttable/index">Restaurant Tables</a></li>
+                        <li class="breadcrumb-item active">Table Layout</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <a id="btnBack" href="/restauranttable/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label>Select Floor</label>
+                                <select class="form-control select2" id="ddlFloor" style="width: 100%;" onchange="loadTableLayout()">
+                                    <option value="0">All Floors</option>
+                                    @if (ViewBag.Floors != null)
+                                    {
+                                        foreach (var item in ViewBag.Floors)
+                                        {
+                                            <option value="@item.FloorId" @(ViewBag.FloorId != null && ViewBag.FloorId == item.FloorId ? "selected" : "")>@item.FloorName</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="d-flex align-items-center flex-wrap" style="gap: 20px;">
+                                    <span class="font-weight-bold">Table Status:</span>
+                                    <div class="d-flex align-items-center">
+                                        <div style="width: 30px; height: 20px; background-color: #28a745; border: 1px solid #1e7e34; border-radius: 4px; margin-right: 5px;"></div>
+                                        <span>Available</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div style="width: 30px; height: 20px; background-color: #dc3545; border: 1px solid #c82333; border-radius: 4px; margin-right: 5px;"></div>
+                                        <span>Occupied</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div style="width: 30px; height: 20px; background-color: #ffc107; border: 1px solid #e0a800; border-radius: 4px; margin-right: 5px;"></div>
+                                        <span>Reserved</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div style="width: 30px; height: 20px; background-color: #6f42c1; border: 1px solid #5a32a3; border-radius: 4px; margin-right: 5px;"></div>
+                                        <span>Booked</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div style="width: 30px; height: 20px; background-color: #6c757d; border: 1px solid #5a6268; border-radius: 4px; margin-right: 5px;"></div>
+                                        <span>Maintenance</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tableLayoutCanvas" style="position: relative; min-height: 600px; border: 2px dashed #ccc; background: #f9f9f9;">
+                            <!-- Tables will be rendered here dynamically -->
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button id="btnSave" type="button" class="btn btn-primary float-right" onclick="saveLayout()"><i class="fas fa-save"></i> Save Layout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet" type="text/css" />
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="~/Content/JQuery/Customer/Restaurant/RestaurantTable.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2();
+        loadTableLayout();
+    });
+</script>
+
+

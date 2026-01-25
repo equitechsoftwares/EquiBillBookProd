@@ -1,0 +1,593 @@
+﻿
+<table id="tblDataB2B" class="table table-bordered ">
+    <thead id="thead">
+        <tr>
+            <th>GSTIN/UIN </th>
+            <th>Receiver Name </th>
+            <th>Invoice Number </th>
+            <th>Invoice Date</th>
+            <th>Invoice Value</th>
+            <th>Place Of Supply</th>
+            <th>Reverse Charge</th>
+            <th>Invoice Type</th>
+            <th>Rate</th>
+            <th>Taxable Amount</th>
+            <th>IGST </th>
+            <th>CGST</th>
+            <th>SGST/ UTGST</th>
+            <th>CESS </th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.SalesB2B)
+        {
+
+            foreach (var item1 in item.SalesDetails)
+            {
+                decimal cgst = 0, sgst = 0, igst = 0, cess = 0;
+
+                foreach (var inner in item1.TaxTypes)
+                {
+                    if (inner.TaxType == "CGST")
+                    {
+                        cgst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "SGST" || inner.TaxType == "UTGST")
+                    {
+                        sgst = sgst + inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "IGST")
+                    {
+                        igst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "CESS")
+                    {
+                        cess = inner.TaxAmount;
+                    }
+                }
+                <tr>
+                    <td>@item.BusinessRegistrationNo </td>
+                    <td>@item.CustomerName </td>
+                    <td>@item.InvoiceNo </td>
+                    <td> @item.SalesDate</td>
+                    <td> @(String.Format("{0:0.##}", item.GrandTotal))</td>
+                    <td>@item.StateCode-@item.PlaceOfSupply </td>
+                    <td> @(item.IsReverseCharge == 1 ? "Y" : "N")</td>
+                    <td> @item.InvoiceType</td>
+                    <td>@(String.Format("{0:0.##}", item1.TaxPercent)) </td>
+                    <td>@(String.Format("{0:0.##}", item1.AmountExcTax)) </td>
+                    <td>@(String.Format("{0:0.##}", igst)) </td>
+                    <td>@(String.Format("{0:0.##}", cgst)) </td>
+                    <td> @(String.Format("{0:0.##}", sgst))</td>
+                    <td>@(String.Format("{0:0.##}", cess)) </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<table id="tblDataB2CL" class="table table-bordered ">
+    <thead id="thead">
+        <tr>
+            <th>Invoice Number </th>
+            <th>Invoice Date</th>
+            <th>Invoice Value</th>
+            <th>Place Of Supply</th>
+            <th>Rate</th>
+            <th>Taxable Amount</th>
+            <th>IGST </th>
+            <th>CGST</th>
+            <th>SGST/ UTGST</th>
+            <th>CESS </th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.SalesB2CL)
+        {
+
+            foreach (var item1 in item.SalesDetails)
+            {
+                decimal cgst = 0, sgst = 0, igst = 0, cess = 0;
+
+                foreach (var inner in item1.TaxTypes)
+                {
+                    if (inner.TaxType == "CGST")
+                    {
+                        cgst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "SGST" || inner.TaxType == "UTGST")
+                    {
+                        sgst = sgst + inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "IGST")
+                    {
+                        igst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "CESS")
+                    {
+                        cess = inner.TaxAmount;
+                    }
+                }
+                <tr>
+                    <td>@item.InvoiceNo </td>
+                    <td> @item.SalesDate</td>
+                    <td> @(String.Format("{0:0.##}", item.GrandTotal))</td>
+                    <td>@item.StateCode-@item.PlaceOfSupply </td>
+                    <td>@(String.Format("{0:0.##}", item1.TaxPercent)) </td>
+                    <td>@(String.Format("{0:0.##}", item1.AmountExcTax)) </td>
+                    <td>@(String.Format("{0:0.##}", igst)) </td>
+                    <td>@(String.Format("{0:0.##}", cgst)) </td>
+                    <td> @(String.Format("{0:0.##}", sgst))</td>
+                    <td>@(String.Format("{0:0.##}", cess)) </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<table id="tblDataB2CS" class="table table-bordered ">
+    <thead id="thead">
+        <tr>
+            <th>Type</th>
+            <th>Place Of Supply</th>
+            @*<th>Reverse Charge</th>*@
+            <th>Rate</th>
+            <th>Taxable Amount</th>
+            <th>IGST </th>
+            <th>CGST</th>
+            <th>SGST/ UTGST</th>
+            <th>CESS </th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @{
+            foreach (var item in ViewBag.SalesB2CS)
+            {
+                decimal cgst = 0, sgst = 0, igst = 0, cess = 0;
+
+                foreach (var inner in item.TaxTypes)
+                {
+                    if (inner.TaxType == "CGST")
+                    {
+                        cgst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "SGST" || inner.TaxType == "UTGST")
+                    {
+                        sgst = sgst + inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "IGST")
+                    {
+                        igst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "CESS")
+                    {
+                        cess = inner.TaxAmount;
+                    }
+                }
+
+                <tr>
+                    <td>OE</td>
+                    <td>@item.StateCode-@item.PlaceOfSupply </td>
+                    @*<td> </td>*@
+                    <td> @(String.Format("{0:0.##}", item.TaxPercent))</td>
+                    <td>@(String.Format("{0:0.##}", item.AmountExcTax)) </td>
+                    <td>@(String.Format("{0:0.##}", igst)) </td>
+                    <td>@(String.Format("{0:0.##}", cgst)) </td>
+                    <td> @(String.Format("{0:0.##}", sgst))</td>
+                    <td>@(String.Format("{0:0.##}", cess ))</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<table id="tblDataEXP" class="table table-bordered ">
+    <thead id="thead">
+        <tr>
+            <th>Export Type</th>
+            <th>Invoice Number </th>
+            <th>Invoice Date</th>
+            <th>Total Invoice Value</th>
+            <th>Port Code</th>
+            <th>Shipping Bill No/ Bill of Export No</th>
+            <th>Shipping Bill Date</th>
+            <th>Supply Type</th>
+            <th>GST Payment</th>
+            <th>Rate</th>
+            <th>Taxable Amount</th>
+            <th>IGST </th>
+            <th>CESS </th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.SalesEXP)
+        {
+            <tr>
+                <td rowspan="@(item.SalesDetails.Count+1)">@item.ExportType </td>
+                <td rowspan="@(item.SalesDetails.Count+1)">@item.InvoiceNo </td>
+                <td rowspan="@(item.SalesDetails.Count+1)"> @item.SalesDate</td>
+                <td rowspan="@(item.SalesDetails.Count+1)"> @(String.Format("{0:0.##}", item.GrandTotal))</td>
+                <td rowspan="@(item.SalesDetails.Count+1)"> @item.PortCode</td>
+                <td rowspan="@(item.SalesDetails.Count+1)">@item.ShippingBillNo </td>
+                <td rowspan="@(item.SalesDetails.Count+1)"> @item.ShippingBillDate</td>
+
+                <td rowspan="@(item.SalesDetails.Count+1)"> Inter-State</td>
+                <td rowspan="@(item.SalesDetails.Count+1)"> @item.GstPayment</td>
+            </tr>
+            foreach (var item1 in item.SalesDetails)
+            {
+                decimal cgst = 0, sgst = 0, igst = 0, cess = 0;
+
+                foreach (var inner in item1.TaxTypes)
+                {
+                    if (inner.TaxType == "IGST")
+                    {
+                        igst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "CESS")
+                    {
+                        cess = inner.TaxAmount;
+                    }
+                }
+                <tr>
+                    <td>@(String.Format("{0:0.##}", item1.TaxPercent)) </td>
+                    <td>@(String.Format("{0:0.##}", item1.AmountExcTax)) </td>
+                    <td>@(String.Format("{0:0.##}", igst)) </td>
+                    <td>@(String.Format("{0:0.##}", cess)) </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<table id="tblDataCDNR" class="table table-bordered ">
+    <thead id="thead">
+        <tr>
+            <th>GSTIN/ UIN</th>
+            <th>Receiver Name</th>
+            <th>Note No</th>
+            <th>Note Date</th>
+            <th>Note Type</th>
+            <th>Place Of Supply</th>
+            <th>Reverse Charge</th>
+            <th>Note Supply Type</th>
+            <th>Note Value</th>
+            <th>Rate</th>
+            <th>Taxable Amount</th>
+            <th>IGST </th>
+            <th>CGST</th>
+            <th>SGST/ UTGST</th>
+            <th>CESS </th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @{
+            foreach (var item in ViewBag.SalesCDNR)
+            {
+                decimal cgst = 0, sgst = 0, igst = 0, cess = 0;
+
+                foreach (var item1 in item.SalesDetails)
+                {
+                    foreach (var inner in item1.TaxTypes)
+                    {
+                        if (inner.TaxType == "CGST")
+                        {
+                            cgst = inner.TaxAmount;
+                        }
+                        else if (inner.TaxType == "SGST" || inner.TaxType == "UTGST")
+                        {
+                            sgst = sgst + inner.TaxAmount;
+                        }
+                        else if (inner.TaxType == "IGST")
+                        {
+                            igst = inner.TaxAmount;
+                        }
+                        else if (inner.TaxType == "CESS")
+                        {
+                            cess = inner.TaxAmount;
+                        }
+                    }
+
+                    <tr>
+                        <td>@item.BusinessRegistrationNo </td>
+                        <td> @item.CustomerName</td>
+                        <td> @item.InvoiceNo</td>
+                        <td>@item.SalesDate </td>
+                        <td> @(item.SalesType == "Debit Note" ? "D" : "C")</td>
+                        <td> @item.PlaceOfSupply</td>
+                        <td> @(item.IsReverseCharge == 1 ? "Y" : "N")</td>
+                        <td> @item.InvoiceType</td>
+                        <td> @(String.Format("{0:0.##}", item.GrandTotal))</td>
+                        <td> @(String.Format("{0:0.##}", item1.TaxPercent))</td>
+                        <td>@(String.Format("{0:0.##}", item1.AmountExcTax))</td>
+                        <td>@(String.Format("{0:0.##}", igst)) </td>
+                        <td>@(String.Format("{0:0.##}", cgst)) </td>
+                        <td> @(String.Format("{0:0.##}", sgst))</td>
+                        <td>@(String.Format("{0:0.##}", cess)) </td>
+                    </tr>
+                }
+            }
+        }
+    </tbody>
+</table>
+
+<table id="tblDataCDNUR" class="table table-bordered ">
+    <thead id="thead">
+        <tr>
+            <th>UR Type</th>
+            <th>Note No</th>
+            <th>Note Date</th>
+            <th>Note Type</th>
+            <th>Place Of Supply</th>
+            <th>Note Value</th>
+            <th>Rate</th>
+            <th>Taxable Amount</th>
+            <th>IGST </th>
+            <th>CGST</th>
+            <th>SGST/ UTGST</th>
+            <th>CESS </th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @{
+            foreach (var item in ViewBag.SalesCDNUR)
+            {
+                decimal cgst = 0, sgst = 0, igst = 0, cess = 0;
+
+                foreach (var item1 in item.SalesDetails)
+                {
+                    foreach (var inner in item1.TaxTypes)
+                    {
+                        if (inner.TaxType == "CGST")
+                        {
+                            cgst = inner.TaxAmount;
+                        }
+                        else if (inner.TaxType == "SGST" || inner.TaxType == "UTGST")
+                        {
+                            sgst = sgst + inner.TaxAmount;
+                        }
+                        else if (inner.TaxType == "IGST")
+                        {
+                            igst = inner.TaxAmount;
+                        }
+                        else if (inner.TaxType == "CESS")
+                        {
+                            cess = inner.TaxAmount;
+                        }
+                    }
+
+                    <tr>
+                        <td>@item.InvoiceType </td>
+                        <td> @item.InvoiceNo</td>
+                        <td>@item.SalesDate </td>
+                        <td> @(item.SalesType == "Debit Note" ? "D" : "C")</td>
+                        <td> @item.PlaceOfSupply</td>
+                        <td> @(String.Format("{0:0.##}", item.GrandTotal))</td>
+                        <td> @(String.Format("{0:0.##}", item1.TaxPercent))</td>
+                        <td>@(String.Format("{0:0.##}", item1.AmountExcTax))</td>
+                        <td>@(String.Format("{0:0.##}", igst)) </td>
+                        <td>@(String.Format("{0:0.##}", cgst ))</td>
+                        <td> @(String.Format("{0:0.##}", sgst))</td>
+                        <td>@(String.Format("{0:0.##}", cess)) </td>
+                    </tr>
+                }
+            }
+        }
+    </tbody>
+</table>
+
+<table id="tblDataAT" class="table table-bordered ">
+    <thead id="thead">
+        <tr>
+            <th>Place of Supply</th>
+            <th>Rate</th>
+            <th>Taxable Amount </th>
+            <th>IGST </th>
+            <th>CGST</th>
+            <th>SGST/ UTGST</th>
+            <th>CESS </th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @{
+            foreach (var item in ViewBag.CustomerPaymentsAT)
+            {
+                decimal cgst = 0, sgst = 0, igst = 0, cess = 0;
+
+                foreach (var inner in item.TaxTypes)
+                {
+                    if (inner.TaxType == "CGST")
+                    {
+                        cgst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "SGST" || inner.TaxType == "UTGST")
+                    {
+                        sgst = sgst + inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "IGST")
+                    {
+                        igst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "CESS")
+                    {
+                        cess = inner.TaxAmount;
+                    }
+                }
+
+                <tr>
+                    <td>@item.StateCode-@item.PlaceOfSupply </td>
+                    <td>@(String.Format("{0:0.##}", item.TaxPercent)) </td>
+                    <td> @(String.Format("{0:0.##}", item.AmountExcTax))</td>
+                    <td>@(String.Format("{0:0.##}", igst ))</td>
+                    <td>@(String.Format("{0:0.##}", cgst ))</td>
+                    <td> @(String.Format("{0:0.##}", sgst))</td>
+                    <td>@(String.Format("{0:0.##}", cess ))</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<table id="tblDataATADJ" class="table table-bordered ">
+    <thead id="thead">
+        <tr>
+            <th>Place of Supply</th>
+            <th>Rate</th>
+            <th>Taxable Amount </th>
+            <th>IGST </th>
+            <th>CGST</th>
+            <th>SGST/ UTGST</th>
+            <th>CESS </th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @{
+            foreach (var item in ViewBag.CustomerPaymentsATADJ)
+            {
+                decimal cgst = 0, sgst = 0, igst = 0, cess = 0;
+
+                foreach (var inner in item.TaxTypes)
+                {
+                    if (inner.TaxType == "CGST")
+                    {
+                        cgst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "SGST" || inner.TaxType == "UTGST")
+                    {
+                        sgst = sgst + inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "IGST")
+                    {
+                        igst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "CESS")
+                    {
+                        cess = inner.TaxAmount;
+                    }
+                }
+
+                <tr>
+                    <td>@item.StateCode-@item.PlaceOfSupply </td>
+                    <td>@(String.Format("{0:0.##}", item.TaxPercent)) </td>
+                    <td> @(String.Format("{0:0.##}", item.AmountExcTax))</td>
+                    <td>@(String.Format("{0:0.##}", igst)) </td>
+                    <td>@(String.Format("{0:0.##}", cgst)) </td>
+                    <td> @(String.Format("{0:0.##}", sgst))</td>
+                    <td>@(String.Format("{0:0.##}", cess)) </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<table id="tblDataHSN" class="table table-bordered ">
+    <thead id="thead">
+        <tr>
+            <th>HSN </th>
+            <th>Description </th>
+            <th>UQC </th>
+            <th>Total Quantity</th>
+            <th>Total Value</th>
+            <th>Rate</th>
+            <th>Total Taxable Value</th>
+            <th>IGST </th>
+            <th>CGST</th>
+            <th>SGST/ UTGST</th>
+            <th>CESS </th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @{
+            foreach (var item in ViewBag.SalesDetailsHSN)
+            {
+                decimal cgst = 0, sgst = 0, igst = 0, cess = 0;
+
+                foreach (var inner in item.TaxTypes)
+                {
+                    if (inner.TaxType == "CGST")
+                    {
+                        cgst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "SGST" || inner.TaxType == "UTGST")
+                    {
+                        sgst = sgst + inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "IGST")
+                    {
+                        igst = inner.TaxAmount;
+                    }
+                    else if (inner.TaxType == "CESS")
+                    {
+                        cess = inner.TaxAmount;
+                    }
+                }
+
+                <tr>
+                    <td>@item.Code </td>
+                    <td>@item.Description </td>
+                    <td>@(item.UnitShortName)-@(item.UnitName) </td>
+                    <td> @item.Quantity</td>
+                    <td> @(String.Format("{0:0.##}", item.GrandTotal))</td>
+                    <td> @(String.Format("{0:0.##}", item.TaxPercent))</td>
+                    <td>@(String.Format("{0:0.##}", item.AmountExcTax)) </td>
+                    <td>@(String.Format("{0:0.##}", igst ))</td>
+                    <td>@(String.Format("{0:0.##}", cgst ))</td>
+                    <td> @(String.Format("{0:0.##}", sgst))</td>
+                    <td>@(String.Format("{0:0.##}", cess)) </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<table id="tblDataEXEMP" class="table table-bordered ">
+    <thead id="thead">
+        <tr>
+            <th>Description</th>
+            <th>Nil Rated Supplies</th>
+            <th>Exempted(Other than Nil rated/non-GST supply)</th>
+            <th>Non-GST Supplies</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @{
+            foreach (var item in ViewBag.SalesDetailsEXEMP)
+            {
+                <tr>
+                    <td>@item.Description </td>
+                    <td>@(String.Format("{0:0.##}", item.NilRatedAmount ))</td>
+                    <td> @(String.Format("{0:0.##}", item.ExemptedAmount))</td>
+                    <td>@(String.Format("{0:0.##}", item.NonGstAmount))</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<table id="tblDataDOCS" class="table table-bordered ">
+    <thead id="thead">
+        <tr>
+            <th>Nature of document </th>
+            <th>From</th>
+            <th>To</th>
+            <th>Total number</th>
+            <th>Cancelled</th>
+            <th>Net issued</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @{
+            foreach (var item in ViewBag.TaxDocumentsDOCS)
+            {
+                <tr>
+                    <td>@item.NatureOfDocument </td>
+                    <td> @item.From</td>
+                    <td> @item.To</td>
+                    <td>@item.TotalNumber </td>
+                    <td>@item.TotalCancelled </td>
+                    <td>@(item.TotalNumber - item.TotalCancelled)</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

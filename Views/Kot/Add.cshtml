@@ -1,0 +1,506 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add KOT";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+<style>
+    .ui-datepicker {
+        z-index: 99999 !important
+    }
+
+    .ui-widget-content {
+        background: #fff !important;
+    }
+
+    .note-editor.note-frame {
+        border: none !important;
+    }
+
+    /* Fix autocomplete dropdown positioning within modals */
+    .ui-autocomplete {
+        z-index: 9999 !important;
+        max-height: 200px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+        .ui-autocomplete .ui-menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+            .ui-autocomplete .ui-menu-item:hover,
+            .ui-autocomplete .ui-menu-item.ui-state-focus {
+                background-color: #007bff;
+                color: white;
+            }
+
+    .ui-autocomplete .ui-menu-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Ensure autocomplete appears above modal backdrop */
+    .modal-open .ui-autocomplete {
+        z-index: 9999 !important;
+    }
+    
+    /* Select2 validation border styling */
+    .select2-container .select2-selection.is-invalid,
+    .select2-container .select2-selection[style*="border: 2px solid #dc3545"] {
+        border: 2px solid #dc3545 !important;
+        border-color: #dc3545 !important;
+    }
+    
+    .select2-container--default .select2-selection.is-invalid {
+        border: 2px solid #dc3545 !important;
+    }
+</style>
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>@(ViewBag.IsEditMode == true ? "Edit KOT" : "Add KOT")</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/kot/index">KOT List</a></li>
+                        <li class="breadcrumb-item active">@(ViewBag.IsEditMode == true ? "Edit KOT" : "Add KOT")</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="@(ViewBag.IsEditMode == true && ViewBag.ExistingKot != null ? "/kot/details/" + ViewBag.ExistingKot.KotId : "/kot/index")" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+                    @*<div class="card-header">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>*@
+                    <div class="card-body">
+                        <div class="card card-outline">
+                            @*<div class="card-header bg-info">
+                                    <h3 class="card-title">Customer Info</h3>
+                                </div>*@
+                            <!-- form start -->
+                            <form id="kotForm">
+                                <input type="hidden" id="KotId" name="KotId" value="@(ViewBag.ExistingKot != null ? ViewBag.ExistingKot.KotId : 0)" />
+                                <input type="hidden" id="BookingId" name="BookingId" value="@(ViewBag.BookingId ?? (ViewBag.ExistingKot != null ? ViewBag.ExistingKot.BookingId : 0))" />
+                                @if (ViewBag.IsEditMode == true && ViewBag.ExistingKot != null)
+                                {
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> <strong>Edit Mode:</strong> You are editing KOT <strong>@ViewBag.ExistingKot.KotNo</strong>. Changes will update the existing KOT.
+                                        @if (ViewBag.ExistingKot.Printed)
+                                        {
+                                            <br /><small><i class="fas fa-print"></i> This KOT has been printed. Consider re-printing after making changes.</small>
+                                        }
+                                    </div>
+                                }
+                                <div class="card-body">
+                                    <div class="row">
+                                        @if ((ViewBag.BookingId == null || ViewBag.BookingId == 0) && (ViewBag.ExistingKot == null || ViewBag.ExistingKot.BookingId == 0))
+                                        {
+                                            <div class="col-12 col-sm-6 col-md-2">
+                                                <div class="form-group">
+                                                    <label>Link to Booking <small class="text-muted">(Optional)</small></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" id="txtSelectedBooking" placeholder="No booking selected" readonly>
+                                                        <input type="hidden" id="selectedBookingId" value="">
+                                                        <div class="input-group-append">
+                                                            <button type="button" class="btn btn-info" onclick="openBookingSearchModal()" title="Search and select booking">
+                                                                <i class="fas fa-search"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-secondary" onclick="clearSelectedBooking()" title="Clear booking selection" style="display:none;" id="btnClearBooking">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-muted">Select a booking to auto-fill table, guest count, and special instructions</small>
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="col-12 col-sm-6 col-md-2 @(ViewBag.Branchs != null && ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                            <div class="form-group">
+                                                <label>Business Location</label>
+                                                <div class="input-group divBranch_ctrl">
+                                                    <select class="form-control select2" style="width: 100%;" id="ddlBranch" name="BranchId" onchange="loadKotTablesByBranch()">
+                                                        @if (ViewBag.Branchs != null)
+                                                        {
+                                                            long? selectedBranchId = null;
+                                                            // Get BranchId from existing KOT, booking, or default
+                                                            if (ViewBag.ExistingKot != null && ViewBag.ExistingKot.BranchId > 0)
+                                                            {
+                                                                selectedBranchId = ViewBag.ExistingKot.BranchId;
+                                                            }
+                                                            else if (ViewBag.Booking != null && ViewBag.Booking.BranchId > 0)
+                                                            {
+                                                                selectedBranchId = ViewBag.Booking.BranchId;
+                                                            }
+
+                                                            foreach (var item in ViewBag.Branchs)
+                                                            {
+                                                                <option value="@item.BranchId" @(selectedBranchId.HasValue && selectedBranchId.Value == item.BranchId ? "selected" : "")>@item.Branch</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-2">
+                                            <div class="form-group">
+                                                <label>Table <span id="tableRequired" class="text-danger" style="display:none;">*</span></label>
+                                                <select class="form-control select2" id="ddlTableId" name="TableId" style="width: 100%;">
+                                                    <option value="">Select Table</option>
+                                                    @if (ViewBag.Tables != null)
+                                                    {
+                                                        long? selectedTableId = null;
+                                                        if (ViewBag.ExistingKot != null && ViewBag.ExistingKot.TableId > 0)
+                                                        {
+                                                            selectedTableId = ViewBag.ExistingKot.TableId;
+                                                        }
+                                                        else if (ViewBag.Booking != null && ViewBag.Booking.TableIds != null && ViewBag.Booking.TableIds.Count > 0)
+                                                        {
+                                                            selectedTableId = ViewBag.Booking.TableIds[0];
+                                                        }
+                                                        
+                                                        foreach (var item in ViewBag.Tables)
+                                                        {
+                                                            <option value="@item.TableId" @(selectedTableId.HasValue && selectedTableId.Value == item.TableId ? "selected" : "")>@item.TableNo - @(item.TableName ?? "")</option>
+                                                        }
+                                                    }
+                                                </select>
+                                                <small class="text-red font-weight-bold errorText" id="divTableId" style="display:none;"></small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-2">
+                                            <div class="form-group">
+                                                <label>Order Type</label>
+                                                <select class="form-control select2" id="ddlOrderType" name="OrderType" style="width: 100%;">
+                                                    <option value="DineIn" @(ViewBag.ExistingKot != null && ViewBag.ExistingKot.OrderType == "DineIn" ? "selected" : "")>Dine In</option>
+                                                    <option value="Takeaway" @(ViewBag.ExistingKot != null && ViewBag.ExistingKot.OrderType == "Takeaway" ? "selected" : "")>Takeaway</option>
+                                                    <option value="Delivery" @(ViewBag.ExistingKot != null && ViewBag.ExistingKot.OrderType == "Delivery" ? "selected" : "")>Delivery</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-2">
+                                            <div class="form-group">
+                                                <label>Number of Guests <span class="text-danger">*</span></label>
+                                                <input type="number" class="form-control" id="txtGuestCount" name="GuestCount" min="1" required value="@(ViewBag.ExistingKot != null ? (ViewBag.ExistingKot.GuestCount != null ? ViewBag.ExistingKot.GuestCount : 1) : (ViewBag.Booking != null ? ViewBag.Booking.NoOfGuests : 1))">
+                                                <small class="text-red font-weight-bold errorText" id="divGuestCount" style="display:none;"></small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-6 col-md-2">
+                                            <div class="form-group">
+                                                <label>Waiter <small class="text-muted">(Optional)</small></label>
+                                                <select class="form-control select2" id="ddlWaiterId" name="WaiterId" style="width: 100%;">
+                                                    <option value="0">Select Waiter</option>
+                                                    @if (ViewBag.Waiters != null)
+                                                    {
+                                                        long? selectedWaiterId = null;
+                                                        if (ViewBag.ExistingKot != null && ViewBag.ExistingKot.WaiterId > 0)
+                                                        {
+                                                            selectedWaiterId = ViewBag.ExistingKot.WaiterId;
+                                                        }
+                                                        foreach (var item in ViewBag.Waiters)
+                                                        {
+                                                            <option value="@item.UserId" @(selectedWaiterId.HasValue && selectedWaiterId.Value == item.UserId ? "selected" : "")>
+                                                                @item.Name
+                                                                @if (!string.IsNullOrEmpty(item.MobileNo))
+                                                                {
+                                                                    <text> - @item.MobileNo</text>
+                                                                }
+                                                            </option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label>Special Requests (Optional)</label>
+                                                <textarea class="form-control" id="txtSpecialInstructions" name="SpecialInstructions" rows="2">@(ViewBag.ExistingKot != null ? ViewBag.ExistingKot.SpecialInstructions : (ViewBag.Booking != null && !string.IsNullOrEmpty(ViewBag.Booking.SpecialRequest) ? ViewBag.Booking.SpecialRequest : ""))</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- /.card-body -->
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card card-outline">
+                            <div class="card-header bg-info">
+                                <h3 class="card-title">Search Items</h3>
+                            </div>
+                            <!-- form start -->
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-12 mb-3">
+                                        <div class="input-group ">
+                                            @*<div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                                                </div>*@<div class="input-group-prepend">
+                                                <span class="btn btn-primary" onclick="openSaltSearchModal()"><i class="fas fa-search"></i>Salt</span>
+                                            </div>
+                                            <input type="text" class="form-control divtags_ctrl" placeholder="Sku Code/ Item Name" id="txttags">
+                                            @*@if (ViewBag.ItemsPermission.IsAdd == true)
+                                                {*@
+                                            <span class="input-group-append">
+                                                <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#ItemModal"><i class="fas fa-plus"></i> Item </a>
+                                            </span>
+                                            @*}*@
+
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divtags"></small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12 table-responsive">
+                                        <table id="example1" class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Item</th>
+                                                    <th>Qty</th>
+                                                    <th>Cooking Instructions</th>
+                                                    <th>
+                                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteFullCombo()">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="kotItemsContainer" class="rows">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button id="btnSave" type="button" class="btn btn-primary float-right" onclick="saveKot()"><i class="fas fa-save"></i> @(ViewBag.IsEditMode == true ? "Update" : "Save")</button>
+                        <a href="@(ViewBag.IsEditMode == true && ViewBag.ExistingKot != null ? "/kot/details/" + ViewBag.ExistingKot.KotId : "/kot/index")" class="btn btn-default float-right mr-2">Cancel</a>
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!--/.col (left) -->
+
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<!-- Booking Search Modal -->
+<div class="modal fade" id="bookingSearchModal" tabindex="-1" role="dialog" aria-labelledby="bookingSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingSearchModalLabel">Search and Select Booking</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="bookingSearchForm">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Booking No</label>
+                                <input type="text" class="form-control" id="modalTxtBookingNo" placeholder="Enter Booking No">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>From Date</label>
+                                <input type="date" class="form-control" id="modalTxtFromDate" value="@DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd")">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>To Date</label>
+                                <input type="date" class="form-control" id="modalTxtToDate" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 text-right">
+                            <button type="button" class="btn btn-primary" onclick="searchBookingsForKot()"><i class="fas fa-search"></i> Search</button>
+                            <button type="button" class="btn btn-secondary" onclick="clearBookingSearch()"><i class="fas fa-times"></i> Clear</button>
+                        </div>
+                    </div>
+                </form>
+                <hr>
+                <div id="modalBookingsList">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Use the search form above to find bookings.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="~/Content/JQuery/Customer/Restaurant/Kot.js"></script>
+<script src="~/Content/JQuery/Customer/Kot/LinkBooking.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            dropdownAutoWidth: true,
+            width: '100%'
+        });
+        
+        // Load existing KOT items if in edit mode
+        @if (ViewBag.IsEditMode == true && ViewBag.KotDetails != null)
+        {
+            <text>
+            var existingKotDetails = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.KotDetails));
+            if (existingKotDetails && existingKotDetails.length > 0) {
+                loadExistingKotItems(existingKotDetails);
+            }
+            </text>
+        }
+        
+        @if (ViewBag.Booking != null && ViewBag.Booking.TableIds != null && ViewBag.Booking.TableIds.Count > 0)
+        {
+            <text>
+            $('#ddlTableId').val('@ViewBag.Booking.TableIds[0]').trigger('change');
+            </text>
+        }
+        else if (ViewBag.ExistingKot != null && ViewBag.ExistingKot.TableId > 0)
+        {
+            <text>
+            $('#ddlTableId').val('@ViewBag.ExistingKot.TableId').trigger('change');
+            </text>
+        }
+        
+        // Pre-select waiter from booking if available (industry standard: one waiter per booking)
+        @if (ViewBag.Booking != null && ViewBag.Booking.WaiterId > 0)
+        {
+            <text>
+            $('#ddlWaiterId').val('@ViewBag.Booking.WaiterId').trigger('change');
+            </text>
+        }
+        
+        // Auto-select branch if not already selected
+        @if (ViewBag.Branchs != null && ViewBag.Branchs.Count > 0)
+        {
+            <text>
+            // Branch should already be selected from server-side (from KOT, booking or cookies)
+            // Just ensure it's triggered if needed
+            if ($('#ddlBranch').val() == '' || $('#ddlBranch').val() == null) {
+                // If no selection, select first branch
+                $('#ddlBranch option:first').prop('selected', true);
+                $('#ddlBranch').trigger('change');
+            } else {
+                // Trigger change to load tables for selected branch
+                loadKotTablesByBranch();
+            }
+            </text>
+        }
+        initKotAutocomplete();
+        
+        // Initialize booking display if booking exists
+        @if (ViewBag.Booking != null)
+        {
+            <text>
+            $('#selectedBookingId').val('@ViewBag.Booking.BookingId');
+            $('#txtSelectedBooking').val('@ViewBag.Booking.BookingNo - @(ViewBag.Booking.CustomerName ?? "")');
+            $('#btnClearBooking').show();
+            </text>
+        }
+        
+        // Show/hide table required indicator based on order type
+        function updateTableRequired() {
+            var orderType = $('#ddlOrderType').val();
+            if (orderType === 'DineIn') {
+                $('#tableRequired').show();
+            } else {
+                $('#tableRequired').hide();
+            }
+        }
+        
+        // Update table required indicator on order type change
+        $('#ddlOrderType').on('change', function() {
+            updateTableRequired();
+            // Clear table validation error when switching to non-DineIn
+            if ($(this).val() !== 'DineIn') {
+                $('#divTableId').hide();
+                $('#ddlTableId').closest('.select2-container').find('.select2-selection').css('border', '');
+            }
+        });
+        
+        // Initialize on page load
+        updateTableRequired();
+        
+        // Clear validation errors when user interacts with fields
+        $('#ddlBranch').on('change', function() {
+            $('#divBranch').hide();
+            var $select = $(this).next('.select2-container').find('.select2-selection');
+            if ($select.length > 0 && $select[0]) {
+                $select.removeClass('is-invalid');
+                $select[0].style.removeProperty('border');
+                $select[0].style.removeProperty('border-color');
+            }
+        });
+        
+        $('#ddlTableId').on('change', function() {
+            $('#divTableId').hide();
+            var $select = $(this).next('.select2-container').find('.select2-selection');
+            if ($select.length > 0 && $select[0]) {
+                $select.removeClass('is-invalid');
+                $select[0].style.removeProperty('border');
+                $select[0].style.removeProperty('border-color');
+            }
+        });
+        
+        $('#txtGuestCount').on('input change', function() {
+            $('#divGuestCount').hide();
+            $(this).css('border', '');
+        });
+        
+        $('#ddlOrderType').on('change', function() {
+            // Clear table error when switching order type
+            $('#divTableId').hide();
+            var $select = $('#ddlTableId').next('.select2-container').find('.select2-selection');
+            if ($select.length > 0 && $select[0]) {
+                $select.removeClass('is-invalid');
+                $select[0].style.removeProperty('border');
+                $select[0].style.removeProperty('border-color');
+            }
+        });
+        
+        // Clear item validation error when items are added
+        $('#txttags').on('input', function() {
+            $('#divtags').hide();
+            $(this).css('border', '');
+        });
+    });
+</script>
+

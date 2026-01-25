@@ -1,0 +1,116 @@
+@{
+    var kots = ViewBag.Kots as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var currentPageIndex = ViewBag.CurrentPageIndex ?? 1;
+    var pageCount = ViewBag.PageCount ?? 0;
+}
+
+@{
+    // Group KOTs by table
+    var tableGroups = kots
+        .Where(k => k.TableId != null && k.TableId > 0)
+        .GroupBy(k => new { TableId = k.TableId, TableNo = k.TableNo ?? "Unknown", TableName = k.TableName ?? "" })
+        .Select(g => new {
+            TableId = g.Key.TableId,
+            TableNo = g.Key.TableNo,
+            TableName = g.Key.TableName,
+            TotalKots = g.Count(),
+            TotalRevenue = g.Where(k => k.SalesId != null && k.SalesId > 0).Sum(k => (decimal?)(k.SalesTotal ?? 0)) ?? 0,
+            ServedKots = g.Count(k => k.OrderStatus == "Served"),
+            AvgGuestCount = g.Average(k => (int?)(k.GuestCount ?? 0)) ?? 0
+        })
+        .OrderByDescending(t => t.TotalRevenue)
+        .ToList();
+}
+
+<thead id="thead">
+    <tr>
+        <th>Table No</th>
+        <th>Table Name</th>
+        <th>Total KOTs</th>
+        <th>Served KOTs</th>
+        <th>Total Revenue</th>
+        <th>Avg Guest Count</th>
+        <th>Revenue per KOT</th>
+        <th>Utilization %</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (tableGroups.Count > 0)
+    {
+        foreach (var table in tableGroups)
+        {
+            var revenuePerKot = table.TotalKots > 0 ? table.TotalRevenue / table.TotalKots : 0;
+            var utilization = table.TotalKots > 0 ? Math.Round((table.ServedKots / (double)table.TotalKots) * 100, 2) : 0;
+            
+            <tr>
+                <td><strong>@table.TableNo</strong></td>
+                <td>@(string.IsNullOrEmpty(table.TableName) ? "-" : table.TableName)</td>
+                <td>@table.TotalKots</td>
+                <td><span class="badge badge-success">@table.ServedKots</span></td>
+                <td><strong>@table.TotalRevenue.ToString("N2")</strong></td>
+                <td>@Math.Round(table.AvgGuestCount, 1)</td>
+                <td>@revenuePerKot.ToString("N2")</td>
+                <td><span class="badge badge-@(utilization >= 80 ? "success" : utilization >= 60 ? "warning" : "danger")">@utilization%</span></td>
+            </tr>
+        }
+    }
+</tbody>
+@if (tableGroups.Count > 0)
+{
+    <tfoot>
+        <tr>
+            <th colspan="2">Total</th>
+            <th>@tableGroups.Sum(t => t.TotalKots)</th>
+            <th>@tableGroups.Sum(t => t.ServedKots)</th>
+            <th>@tableGroups.Sum(t => t.TotalRevenue).ToString("N2")</th>
+            <th>@Math.Round(tableGroups.Average(t => t.AvgGuestCount), 1)</th>
+            <th>@(tableGroups.Sum(t => t.TotalRevenue) / tableGroups.Sum(t => t.TotalKots)).ToString("N2")</th>
+            <th>-</th>
+        </tr>
+    </tfoot>
+}
+<tbody class="hide noPrint">
+    <tr></tr>
+    <tr>
+        <td colspan="8">
+            <div class="dataTables_info" id="tblTableWiseRevenue_info_custom" role="status" aria-live="polite">Showing @((currentPageIndex - 1) * pageSize + 1) to @(Math.Min(currentPageIndex * pageSize, totalCount)) of @totalCount entries</div>
+            @if (pageCount > 1)
+            {
+                int j = 0;
+                <div class="dataTables_paginate paging_simple_numbers" id="tblTableWiseRevenue_paginate_custom" style="float:right">
+                    <ul class="pagination">
+                        @if (currentPageIndex > 1)
+                        {
+                            <li class="paginate_button page-item previous" id="tblTableWiseRevenue_previous">
+                                <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblTableWiseRevenue" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                            </li>
+                            <li class="paginate_button page-item previous" id="tblTableWiseRevenue_previous">
+                                <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblTableWiseRevenue" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                            </li>
+                        }
+                        @for (int i = currentPageIndex; i <= pageCount; i++)
+                        {
+                            <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblTableWiseRevenue" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                            </li>
+                            if (j == 10)
+                            {
+                                i = pageCount + 1;
+                            }
+                            j++;
+                        }
+                        @if (currentPageIndex < pageCount)
+                        {
+                            <li class="paginate_button page-item next" id="tblTableWiseRevenue_next">
+                                <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblTableWiseRevenue" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </td>
+    </tr>
+</tbody>
+

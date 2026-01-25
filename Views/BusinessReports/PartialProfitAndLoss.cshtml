@@ -1,0 +1,117 @@
+﻿
+
+
+
+@{
+    decimal OperatingIncome = 0, CostOfGoods = 0, OperatingExpense = 0,
+   NonOperatingIncome = 0, NonOperatingExpense = 0, GrossProfit = 0, OperatingProfit = 0, NetProfiLoss = 0;
+    <thead id="thead">
+        <tr>
+            @*<th>Sln</th>*@
+            <th>Account </th>
+            <th>Account Code</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var accountType in ViewBag.AccountSubTypes)
+        {
+            decimal Balance = 0;
+            bool showTotal = false;
+            <tr class="bg-secondary">
+                @*<td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>*@
+                <td class="text-bold" colspan="4">@accountType.AccountSubType</td>
+            </tr>
+            foreach (var item in accountType.Accounts)
+            {
+                showTotal = true;
+                <tr>
+                    @*<td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>*@
+                    <td>@item.AccountName</td>
+                    <td>@item.AccountNumber</td>
+                    <td>
+                        @{
+                            //if (item.Debit > 0)
+                            //{
+                            <a href="/accountsreports/AccountTransactions?AccountId=@item.AccountId&AccountName=@item.AccountName&BranchId=@ViewBag.BranchId&FromDate=@ViewBag.FromDate.ToString("MM-dd-yyyy")&ToDate=@ViewBag.ToDate.ToString("MM-dd-yyyy")&Page=profit and loss">
+                                @(String.Format("{0:0.##}", (item.Credit - item.Debit)))
+                            </a>
+
+                            Balance = Balance + (item.Credit - item.Debit);
+                            @*}
+            else
+            {
+                <a href="/accountsreports/AccountTransactions?AccountId=@item.AccountId&AccountName=@item.AccountName&BranchId=@ViewBag.BranchId&FromDate=@ViewBag.FromDate.ToString("MM-dd-yyyy")&ToDate=@ViewBag.ToDate.ToString("MM-dd-yyyy")&Page=account type summary">
+                    @(item.Credit - item.Debit)
+                </a>
+                Balance = Balance + (item.Credit - item.Debit);
+            }*@
+                        }
+                    </td>
+                </tr>
+            }
+            if (showTotal == true)
+            {
+                if (accountType.AccountSubType == "Operating Income")
+                {
+                    OperatingIncome = Balance;
+                }
+                else if (accountType.AccountSubType == "Cost of Goods Sold")
+                {
+                    CostOfGoods = Balance;
+                }
+                else if (accountType.AccountSubType == "Operating Expense")
+                {
+                    OperatingExpense = Balance;
+                }
+                else if (accountType.AccountSubType == "Non Operating Income")
+                {
+                    NonOperatingIncome = Balance;
+                }
+                else if (accountType.AccountSubType == "Non Operating Expense")
+                {
+                    NonOperatingExpense = Balance;
+                }
+                <tr class="">
+                    <td class="text-bold" colspan="2">Total For @accountType.AccountSubType</td>
+                    <td class="text-bold">
+                        @(String.Format("{0:0.##}", Balance))
+                    </td>
+                </tr>
+            }
+
+            if (accountType.AccountSubType == "Cost of Goods Sold")
+            {
+                <tr class="">
+                    <td class="text-bold text-center" colspan="2">Gross Profit</td>
+                    <td class="text-bold">@(String.Format("{0:0.##}", (OperatingIncome - CostOfGoods)))</td>
+                </tr>
+            }
+            else if (accountType.AccountSubType == "Operating Expense")
+            {
+                <tr class="">
+                    <td class="text-bold text-center" colspan="2">Operating Profit</td>
+                    <td class="text-bold">
+                        @(String.Format("{0:0.##}", (OperatingIncome - CostOfGoods - OperatingExpense)))
+                    </td>
+                </tr>
+            }
+            else if (accountType.AccountSubType == "Non Operating Expense")
+            {
+                <tr class="">
+                    <td class="text-bold text-center" colspan="2">Net Profit/Loss</td>
+                    <td class="text-bold">
+                        @(String.Format("{0:0.##}", ((OperatingIncome - CostOfGoods) - (OperatingExpense + NonOperatingIncome) - (NonOperatingExpense))))
+                    </td>
+                </tr>
+            }
+        }
+
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divAsof').text('Showing Results: (' + @Html.Raw(Json.Encode(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+        @*$('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+        $('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+        $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));*@
+</script>

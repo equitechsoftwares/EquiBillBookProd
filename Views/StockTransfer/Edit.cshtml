@@ -1,0 +1,680 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Stock Transfer";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Stock Transfer</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/stocktransfer/index">Stock Transfer List</a></li>
+                        <li class="breadcrumb-item active">Edit Stock Transfer</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/stocktransfer/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <div class="card-body">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Reference No</label>
+                                            <input disabled type="text" class="form-control" id="txtReferenceNo" value="@ViewBag.StockTransfer.ReferenceNo">
+                                            <small class="text-red font-weight-bold errorText" id="divReferenceNo"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Date <span class="danger">*</span></label>
+                                            <div class="input-group date" id="_Date" data-target-input="nearest">
+                                                <input id="txtDate" value="@ViewBag.StockTransfer.Date.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])" type="text" class="form-control datetimepicker-input" data-target="#_Date" />
+                                                <div class="input-group-append" data-target="#_Date" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                            @*<input type="datetime-local" class="form-control" id="txtDate" placeholder="Enter SKU" value="@ViewBag.StockTransfer.Date.ToString("yyyy-MM-ddTHH:mm")">*@
+                                            <small class="text-red font-weight-bold errorText" id="divDate"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Status <span class="danger">*</span> <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Stock transfer will not be editable if status is completed"></i></label>
+                                            <select class="form-control" style="width: 100%;" id="ddlStatus">
+                                                @{
+                                                    if (ViewBag.StockTransfer.Status == 1)
+                                                    {
+                                                        <option value="1" selected>Pending</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="1">Pending</option>
+                                                    }
+                                                    if (ViewBag.StockTransfer.Status == 2)
+                                                    {
+                                                        <option value="2" selected>In Transit</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="2">In Transit</option>
+                                                    }
+                                                    if (ViewBag.StockTransfer.Status == 3)
+                                                    {
+                                                        <option value="3" selected>Completed</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="3">Completed</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>From Business Location <span class="danger">*</span></label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" style="width: 100%;" id="ddlFromBranch" onchange="clearTable()">
+                                                    @foreach (var item in ViewBag.Branchs)
+                                                    {
+                                                        if (ViewBag.StockTransfer.FromBranchId == item.BranchId)
+                                                        {
+                                                            <option value="@item.BranchId" selected>@item.Branch</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.BranchId">@item.Branch</option>
+                                                        }
+                                                    }
+                                                </select>
+                                                @*<span class="input-group-append">
+                        <a href="customers/add" target="_blank" class="btn btn-info">+ </a>
+                    </span>*@
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divFromBranch"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>To Business Location <span class="danger">*</span></label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" style="width: 100%;" id="ddlToBranch">
+                                                    @foreach (var item in ViewBag.Branchs)
+                                                    {
+                                                        if (ViewBag.StockTransfer.ToBranchId == item.BranchId)
+                                                        {
+                                                            <option value="@item.BranchId" selected>@item.Branch</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.BranchId">@item.Branch</option>
+                                                        }
+                                                    }
+                                                </select>
+                                                @*<span class="input-group-append">
+                        <a href="customers/add" target="_blank" class="btn btn-info">+ </a>
+                    </span>*@
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divToBranch"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Reason <span class="danger">*</span></label>
+                                            <div class="input-group divStockTransferReason_ctrl">
+                                                <select class="form-control select2" id="ddlStockTransferReason">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.StockTransferReasons)
+                                                    {
+                                                        if (ViewBag.StockTransfer.StockTransferReasonId == item.StockTransferReasonId)
+                                                        {
+                                                            <option value="@item.StockTransferReasonId" selected>@item.StockTransferReason</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.StockTransferReasonId">@item.StockTransferReason</option>
+                                                        }
+                                                    }
+                                                </select>
+                                                @if (ViewBag.StockTransferReasonsPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#stockTransferReasonsModal">+ </a>
+                                                    </span>
+                                                }
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divStockTransferReason"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card card-outline">
+                            <div class="card-header bg-info">
+                                <h3 class="card-title">Search Items</h3>
+                            </div>
+                            <!-- form start -->
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-12 mb-3">
+                                        <div class="input-group">
+                                            @*<div class="input-group-prepend">
+                                                <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                                            </div>*@
+                                            <input type="text" class="form-control divtags_ctrl" placeholder="Sku Code/ Item Name" id="txttags">
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divtags"></small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12 table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    @*<th>#</th>*@
+                                                    <th>Item </th>
+                                                    <th class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden")">Lot No</th>
+                                                    <th>Choose Unit</th>
+                                                    <th>Avl Qty</th>
+                                                    <th>Qty</th>
+                                                    <th>Unit Cost</th>
+                                                    <th>Amount</th>
+                                                    <th>
+                                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteFullCombo(@ViewBag.StockTransfer.StockTransferId)">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                        <input type="hidden" id="hdnEnableLotNo" value="@(ViewBag.ItemSetting.EnableLotNo.ToString())" />
+                                                        <input type="hidden" id="hdnEnableItemExpiry" value="@(ViewBag.ItemSetting.EnableItemExpiry.ToString())" />
+                                                        <input type="hidden" id="hdnOnItemExpiry" value="@(ViewBag.ItemSetting.OnItemExpiry)" />
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="divCombo">
+                                                @{
+                                                    var count = 100000000;
+                                                    foreach (var item in ViewBag.StockTransfer.StockTransferDetails)
+                                                    {
+                                                        <tr id="divCombo@(count)">
+                                                            @*<td>@count </td>*@
+                                                            <td style="min-width:250px;">
+                                                                <input type="text" hidden class="form-control" id="txtItemId@(count)" value="@item.ItemId">
+                                                                <input type="text" hidden class="form-control" id="txtItemDetailsId@(count)" value="@item.ItemDetailsId">
+                                                                <input type="text" hidden class="form-control" id="txtSkuCode@(count)" value="@item.SKU">
+                                                                <input type="text" hidden class="form-control" id="txtPurchaseDetailsId@(count)" value="@item.StockTransferDetailsId">
+                                                                @if (item.ItemName.Length > 15)
+                                                                {
+                                                                    <span><b>Name:</b> @item.ItemName.Substring(0, 15)...</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span><b>Name:</b> @item.ItemName</span>
+                                                                }
+
+                                                                @if (item.VariationName != null)
+                                                                {
+                                                                    <br /><span> <b>Variation:</b> @item.VariationName</span>
+                                                                }
+                                                                <br /><span><b>SKU:</b> @item.SKU</span>
+                                                            </td>
+                                                            <td style="min-width:200px" class="@(ViewBag.ItemSetting.EnableLotNo == true ? "" : "hidden")">
+                                                                @if (item.LotId != 0)
+                                                                {
+                                                                    <select class="form-control" style="min-width: 100px;display:none;" id="ddlLot@(count)" onchange="fetchLotDetails(@(count))">
+                                                                        <option selected value="@item.LotId-@item.LotType"> Lot No: @item.LotNo</option>
+                                                                    </select>
+                                                                    <span><b>Lot No:</b> @item.LotNo</span>
+                                                                    if (item.LotManufacturingDate != null)
+                                                                    {
+                                                                        <br /> <span><b>Mfg Date:</b> @item.LotManufacturingDate.ToString(Request.Cookies["ItemSetting"].Value.Split('&')[0].Split('=')[1])</span>
+                                                                    }
+                                                                    if (item.LotExpiryDate != null)
+                                                                    {
+                                                                        <br /> <span><b>Exp Date:</b> @item.LotExpiryDate.ToString(Request.Cookies["ItemSetting"].Value.Split('&')[0].Split('=')[1])</span>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span style="text-align:center;display:block">-</span>
+                                                                }
+                                                            </td>
+                                                            <td style="min-width:150px">
+                                                                <div class="input-group" style="min-width:180px">
+                                                                    <select disabled class="form-control" style="min-width: 100px;" id="ddlUnit@(count)" onchange="toggleUnit(@(count))">
+                                                                        @{
+                                                                            if (item.QuaternaryUnitId != 0)
+                                                                            {
+                                                                                if (item.PriceAddedFor == 1)
+                                                                                {
+                                                                                    <option selected value="@(item.UnitId)-1-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.UnitId)-1-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 2)
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-2-2" selected>@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-2-2">@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 3)
+                                                                                {
+                                                                                    <option value="@(item.TertiaryUnitId)-3-3" selected>@item.TertiaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.TertiaryUnitId)-3-3">@item.TertiaryUnitShortName</option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 4)
+                                                                                {
+                                                                                    <option value="@(item.QuaternaryUnitId)-4-4" selected>@item.QuaternaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.QuaternaryUnitId)-4-4">@item.QuaternaryUnitShortName</option>
+                                                                                }
+                                                                            }
+                                                                            else if (item.TertiaryUnitId != 0)
+                                                                            {
+                                                                                @*<option value="0" hidden>@item.UnitShortName</option>*@
+                                                                                if (item.PriceAddedFor == 2)
+                                                                                {
+                                                                                    <option selected value="@(item.UnitId)-2-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.UnitId)-2-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 3)
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-3-2" selected>@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-3-2">@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 4)
+                                                                                {
+                                                                                    <option value="@(item.TertiaryUnitId)-4-3" selected>@item.TertiaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.TertiaryUnitId)-4-3">@item.TertiaryUnitShortName</option>
+                                                                                }
+                                                                            }
+                                                                            else if (item.SecondaryUnitId != 0)
+                                                                            {
+                                                                                @*<option value="0" hidden>@item.UnitShortName</option>
+                                                <option value="0" hidden>@item.UnitShortName</option>*@
+                                                                                if (item.PriceAddedFor == 3)
+                                                                                {
+                                                                                    <option selected value="@(item.UnitId)-3-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.UnitId)-3-1">@item.UnitShortName </option>
+                                                                                }
+                                                                                if (item.PriceAddedFor == 4)
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-4-2" selected>@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@(item.SecondaryUnitId)-4-2">@item.SecondaryUnitShortName</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                @*<option value="0" hidden>@item.UnitShortName</option>
+                                                <option value="0" hidden>@item.UnitShortName</option>
+                                                <option value="0" hidden>@item.UnitShortName</option>*@
+                                                                                <option selected value="@(item.UnitId)-4-1">@item.UnitShortName </option>
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                    <input type="text" hidden class="form-control" id="hdnPriceAddedFor@(count)" value="@item.PriceAddedFor">
+                                                                    <input type="text" hidden class="form-control" id="hdnUToSValue@(count)" value="@item.UToSValue">
+                                                                    <input type="text" hidden class="form-control" id="hdnSToTValue@(count)" value="@item.SToTValue">
+                                                                    <input type="text" hidden class="form-control" id="hdnTToQValue@(count)" value="@item.TToQValue">
+                                                                    <input type="text" hidden class="form-control" id="hdnUnitCost@(count)" value="@item.UnitCost">
+                                                                    <input type="hidden" class="form-control" id="hdnAllowDecimal@(count)" value="@(item.AllowDecimal.ToString())" />
+                                                                    <input type="hidden" class="form-control" id="hdnSecondaryUnitAllowDecimal@(count)" value="@item.SecondaryUnitAllowDecimal.ToString()" />
+                                                                    <input type="hidden" class="form-control" id="hdnTertiaryUnitAllowDecimal@(count)" value="@item.TertiaryUnitAllowDecimal.ToString()">
+                                                                    <input type="hidden" class="form-control" id="hdnQuaternaryUnitAllowDecimal@(count)" value="@item.QuaternaryUnitAllowDecimal.ToString()">
+                                                                </div>
+                                                            </td>
+                                                            <td style="min-width:150px" class="divIsDebit">
+                                                                <input style="min-width: 100px;" type="number" disabled class="form-control" value="@(String.Format("{0:0.##}",item.QuantityRemaining))" id="txtStockQuantity@(count)" onchange="ChangeQtyAmount(@count)">
+                                                                <input type="text" hidden class="form-control" id="hdnQuantityRemaining@(count)" value="@item.QuantityRemaining">
+                                                            </td>
+
+                                                            <td style="min-width:150px">
+                                                                <div class="input-group">
+                                                                    <input type="number" class="form-control divQuantity@(count)_ctrl" value="@(String.Format("{0:0.##}",item.Quantity))" id="txtQuantity@(count)" onchange="updateQuantity(@count,2)">
+                                                                </div>
+                                                                <small class="text-red font-weight-bold errorText" id="divQuantity@(count)"></small>
+                                                            </td>
+                                                            <td style="min-width:150px">
+                                                                <div class="input-group">
+                                                                    <input type="number" disabled class="form-control divUnitCost@(count)_ctrl" id="txtUnitCost@(count)" value="@(String.Format("{0:0.##}",item.UnitCost))" onchange="updateQuantity(@count,2)">
+                                                                </div>
+                                                                <small class="text-red font-weight-bold errorText" id="divUnitCost@(count)"></small>
+                                                            </td>
+                                                            <td style="min-width:150px">
+                                                                <input type="number" disabled class="form-control" id="txtTotalAmount@(count)" value="@(String.Format("{0:0.##}",item.Amount))">
+                                                            </td>
+                                                            <td>
+                                                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteCombo(@count,@item.StockTransferDetailsId)">
+                                                                    <i class="fas fa-times">
+                                                                    </i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        count++;
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>                                    
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <div class="row">
+
+                                            @*<div class="col-sm-6 mt-2">
+                                                <div class="form-group row">
+                                                    <label class="col-sm-5 col-form-label">Shipping Charge</label>
+                                                    <div class="input-group col-sm-7">
+                                                        <input type="number" class="form-control" id="txtShippingCharge" placeholder="" onchange="updateAmount()" value="@(String.Format("{0:0.##}",ViewBag.StockTransfer.ShippingCharge))">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label">Packaging Charge</label>
+                                                    <div class="col-sm-7">
+                                                        <input type="number" class="form-control" id="txtPackagingCharge" placeholder="" onchange="updateAmount()" value="@(String.Format("{0:0.##}",ViewBag.StockTransfer.PackingCharge))">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label">Other Charges</label>
+                                                    <div class="col-sm-7">
+                                                        <input type="number" min="0" class="form-control" id="txtOtherCharges" placeholder="" onchange="updateAmount()" value="@(String.Format("{0:0.##}",ViewBag.StockTransfer.OtherCharges))">
+                                                    </div>
+                                                </div>
+                                            </div>*@
+
+                                            <div class="col-sm-6 mt-2">
+                                                <div class="form-group row">
+                                                    <label for="inputEmail3" class="col-sm-5 col-form-label">Notes</label>
+                                                    <div class="col-sm-12">
+                                                        <textarea rows="2" class="form-control" id="txtNotes">@ViewBag.StockTransfer.Notes</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right">Net Total Amount :</label>
+                                                    <input type="number" class="form-control" id="hdndivTotalAmount" hidden value="@ViewBag.StockTransfer.Subtotal">
+                                                    <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTotalAmount">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}",ViewBag.StockTransfer.Subtotal))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}",ViewBag.Purchase.Subtotal))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12" style="display:none;">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right">Total Quantities :</label>
+                                                    <label for="inputEmail3" class="col-4 col-form-label text-left" id="divTotalQty">
+                                                        @(String.Format("{0:0.##}",ViewBag.StockTransfer.TotalQuantity))
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="row">
+                                                    <label for="inputEmail3" class="col-8 col-form-label text-right">Total Amount:</label>
+                                                    @*<input type="email" class="form-control" id="hdndivTotalAmount" hidden value="@ViewBag.StockTransfer.TotalAmount">*@
+                                                    <label for="inputEmail3" class="col-4 col-form-label text-left" id="divGrandTotal">
+                                                        @{
+                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                            {
+                                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}",ViewBag.StockTransfer.TotalAmount))
+                                                            }
+                                                            else
+                                                            {
+                                                                @(String.Format("{0:0.##}",ViewBag.StockTransfer.TotalAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                            }
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card-footer">
+                        <button id="btnUpdate" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                        <button id="btnUpdate_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                        @*<a id="btnBack" href="/stocktransfer/index" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Can I track my stock in multiple locations?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Yes, you can track your inventory levels at multiple locations through this software. Besides checking the system, the software also notifies you about any disruption in the supply chain so you can resolve the problem efficiently.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What are various types of stock transfer?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    •	Stock transfers can occur at three different levels:
+                                    •	Stock transfer from company code to company code.
+                                    •	Stock transfer from plant to plant.
+                                    •	Stock transfer from storage location to storage location (in the plant)
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What does it mean to transfer stock?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Stock transfer is the act of moving goods from one part of the distribution chain to another. An internal purchase order is created for stock transfer between branches and warehouses.<br />
+                                    A stock transport order, generated by converting a stock transport requisition, exists in SAP ERP. The goods issue for delivery is posted to the issuing plant. The booked-out quantity is then managed in the stock in transit of the receiving plant.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is the difference between transfer posting and stock transfer?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Transfer postings differ from stock transfers, in that transfer postings are not connected with a physical goods movement. They usually involve a change in stock type, batch number, or material number. An example of transfer posting is the release from inspection into the company's own stock.
+                                    Types of stock transfer:
+                                    Intercompany transfer
+                                    In this process, inventory is transferred between two companies with the involvement of many departments in both parties such as sales, logistics or procurement. The process may become more complicated if identification codes used by the two parties are different.
+                                    Intra-company transfer
+                                    In this type of stock transferring process, two particular locations belonging to the same company participate in the inventory transferring process. The intra-company transfer is considered less complicated than intercompany transfer thanks to the involvement of departments in only one entity.
+                                    One-step transferring process
+                                    In this process, inventory is transferred from one to another location through a single Stock Transfer Order (STO). Companies are recommended to use this method only in case it is an intra-company transferring process and the locations should not be too far from each other.
+                                    Two-step transferring process
+                                    This is a more efficient process in terms of tracking stock transferring and inventory management since STO is issued by both ends.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Why should retail businesses document stock transfer?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Retail businesses have to annually carry out stock transfers numerous times. And following are highlight benefits that retailers may get from an efficient transferring process.
+                                    Stock transfers enable businesses to maintain their inventory records through documentation.
+                                    Businesses can also manage unexpected damage which may be caused by improper transferring processes.
+                                    With transferring documentation, retailers can assure their audit processes are accurate and reliable.
+                                    Transferring documentation also supports retailers to keep their businesses on track.
+                                    STOs document used in transferring processes simplifies the intercompany transfer.
+                                    Companies can also aid taxation and compliance audits
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="stockTransferReasonsModal" style="z-index:1050 !important">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Stock Transfer Reason</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                        <div class="form-group">
+                            <label>Reason <span class="danger">*</span></label>
+                            <input type="text" class="form-control divStockTransferReason_M_ctrl" id="txtStockTransferReason_M" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divStockTransferReason_M"></small>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-control" id="txtDescription_M" placeholder=""></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertStockTransferReason()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+      rel="stylesheet">
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="~/Content/JQuery/Customer/Items/StockTransfer.js"></script>

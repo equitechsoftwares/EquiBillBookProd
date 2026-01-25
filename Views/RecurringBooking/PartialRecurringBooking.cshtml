@@ -1,0 +1,189 @@
+@{
+    var count = 1;
+    <thead>
+        <tr role="row">
+            <th>Sln</th>
+            <th class="hide noPrint">Action</th>
+            <th>Recurrence Type</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Repeat Pattern</th>
+            <th class="hidden">Status</th>
+            <th class="hide">Status</th>
+            <th>Created On</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (ViewBag.RecurringBookings != null)
+        {
+            foreach (var item in ViewBag.RecurringBookings)
+            {
+                <tr>
+                    <td>@(ViewBag.PageSize * (Math.Max(1, ViewBag.PageIndex) - 1) + count)</td>
+                    <td class="hide noPrint">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-info">Action</button>
+                            <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                <span class="sr-only">Toggle Dropdown</span>
+                            </button>
+                            <div class="dropdown-menu" role="menu">
+                                @{
+                                    if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsEdit)
+                                    {
+                                        <a class="dropdown-item" href="/recurringbooking/edit?RecurringBookingId=@item.RecurringBookingId" id="Edit"><i class="fas fa-edit"></i> Edit</a>
+                                    }
+                                    <a class="dropdown-item" href="/recurringbooking/details?RecurringBookingId=@item.RecurringBookingId" id="View"><i class="fas fa-eye"></i> View</a>
+                                    <a class="dropdown-item" href="/tablebooking/details/@item.BookingId" id="ViewBooking"><i class="fas fa-calendar"></i> View Booking</a>
+                                    if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsDelete)
+                                    {
+                                        <a class="dropdown-item" href="javascript:void(0)" id="Delete" onclick="Delete(@item.RecurringBookingId)"><i class="fas fa-trash-alt"></i> Delete</a>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </td>
+                    <td>@item.RecurrenceType</td>
+                    <td>@item.StartDate.ToString("dd-MMM-yyyy")</td>
+                    <td>@(item.EndDate != DateTime.MinValue && item.EndDate.Year > 1900 ? item.EndDate.ToString("dd-MMM-yyyy") : "")</td>
+                    <td>
+                        @{
+                            if (item.RecurrenceType == "Daily")
+                            {
+                                <text>Every @(item.RepeatEveryNumber > 0 ? item.RepeatEveryNumber : 1) day(s)</text>
+                            }
+                            else if (item.RecurrenceType == "Weekly")
+                            {
+                                try
+                                {
+                                    var daysOfWeekList = new List<int>();
+                                    if (item.DaysOfWeek != null)
+                                    {
+                                        // Handle both List<int> and JArray from JSON deserialization
+                                        var daysEnumerable = item.DaysOfWeek as System.Collections.IEnumerable;
+                                        if (daysEnumerable != null)
+                                        {
+                                            foreach (var day in daysEnumerable)
+                                            {
+                                                int dayValue;
+                                                if (int.TryParse(day?.ToString(), out dayValue) && dayValue >= 0 && dayValue <= 6)
+                                                {
+                                                    daysOfWeekList.Add(dayValue);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (daysOfWeekList.Count > 0)
+                                    {
+                                        var dayNames = new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+                                        var selectedDays = daysOfWeekList.Select(d => dayNames[d]).ToArray();
+                                        <text>Every @(item.RepeatEveryNumber > 0 ? item.RepeatEveryNumber : 1) week(s) on @string.Join(", ", selectedDays)</text>
+                                    }
+                                    else
+                                    {
+                                        <text>Every @(item.RepeatEveryNumber > 0 ? item.RepeatEveryNumber : 1) week(s)</text>
+                                    }
+                                }
+                                catch
+                                {
+                                    <text>Every @(item.RepeatEveryNumber > 0 ? item.RepeatEveryNumber : 1) week(s)</text>
+                                }
+                            }
+                            else if (item.RecurrenceType == "Monthly")
+                            {
+                                if (item.DayOfMonth != null && item.DayOfMonth > 0)
+                                {
+                                    <text>Every @(item.RepeatEveryNumber > 0 ? item.RepeatEveryNumber : 1) month(s) on day @item.DayOfMonth</text>
+                                }
+                                else
+                                {
+                                    <text>Every @(item.RepeatEveryNumber > 0 ? item.RepeatEveryNumber : 1) month(s) on day @item.StartDate.Day</text>
+                                }
+                            }
+                            else
+                            {
+                                <text>-</text>
+                            }
+                        }
+                    </td>
+                    <td class="hidden">@(item.IsActive == true ? "Active" : "Inactive")</td>
+                    <td class="hide">
+                        @if (item.IsActive)
+                        {
+                            if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsEdit)
+                            {
+                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.RecurringBookingId,false)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                            else
+                            {
+                                <input disabled class="chkIsActive" type="checkbox" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                        }
+                        else
+                        {
+                            if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsEdit)
+                            {
+                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.RecurringBookingId,true)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                            else
+                            {
+                                <input disabled class="chkIsActive" type="checkbox" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                            }
+                        }
+                    </td>
+                    <td>@item.AddedOn.ToString("dd-MMM-yyyy HH:mm")</td>
+                </tr>
+                count++;
+            }
+        }
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="8">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (Math.Max(1, ViewBag.PageIndex) - 1) + 1) to @(ViewBag.PageSize * Math.Max(1, ViewBag.CurrentPageIndex)) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+
+<script type="text/javascript">
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    $('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('Inactive : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));
+</script>
+

@@ -1,0 +1,381 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add Reminder";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+<style>
+    .ui-widget-content {
+        background: #fff !important;
+    }
+
+    .note-editor.note-frame {
+        border: none !important;
+    }
+</style>
+<style>
+    .category-heading {
+        background-color: #007bff; /* Blue background */
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    .tag {
+        background-color: #f8f9fa; /* Light gray */
+        color: #333;
+        padding: 5px 10px;
+        margin: 3px;
+        border-radius: 4px;
+        display: inline-block;
+        text-decoration: none;
+        border: 1px solid #ddd;
+        cursor: pointer;
+    }
+
+        .tag:hover {
+            background-color: #e2e6ea;
+        }
+</style>
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Reminder</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/notificationsettings/reminders">Reminder List</a></li>
+                        <li class="breadcrumb-item active">Add Reminder</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/notificationsettings/reminders" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Name <span class="danger">*</span> </label>
+                                        <input type="text" class="form-control" id="txtName" />
+                                        <small class="text-red font-weight-bold errorText" id="divName"></small>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Reminder To <span class="danger">*</span></label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="ddlReminderTo">
+                                                @{
+                                                    if (ViewBag.ReminderModule.ReminderModulesId == 1)
+                                                    {
+                                                        <option value="Customer">Customer</option>
+                                                        <option value="Me">Me</option>
+                                                        <option value="Customer + Me">Customer + Me</option>
+                                                    }
+
+                                                    if (ViewBag.ReminderModule.ReminderModulesId == 2)
+                                                    {
+                                                        <option value="Supplier">Supplier</option>
+                                                        <option value="Me">Me</option>
+                                                        <option value="Supplier + Me">Supplier + Me</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label>Description </label>
+                                        <textarea class="form-control" id="txtDescription"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Reminder In </label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="txtReminderInDays" placeholder="No of Days" onkeypress="return onlyDecimalKey(event)">
+                                            <select class="form-control select2" style="width: 40%;" id="ddlReminderBeforeAfter" onchange="toggleOverdueDays()">
+                                                <option value="Before Due Date">Before Due Date</option>
+                                                <option value="After Due Date">After Due Date</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Send Reminder Only if Due Amount >= </label>
+                                        <input type="number" class="form-control" id="txtTotalDue" onkeypress="return onlyDecimalKey(event)" />
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label>Exception Customers </label>
+                                        <div class="input-group">
+                                            <select id="ddlReminderExceptionContacts" class="select2" multiple="multiple" data-placeholder="">
+                                                @foreach (var item in ViewBag.Users)
+                                                {
+                                                    <option value="@item.UserId">
+                                                        @item.Name
+                                                        @if (item.MobileNo != null && item.MobileNo != "")
+                                                        {
+                                                            <span>- @item.MobileNo</span>
+                                                        }
+                                                    </option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @*<div class="col-sm-12">
+                                        <p class="help-block">
+                                            <b>Available Tags <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any tag to copy it"></i></b>
+                                            <br>
+                                            @{
+                                                string[] AvailableTags = ViewBag.ReminderModule.AvailableTags.Split(',');
+                                                foreach (var tag in AvailableTags)
+                                                {
+                                                    if (tag == "{Overdue Days}")
+                                                    {
+                                                        <a style="display:none" href="javascript:void(0)" id="lblOverdueDays" onclick="setAvailableTags('@tag')">@tag</a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a href="javascript:void(0)" onclick="setAvailableTags('@tag')">@tag</a>
+                                                    }
+                                                }
+                                            }
+                                        </p>
+                                    </div>*@
+
+                                <div class="col-sm-12">
+                                    <p class="help-block">
+                                        <b>
+                                            Available Tags
+                                            <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")"
+                                               role="button" data-toggle="popover" data-trigger="focus" title=""
+                                               data-content="Click on any tag to copy it">
+                                            </i>
+                                        </b>
+                                        <br>
+
+                                        @{
+                                            string json = ViewBag.ReminderModule.AvailableTags;
+
+                                            var categories = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(json);
+
+                                            foreach (var category in categories)
+                                            {
+                                                <h6 class="category-heading">@category.Category</h6><br>
+                                                foreach (var tag in category.Fields)
+                                                {
+                                                    if (tag == "{Overdue Days}")
+                                                    {
+                                                        <a style="display:none" href="javascript:void(0)" id="lblOverdueDays" onclick="setAvailableTags('@tag')" class="tag">@tag</a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a href="javascript:void(0)" onclick="setAvailableTags('@tag')" class="tag">@tag</a>
+                                                    }
+                                                }
+                                                <br>
+                                            }
+                                        }
+                                        <br>
+                                    </p>
+                                </div>
+
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label>Email Subject <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available Tags can be used to frame a subject.<br><small class='text-muted'>{Business Logo} tag will not work in subject </small>"></i></label>
+                                        <input type="text" class="form-control" id="txtEmailSubject" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label>CC <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Add as many CC using coma separated<br><small class='text-muted'>Eg: demo1@gmail.com,demo2@gmail.com,demo3@gmail.com </small>"></i></label>
+                                        <input type="text" class="form-control" id="txtCC" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label>BCC <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Add as many Bcc using coma separated<br><small class='text-muted'>Eg: demo1@gmail.com,demo2@gmail.com,demo3@gmail.com </small>"></i></label>
+                                        <input type="text" class="form-control" id="txtBCC" />
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 divEmailBody">
+                                    <div class="form-group">
+                                        <label id="lblProductDescription">Email Body <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available Tags can be used to frame the Email Body"></i></label>
+                                        <br />
+                                        <textarea id="txtEmailBody" class="txtEmailBody"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            <input type="checkbox" id="chkAutoSendEmail">
+                                            <label for="chkAutoSendEmail" class="mt-2">
+                                                Auto Send Email
+                                                <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Enable this to auto send email"></i>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="row">
+
+                                <div class="col-sm-12 ">
+                                    <div class="form-group">
+                                        <label id="lblProductDescription">Sms Body <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available Tags can be used to frame a subject.<br><small class='text-muted'>{Business Logo} tag will not work in subject </small>"></i></label>
+                                        <br />
+                                        <textarea id="txtSmsBody" class="form-control"></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            <input type="checkbox" id="chkAutoSendSms">
+
+                                            <label for="chkAutoSendSms" class="mt-2">
+                                                Auto Send Sms
+                                                <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Enable this to auto send sms"></i>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr />
+                                <div class="row">
+                                    <div class="col-sm-12 ">
+                                        <div class="form-group">
+                                            <label id="lblProductDescription">Whatsapp Text <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available Tags can be used to frame a subject.<br><small class='text-muted'>{Business Logo} tag will not work in subject </small>"></i></label>
+                                            <br />
+                                            <textarea id="txtWhatsappBody" class="form-control"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                <input type="checkbox" id="chkAutoSendWhatsapp">
+                                                <label for="chkAutoSendWhatsapp" class="mt-2">
+                                                    Auto Send Whatsapp
+                                                    <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Enable this to auto send whatsapp"></i>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="insert(1)"><i class="fas fa-save"></i> Save</button>
+                            <button id="btnSave_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="insert(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                            @*<a id="btnBack" href="/items/category" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I add and update product categories?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    •	To add a new product category, click on the ‘Add New’ button at the top of the screen
+                                    •	To update an existing product category, click on 'Edit' button beside the name of product category you want to change, make your changes and then click the ‘Save’ button at the bottom of the screen.
+                                    •	To delete an existing product category, tick the box that is to the left of the product category you would like to delete and then click the ‘Delete’ button at the top of the list.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I make a product category inactive?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    IMS allows you stop an entire product category from displaying in your catalogue, by marking it as inactive. This is sometimes better than deleting all those products since all the product information is retained but the products are not shown in the catalogue. To mark a product category as inactive, follow these steps:
+
+                                    •	Click on the name of the product category that you want to make active.
+                                    •	Change the status field from ‘Active’ to ‘Inactive’.
+                                    •	Click the ‘Save’ button at the bottom of the page.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Settings/NotificationSettings/Reminder.js"></script>
+
+

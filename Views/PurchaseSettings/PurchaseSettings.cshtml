@@ -1,0 +1,595 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Purchase Settings";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Purchase Settings</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item active">Purchase Settings</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/settings/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+                            <div class="row mt-3">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Default Payment Term</label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlPurchasePaymentTerm">
+                                                @{
+                                                    foreach (var item in ViewBag.PaymentTerms)
+                                                    {
+                                                        if (ViewBag.PurchaseSetting.PaymentTermId == item.PaymentTermId)
+                                                        {
+                                                            <option value="@item.PaymentTermId" selected> @item.PaymentTerm</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.PaymentTermId"> @item.PaymentTerm </option>
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                            @if (ViewBag.PaymentTermPermission.IsAdd == true)
+                                            {
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn btn-info" onclick="openPaymentTermModal('ddlPurchasePaymentTerm')">+ </a>
+                                                </span>
+                                            }
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.PurchaseSetting.EnableEditingProductPrice == true)
+                                            {
+                                                <input type="checkbox" id="chkEnableEditingProductPrice" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableEditingProductPrice">
+                                            }
+                                            <label for="chkEnableEditingProductPrice" class="mt-2">
+                                                Enable editing product price from purchase screen
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+            <br>
+            <div class="form-group">
+                <div class="checkbox icheck-turquoise">
+                    @if (ViewBag.PurchaseSetting.EnablePurchaseStatus == true)
+                    {
+                        <input type="checkbox" id="chkEnablePurchaseStatus" checked>
+                    }
+                    else
+                    {
+                        <input type="checkbox" id="chkEnablePurchaseStatus">
+                    }
+                    <label for="chkEnablePurchaseStatus" class="mt-2">
+                        Enable Purchase Status
+                        <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="On disable all purchases will be marked as <i>Item Received</i>"></i>
+                    </label>
+                </div>
+            </div>
+        </div>*@
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divLot @(ViewBag.ItemSetting.EnableLotNo == false?"hidden":"")">*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.PurchaseSetting.EnableFreeQuantity == true)
+                                            {
+                                                <input type="checkbox" id="chkEnableFreeQuantity" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableFreeQuantity">
+                                            }
+                                            <label for="chkEnableFreeQuantity" class="mt-2">
+                                                Enable Free Quantity
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+            <br>
+            <div class="form-group">
+                <div class="checkbox icheck-turquoise">
+                    @if (ViewBag.PurchaseSetting.EnableSms)
+                    {
+                        <input type="checkbox" id="chkPurchaseEnableSms" checked>
+                    }
+                    else
+                    {
+                        <input type="checkbox" id="chkPurchaseEnableSms">
+                    }
+                    <label for="chkPurchaseEnableSms" class="mt-2">
+                        Enable Sms
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+            <br>
+            <div class="form-group">
+                <div class="checkbox icheck-turquoise">
+                    @if (ViewBag.PurchaseSetting.EnableEmail)
+                    {
+                        <input type="checkbox" id="chkPurchaseEnableEmail" checked>
+                    }
+                    else
+                    {
+                        <input type="checkbox" id="chkPurchaseEnableEmail">
+                    }
+                    <label for="chkPurchaseEnableEmail" class="mt-2">
+                        Enable Email
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+            <br>
+            <div class="form-group">
+                <div class="checkbox icheck-turquoise">
+                    @if (ViewBag.PurchaseSetting.EnableWhatsapp)
+                    {
+                        <input type="checkbox" id="chkPurchaseEnableWhatsapp" checked>
+                    }
+                    else
+                    {
+                        <input type="checkbox" id="chkPurchaseEnableWhatsapp">
+                    }
+                    <label for="chkPurchaseEnableWhatsapp" class="mt-2">
+                        Enable Whatsapp
+                    </label>
+                </div>
+            </div>
+        </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.PurchaseSetting.EnableSpecialDiscount == true)
+                                            {
+                                                <input type="checkbox" id="chkPurchaseEnableSpecialDiscount" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkPurchaseEnableSpecialDiscount">
+                                            }
+                                        <label for="chkPurchaseEnableSpecialDiscount" class="mt-2">
+                                            Enable Special Discount
+                                        </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.PurchaseSetting.EnableRoundOff == true)
+                                            {
+                                                <input type="checkbox" id="chkPurchaseEnableRoundOff" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkPurchaseEnableRoundOff">
+                                            }
+                                            <label for="chkPurchaseEnableRoundOff" class="mt-2">
+                                                Enable Round Off
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.PurchaseSetting.EnablePurchaseQuotation == true)
+                                            {
+                                                <input type="checkbox" id="chkEnablePurchaseQuotation" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnablePurchaseQuotation">
+                                            }
+                                            <label for="chkEnablePurchaseQuotation" class="mt-2">
+                                                Enable Purchase Quotation
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.PurchaseSetting.EnablePurchaseOrder == true)
+                                            {
+                                                <input type="checkbox" id="chkEnablePurchaseOrder" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnablePurchaseOrder">
+                                            }
+                                            <label for="chkEnablePurchaseOrder" class="mt-2">
+                                                Enable Purchase Order
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.PurchaseSetting.AutoPrintInvoicePurchaseQuotation == true)
+                                            {
+                                                <input type="checkbox" id="chkPurchaseAutoPrintInvoicePurchaseQuotation" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkPurchaseAutoPrintInvoicePurchaseQuotation">
+                                            }
+                                            <label for="chkPurchaseAutoPrintInvoicePurchaseQuotation" class="mt-2">
+                                                Auto Print (Purchase Quotation)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.PurchaseSetting.AutoPrintInvoicePurchaseOrder == true)
+                                            {
+                                                <input type="checkbox" id="chkPurchaseAutoPrintInvoicePurchaseOrder" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkPurchaseAutoPrintInvoicePurchaseOrder">
+                                            }
+                                            <label for="chkPurchaseAutoPrintInvoicePurchaseOrder" class="mt-2">
+                                                Auto Print (Purchase Order)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.PurchaseSetting.AutoPrintInvoicePurchaseBill == true)
+                                            {
+                                                <input type="checkbox" id="chkPurchaseAutoPrintInvoicePurchaseBill" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkPurchaseAutoPrintInvoicePurchaseBill">
+                                            }
+                                            <label for="chkPurchaseAutoPrintInvoicePurchaseBill" class="mt-2">
+                                                Auto Print (Purchase Bill)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.PurchaseSetting.AutoPrintInvoicePurchaseReturn == true)
+                                            {
+                                                <input type="checkbox" id="chkPurchaseAutoPrintInvoicePurchaseReturn" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkPurchaseAutoPrintInvoicePurchaseReturn">
+                                            }
+                                            <label for="chkPurchaseAutoPrintInvoicePurchaseReturn" class="mt-2">
+                                                Auto Print (Purchase Return)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr />
+                            <h4 class="@(ViewBag.IsAccountsAddon == true ? "" : "hidden")">Link Purchase With Accounts</h4>
+                            <div class="row">
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+            <div class="form-group">
+                <label>Vendor Advance <span class="danger">*</span> <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Select a default account to track vendor advances"></i></label>
+                <select class="form-control select2" id="ddlVendorAdvanceAccount" style="width:100%">
+                    @{
+                        if (ViewBag.AccountSubTypes != null)
+                        {
+                            foreach (var item in ViewBag.AccountSubTypes)
+                            {
+                                if (item.Accounts.Count > 0)
+                                {
+                                    if (item.type == "other current asset")
+                                    {
+                                    <optgroup label="@item.DisplayAs">
+                                        @foreach (var inner in item.Accounts)
+                                        {
+                                            if (ViewBag.PurchaseSetting.VendorAdvanceAccountId == inner.AccountId)
+                                            {
+                                                <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                            }
+                                        }
+                                    </optgroup>
+                                    }
+                                }
+                            }
+                        }
+                    }
+                </select>
+            </div>
+        </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mt-2" @(ViewBag.IsAccountsAddon == true ? "" : "hidden")>
+                                    <div class="form-group">
+                                        <label> Discount <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Choose the account where Purchase Discount will be linked"></i></label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlPurchaseDiscountAccount">
+                                                @{
+                                                    if (ViewBag.AccountSubTypes != null)
+                                                    {
+                                                        foreach (var item in ViewBag.AccountSubTypes)
+                                                        {
+                                                            if (item.Accounts.Count > 0)
+                                                            {
+                                                                if (item.Type == "Expense")
+                                                                {
+                                                                    <optgroup label="@item.DisplayAs">
+                                                                        @foreach (var inner in item.Accounts)
+                                                                        {
+                                                                            if (ViewBag.PurchaseSetting.DiscountAccountId == inner.AccountId)
+                                                                            {
+                                                                                <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                            }
+
+                                                                        }
+                                                                    </optgroup>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mt-2" @(ViewBag.IsAccountsAddon == true ? "" : "hidden")>
+                                    <div class="form-group">
+                                        <label> Special Discount <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Choose the account where Sales Discount will be linked"></i></label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlPurchaseSpecialDiscountAccount">
+                                                @{
+                                                    if (ViewBag.AccountSubTypes != null)
+                                                    {
+                                                        foreach (var item in ViewBag.AccountSubTypes)
+                                                        {
+                                                            if (item.Accounts.Count > 0)
+                                                            {
+                                                                if (item.Type == "Expense")
+                                                                {
+                                                                    <optgroup label="@item.DisplayAs">
+                                                                        @foreach (var inner in item.Accounts)
+                                                                        {
+                                                                            if (ViewBag.PurchaseSetting.SpecialDiscountAccountId == inner.AccountId)
+                                                                            {
+                                                                                <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                            }
+
+                                                                        }
+                                                                    </optgroup>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mt-2" @(ViewBag.IsAccountsAddon == true ? "" : "hidden")>
+                                    <div class="form-group">
+                                        <label> Round Off <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Choose the account where Purchase Round Off will be linked"></i></label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlPurchaseRoundOffAccount">
+                                                @{
+                                                    if (ViewBag.AccountSubTypes != null)
+                                                    {
+                                                        foreach (var item in ViewBag.AccountSubTypes)
+                                                        {
+                                                            if (item.Accounts.Count > 0)
+                                                            {
+                                                                if (item.Type == "Expense")
+                                                                {
+                                                                    <optgroup label="@item.DisplayAs">
+                                                                        @foreach (var inner in item.Accounts)
+                                                                        {
+                                                                            if (ViewBag.PurchaseSetting.RoundOffAccountId == inner.AccountId)
+                                                                            {
+                                                                                <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                            }
+                                                                        }
+                                                                    </optgroup>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary float-right" onclick="purchaseUpdate()"><i class="fas fa-edit"></i> Update</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="paymentTermModal">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Payment Term</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Term Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divPaymentTerm_M_ctrl" id="txtPaymentTerm_M" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divPaymentTerm_M"></small>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Days <span class="danger">*</span></label>
+                            <input type="text" class="form-control divDays_M_ctrl" id="txtDays_M" placeholder="" onkeypress="return onlyNumberKey(event)">
+                            <small class="text-red font-weight-bold errorText" id="divDays_M"></small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertPaymentTerm()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I add and update product categories?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    •	To add a new product category, click on the ‘Add New’ button at the top of the screen
+                                    •	To update an existing product category, click on 'Edit' button beside the name of product category you want to change, make your changes and then click the ‘Save’ button at the bottom of the screen.
+                                    •	To delete an existing product category, tick the box that is to the left of the product category you would like to delete and then click the ‘Delete’ button at the top of the list.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I make a product category inactive?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    IMS allows you stop an entire product category from displaying in your catalogue, by marking it as inactive. This is sometimes better than deleting all those products since all the product information is retained but the products are not shown in the catalogue. To mark a product category as inactive, follow these steps:
+
+                                    •	Click on the name of the product category that you want to make active.
+                                    •	Change the status field from ‘Active’ to ‘Inactive’.
+                                    •	Click the ‘Save’ button at the bottom of the page.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Settings/PurchaseSettings/PurchaseSettings.js"></script>
+
+

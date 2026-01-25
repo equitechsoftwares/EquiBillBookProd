@@ -1,0 +1,634 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add User";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add User </h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/usersettings/users">User List</a></li>
+                        <li class="breadcrumb-item active">Add User</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/usersettings/users" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>User Code <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divUsername_ctrl" id="txtUsername" placeholder="">
+                                        <small class="text-red font-weight-bold errorText" id="divUsername"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divName_ctrl" id="txtName" placeholder="">
+                                        <small class="text-red font-weight-bold errorText" id="divName"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Mobile <span class="danger">*</span></label>
+                                        <div class="input-group">
+                                            @*<span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn bg-gray-light"> @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] </a>
+                                                </span>*@
+                                            <input type="text" class="form-control divMobileNo_ctrl" id="txtMobileNo" placeholder=""
+                                                   onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divMobileNo"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Email <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divEmailId_ctrl" id="txtEmailId" placeholder="">
+                                        <small class="text-red font-weight-bold errorText" id="divEmailId"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Alternative Mobile</label>
+                                        <div class="input-group">
+                                            @*<span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn bg-gray-light"> @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] </a>
+                                                </span>*@
+                                            <input type="text" class="form-control divAltMobileNo_ctrl" id="txtAltMobileNo" placeholder=""
+                                                   onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divAltMobileNo"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Gender</label>
+                                        <select class="form-control select2" id="ddlGender">
+                                            <option value="0">Select</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Others">Others</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Date of Birth</label>
+                                        <div class="input-group date" id="_DOB" data-target-input="nearest">
+                                            <input id="txtDOB" type="text" class="form-control datetimepicker-input" data-target="#_DOB" />
+                                            <div class="input-group-append" data-target="#_DOB" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                        @*<input type="date" class="form-control" id="txtDOB">*@
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Joining Date</label>
+                                        <div class="input-group date" id="_JoiningDate" data-target-input="nearest">
+                                            <input id="txtJoiningDate" type="text" class="form-control datetimepicker-input divJoiningDate_ctrl" data-target="#_JoiningDate" />
+                                            <div class="input-group-append" data-target="#_JoiningDate" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divJoiningDate"></small>
+                                        @*<input type="date" class="form-control" id="txtJoiningDate" value="@DateTime.Now.ToString("yyyy-MM-dd")">*@
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Religion</label>
+                                        <select class="form-control select2" id="ddlReligion">
+                                            <option value="0">Select</option>
+                                            @foreach (var item in ViewBag.Religions)
+                                            {
+                                                <option value="@item.ReligionId">@item.ReligionName</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Role <span class="danger">*</span></label>
+                                        <div class="input-group divUserRole_ctrl">
+                                            <select class="form-control select2" id="ddlUserRole">
+
+                                                @foreach (var item in ViewBag.Roles)
+                                                {
+                                                    <option value="@item.RoleId">@item.RoleName</option>
+                                                }
+                                            </select>
+                                            @if (ViewBag.UserRolePermission.IsAdd == true)
+                                            {
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#roleModal">+ </a>
+                                                </span>
+                                            }
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divUserRole"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Password <span class="danger">*</span></label>
+                                        <input type="password" class="form-control divPassword_ctrl" id="txtPassword" placeholder="">
+                                        <small class="text-red font-weight-bold errorText" id="divPassword"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Confirm Password <span class="danger">*</span></label>
+                                        <input type="password" class="form-control divCPassword_ctrl" id="txtCPassword" placeholder="">
+                                        <small class="text-red font-weight-bold errorText" id="divCPassword"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Upload Image</label>
+                                        <div class="custom-file">
+                                            <input type="file" id="ProfilePic" class="custom-file-input" accept='image/*' onchange="getProfileBase64()">
+                                            <label class="custom-file-label" for="Logo">Choose file</label>
+                                        </div>
+                                        <img id="blah" alt="" height="60" style="padding-top:10px;">
+                                    </div>
+                                </div>
+                                @if (ViewBag.Branchs.Count > 1)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group divBranch_ctrl">
+                                            <label>Business Location <span class="danger">*</span></label>
+                                            <select class="select2" multiple="multiple" data-placeholder="" style="width: 100%;" id="ddlBranch">
+                                                <option value="0">Select</option>
+                                                @foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    <option value="@item.BranchId">@item.Branch</option>
+                                                }
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 hidden">
+                                        <div class="form-group divBranch_ctrl">
+                                            <label>Business Location <span class="danger">*</span></label>
+                                            <select class="select2" multiple="multiple" data-placeholder="" style="width: 100%;" id="ddlBranch">
+                                                @foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    <option value="@item.BranchId" selected>@item.Branch</option>
+                                                }
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+                                        </div>
+                                    </div>
+                                }
+
+                            </div>
+                        </div>
+                        <div class="card card-outline collapsed-card m-3">
+                            <div class="card-header  bg-info" data-card-widget="collapse" title="Expand/Collapse">
+                                <h3 class="card-title">More Info</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Address</label>
+                                            <textarea class="form-control" id="txtAddress" rows="2" placeholder=""></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Country</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlCountry" onchange="fetchActiveStates('')">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.Countrys)
+                                                    {
+                                                        <option value="@item.CountryId">@item.Country</option>
+                                                    }
+                                                </select>
+                                                @*<span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" onclick="openCountryModal('ddlCountry')">+ </a>
+                                                    </span>*@
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divCountry"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" id="p_States_Dropdown">
+                                        @Html.Partial("PartialStatesDropdown")
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" id="p_Citys_Dropdown">
+                                        @Html.Partial("PartialCitysDropdown")
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Pincode</label>
+                                            <input type="text" class="form-control" id="txtZipcode" placeholder="">
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <hr />
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Alternative Address</label>
+                                            <textarea class="form-control" id="txtAltAddress" rows="2" placeholder=""></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Country</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlAltCountry" onchange="fetchActiveStates('alt')">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.Countrys)
+                                                    {
+                                                        <option value="@item.CountryId">@item.Country</option>
+                                                    }
+                                                </select>
+                                                @*<span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" onclick="openCountryModal('ddlAltCountry')">+ </a>
+                                                    </span>*@
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divAltCountry"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" id="p_Alt_States_Dropdown">
+                                        @Html.Partial("PartialAltStatesDropdown")
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" id="p_Alt_Citys_Dropdown">
+                                        @Html.Partial("PartialAltCitysDropdown")
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Pincode</label>
+                                            <input type="number" class="form-control" id="txtAltZipcode" placeholder="">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnSave" type="submit" class="btn btn-primary float-right" onclick="insert(1)"><i class="fas fa-save"></i> Save</button>
+                            <button id="btnSave_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="insert(2)"><i class="fas fa-plus-circle"></i> Save & Add Another</button>
+                            @*<a id="btnBack" href="/permission/users" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade" id="roleModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Role</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    @*<div class="col-md-6">
+                        <div class="">
+                            <label> Role Code <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                            <input type="text" class="form-control" id="txtRoleCode" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divRoleCode_M"></small>
+                        </div>
+                    </div>*@
+                    <div class="col-md-6">
+                        <div class="">
+                            <label> Role Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divRoleName_M_ctrl" id="txtRoleName" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divRoleName_M"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertRole()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="countryModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Country</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Country Code <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                            <input type="text" class="form-control" id="txtCountryCode" placeholder="">
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Country Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control" id="txtCountry" placeholder="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertCountry()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="stateModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add State</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    @*<div class="col-sm-6">
+                        <div class="form-group">
+                            <label>State Code <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                            <input type="text" class="form-control" id="txtStateCode" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divStateCode_M"></small>
+                        </div>
+                    </div>*@
+                    @*<div class="col-sm-4">
+                            <!-- text input -->
+                            <div class="form-group">
+                                <label>Country <span class="danger">*</span></label>
+                                <div class="input-group">
+                                    <select class="form-control select2" style="width: 100%;" id="ddlNewCountry">
+                                        @foreach (var item in ViewBag.Countrys)
+                                        {
+                                            <option value="@item.CountryId">@item.Country</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    *@
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>State Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control" id="txtState" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divState_M"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertState()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="cityModal">
+    <div class="modal-dialog modal-l">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add City</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    @*<div class="col-sm-6">
+                        <div class="form-group">
+                            <label>City Code <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                            <input type="text" class="form-control" id="txtCityCode" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divCityCode_M"></small>
+                        </div>
+                    </div>*@
+                    @*<div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Country <span class="danger">*</span></label>
+                                <div class="input-group">
+                                    <select class="form-control select2" style="width: 100%;" id="ddlCityModalCountry" onchange="fetchCityModalActiveStates()">
+                                        <option value="0">Select</option>
+                                        @foreach (var item in ViewBag.Countrys)
+                                        {
+                                            <option value="@item.CountryId">@item.Country</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>*@
+                    @*<div class="col-sm-6" id="p_CityModalStates_Dropdown">
+                            <label>State <span class="danger">*</span></label>
+                            <select class="form-control select2" id="ddlCityModalState" style="width: 100%;">
+                            </select>
+                        </div>*@
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>City Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divCity_M_ctrl" id="txtCity" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divCity_M"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertCity()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+      rel="stylesheet">
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="~/Content/JQuery/Customer/Settings/UserSettings/User.js"></script>

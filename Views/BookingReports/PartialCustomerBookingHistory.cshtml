@@ -1,0 +1,94 @@
+@{
+    var bookings = ViewBag.Bookings as System.Collections.Generic.List<EquiBillBook.Models.ClsTableBookingVm> ?? new System.Collections.Generic.List<EquiBillBook.Models.ClsTableBookingVm>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var currentPageIndex = ViewBag.CurrentPageIndex ?? 1;
+    var pageCount = ViewBag.PageCount ?? 0;
+}
+
+<thead id="thead">
+    <tr>
+        <th>Customer Name</th>
+        <th>Mobile</th>
+        <th>Email</th>
+        <th>Total Bookings</th>
+        <th>Confirmed</th>
+        <th>Cancelled</th>
+        <th>Completed</th>
+        <th>Last Booking Date</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (bookings != null && bookings.Count > 0)
+    {
+        var customerGroups = bookings.GroupBy(b => new { 
+            CustomerName = b.CustomerName ?? "-", 
+            Mobile = b.CustomerMobile ?? "-", 
+            Email = b.CustomerEmail ?? "-" 
+        });
+        foreach (var group in customerGroups)
+        {
+            var customerBookings = group.ToList();
+            var totalBookings = customerBookings.Count;
+            var confirmed = customerBookings.Count(b => b.Status == "Confirmed");
+            var cancelled = customerBookings.Count(b => b.Status == "Cancelled");
+            var completed = customerBookings.Count(b => b.Status == "Completed");
+            var lastBooking = customerBookings.OrderByDescending(b => b.BookingDate).FirstOrDefault();
+            var lastBookingDate = lastBooking != null && lastBooking.BookingDate != null ? ((DateTime)lastBooking.BookingDate).ToString("dd/MM/yyyy") : "-";
+            
+            <tr>
+                <td>@group.Key.CustomerName</td>
+                <td>@group.Key.Mobile</td>
+                <td>@group.Key.Email</td>
+                <td>@totalBookings</td>
+                <td>@confirmed</td>
+                <td>@cancelled</td>
+                <td>@completed</td>
+                <td>@lastBookingDate</td>
+            </tr>
+        }
+    }
+</tbody>
+<tbody class="hide noPrint">
+    <tr></tr>
+    <tr>
+        <td colspan="8">
+            <div class="dataTables_info" id="tblCustomerBookingHistory_info_custom" role="status" aria-live="polite">Showing @((currentPageIndex - 1) * pageSize + 1) to @(Math.Min(currentPageIndex * pageSize, totalCount)) of @totalCount entries</div>
+            @if (pageCount > 1)
+            {
+                int j = 0;
+                <div class="dataTables_paginate paging_simple_numbers" id="tblCustomerBookingHistory_paginate_custom" style="float:right">
+                    <ul class="pagination">
+                        @if (currentPageIndex > 1)
+                        {
+                            <li class="paginate_button page-item previous" id="tblCustomerBookingHistory_previous">
+                                <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblCustomerBookingHistory" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                            </li>
+                            <li class="paginate_button page-item previous" id="tblCustomerBookingHistory_previous">
+                                <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblCustomerBookingHistory" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                            </li>
+                        }
+                        @for (int i = currentPageIndex; i <= pageCount; i++)
+                        {
+                            <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblCustomerBookingHistory" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                            </li>
+                            if (j == 10)
+                            {
+                                i = pageCount + 1;
+                            }
+                            j++;
+                        }
+                        @if (currentPageIndex < pageCount)
+                        {
+                            <li class="paginate_button page-item next" id="tblCustomerBookingHistory_next">
+                                <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblCustomerBookingHistory" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </td>
+    </tr>
+</tbody>
+

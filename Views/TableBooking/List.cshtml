@@ -1,0 +1,394 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Booking List";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Booking List</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/tablebooking/index">Table Booking</a></li>
+                        <li class="breadcrumb-item active">Booking List</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <a id="btnBack" href="/restaurantdashboard/index" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>
+                <a id="btnNew" href="/tablebooking/add" class="btn btn-primary float-sm-right mr-2"><i class="fas fa-plus"></i> New Booking</a>
+                <a id="btnCalendar" href="/tablebooking/index" class="btn btn-info float-sm-right mr-2"><i class="fas fa-calendar"></i> Calendar View</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline collapsed-card">
+                    <div class="card-header" data-card-widget="collapse">
+                        <h3 class="card-title">Filter</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>From Date</label>
+                                    <input type="date" class="form-control" id="txtFromDate">
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>To Date</label>
+                                    <input type="date" class="form-control" id="txtToDate">
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <select class="form-control select2" id="ddlStatus">
+                                        <option value="">All</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Confirmed">Confirmed</option>
+                                        <option value="Cancelled">Cancelled</option>
+                                        <option value="Completed">Completed</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Branch</label>
+                                    <select class="form-control select2" id="ddlBranch">
+                                        <option value="">All</option>
+                                        @if (ViewBag.Branchs != null)
+                                        {
+                                            foreach (var item in ViewBag.Branchs)
+                                            {
+                                                <option value="@item.BranchId">@item.Branch</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Table</label>
+                                    <select class="form-control select2" id="ddlTable">
+                                        <option value="">All</option>
+                                        @if (ViewBag.Tables != null)
+                                        {
+                                            foreach (var item in ViewBag.Tables)
+                                            {
+                                                <option value="@item.TableId">@item.TableNo</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Search</label>
+                                    <input type="text" class="form-control" id="txtSearch" placeholder="Booking No / Customer">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary float-right mt-2" onclick="fetchList(1)">Search</button>
+                        <button type="submit" class="btn btn-warning float-right mt-2 mr-2" onclick="window.location.reload()">Refresh</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h5>
+                                    <span class="text-success" id="divTotalCount">
+                                        Total : @(ViewBag.TotalCount ?? 0)
+                                    </span>
+                                    |
+                                    <span class="text-warning" id="divPendingCount">
+                                        Pending : @(ViewBag.PendingCount ?? 0)
+                                    </span>
+                                    |
+                                    <span class="text-primary" id="divConfirmedCount">
+                                        Confirmed : @(ViewBag.ConfirmedCount ?? 0)
+                                    </span>
+                                    |
+                                    <span class="text-info" id="divCompletedCount">
+                                        Completed : @(ViewBag.CompletedCount ?? 0)
+                                    </span>
+                                    |
+                                    <span class="text-danger" id="divCancelledCount">
+                                        Cancelled : @(ViewBag.CancelledCount ?? 0)
+                                    </span>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                            <div class="dataTables_length noPrint" id="tblUserRole_length">
+                                <label>
+                                    Show
+                                    <select name="tblUserRole_length" aria-controls="tblUserRole" class="custom-select custom-select-sm form-control form-control-sm"
+                                            onchange="fetchList(1)" id="txtPageSize">
+                                        <option value="10" @(ViewBag.PageSize == 10 ? "selected" : "")>10</option>
+                                        <option value="25" @(ViewBag.PageSize == 25 ? "selected" : "")>25</option>
+                                        <option value="50" @(ViewBag.PageSize == 50 ? "selected" : "")>50</option>
+                                        <option value="100" @(ViewBag.PageSize == 100 ? "selected" : "")>100</option>
+                                        <option value="500" @(ViewBag.PageSize == 500 ? "selected" : "")>500</option>
+                                    </select>
+                                    entries
+                                </label>
+                            </div>
+                            @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsExport)
+                            {
+                                <div class="dt-buttons btn-group flex-wrap noPrint">
+                                    <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+                                    <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+                                    <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+                                    <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+                                </div>
+                            }
+                            <div id="tblUserRole_filter" class="dataTables_filter noPrint invisible"><label>Search:<input type="text" class="form-control form-control-sm" placeholder="" aria-controls="tblUserRole" id="txtSearch" onkeyup="fetchList(1)"></label></div>
+                            <div class="row mt-1">
+                                <div class="col-sm-12 table-responsive">
+                                    <table id="tblData" class="table table-bordered table-striped">
+                            <thead>
+                                <tr role="row">
+                                    <th>Sln</th>
+                                    <th class="hide noPrint">Action</th>
+                                    <th>Booking No</th>
+                                    <th>Customer</th>
+                                    <th>Table</th>
+                                    <th>Date & Time</th>
+                                    <th>Guests</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var count = 1;
+                                }
+                                @if (ViewBag.Bookings != null)
+                                {
+                                    foreach (var item in ViewBag.Bookings)
+                                    {
+                                        <tr>
+                                            <td>@((Convert.ToInt32(ViewBag.PageSize ?? 10) * (Convert.ToInt32(ViewBag.PageIndex ?? 1) - 1)) + count)</td>
+                                            <td class="hide noPrint">
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-info">Action</button>
+                                                    <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <div class="dropdown-menu" role="menu">
+                                                        <a class="dropdown-item" href="/tablebooking/details/@item.BookingId"><i class="fas fa-eye"></i> View</a>
+                                                        @if (item.Status != "Cancelled")
+                                                        {
+                                                            <a class="dropdown-item" href="/tablebooking/edit/@item.BookingId"><i class="fas fa-edit"></i> Edit</a>
+                                                        }
+                                                        @if (item.Status == "Pending")
+                                                        {
+                                                            <a class="dropdown-item" href="javascript:void(0)" onclick="confirmBooking(@item.BookingId)"><i class="fas fa-check"></i> Confirm</a>
+                                                            <a class="dropdown-item" href="javascript:void(0)" onclick="cancelBooking(@item.BookingId)"><i class="fas fa-times"></i> Cancel</a>
+                                                        }
+                                                        @if (item.Status == "Confirmed")
+                                                        {
+                                                            <a class="dropdown-item" href="javascript:void(0)" onclick="completeBooking(@item.BookingId)" title="Mark booking as completed and make table available"><i class="fas fa-check-circle"></i> Complete</a>
+                                                        }
+                                                        @if (item.Status == "Confirmed" && (item.KotNos == null || item.KotNos.Count == 0))
+                                                        {
+                                                            <a class="dropdown-item" href="/kot/add?bookingId=@item.BookingId"><i class="fas fa-utensils"></i> Create KOT</a>
+                                                        }
+                                                        <div class="dropdown-divider"></div>
+                                                        <a class="dropdown-item" href="javascript:void(0)" onclick="deleteBooking(@item.BookingId)" title="Delete booking permanently"><i class="fas fa-trash-alt"></i> Delete</a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>@item.BookingNo</td>
+                                            <td>@item.CustomerName</td>
+                                            <td>@(item.TableNo ?? "-")</td>
+                                            <td>@item.BookingDate.ToString("dd-MMM-yyyy") @item.BookingTime.ToString(@"hh\:mm")</td>
+                                            <td>@item.NoOfGuests</td>
+                                            <td>
+                                                <span class="badge badge-@(item.Status == "Confirmed" ? "success" : item.Status == "Pending" ? "warning" : item.Status == "Cancelled" ? "danger" : item.Status == "Completed" ? "info" : "secondary")">
+                                                    @item.Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        count++;
+                                    }
+                                }
+                            </tbody>
+                            <tbody class="hide noPrint">
+                                <tr></tr>
+                                <tr>
+                                    <td colspan="8">
+                                        <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1) + 1) to @(ViewBag.PageSize * ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                                        @if (ViewBag.PageCount > 1)
+                                        {
+                                            int j = 0;
+                                            <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                                                <ul class="pagination">
+                                                    @if (ViewBag.CurrentPageIndex > 1)
+                                                    {
+                                                        <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                                            <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                                        </li>
+                                                        <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                                            <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                                        </li>
+                                                    }
+                                                    @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                                                    {
+                                                        <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                                            <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                                        </li>
+                                                        if (j == 10)
+                                                        {
+                                                            i = ViewBag.PageCount + 1;
+                                                        }
+                                                        j++;
+                                                    }
+                                                    @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                                                    {
+                                                        <li class="paginate_button page-item next" id="tblUserRole_next">
+                                                            <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking Payment Modal -->
+<div class="modal fade bd-example-modal-lg" id="bookingPaymentModal" tabindex="-1" role="dialog" aria-labelledby="bookingPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingPaymentModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card card-primary card-outline">
+                                    <div class="card-body" id="divBookingPayments">
+                                        <!-- Content will be loaded dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary hidden paymentAdd" onclick="insertBookingPayment()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Refund Modal -->
+<div class="modal fade bd-example-modal-lg" id="bookingRefundModal" tabindex="-1" role="dialog" aria-labelledby="bookingRefundModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingRefundModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card card-primary card-outline">
+                                    <div class="card-body" id="divBookingRefunds">
+                                        <!-- Content will be loaded dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary hidden refundAdd" onclick="insertBookingRefund()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Content/JQuery/Customer/Restaurant/TableBooking.js"></script>
+<script type="text/javascript">
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount ?? 0)));
+    $('#divPendingCount').text('Pending : '+@Html.Raw(Json.Encode(ViewBag.PendingCount ?? 0)));
+    $('#divConfirmedCount').text('Confirmed : '+@Html.Raw(Json.Encode(ViewBag.ConfirmedCount ?? 0)));
+    $('#divCompletedCount').text('Completed : '+@Html.Raw(Json.Encode(ViewBag.CompletedCount ?? 0)));
+    $('#divCancelledCount').text('Cancelled : '+@Html.Raw(Json.Encode(ViewBag.CancelledCount ?? 0)));
+</script>
+<script>
+    $(document).ready(function () {
+        // Check for success message from sessionStorage
+        var successMessage = sessionStorage.getItem('bookingSuccessMessage');
+        var successType = sessionStorage.getItem('bookingSuccessType');
+        
+        if (successMessage) {
+            // Clear the message from sessionStorage
+            sessionStorage.removeItem('bookingSuccessMessage');
+            sessionStorage.removeItem('bookingSuccessType');
+            
+            // Show the message
+            if (successType === 'success') {
+                if (typeof EnableSound !== 'undefined' && EnableSound == 'True') { 
+                    if (document.getElementById('success')) {
+                        document.getElementById('success').play(); 
+                    }
+                }
+                toastr.success(successMessage);
+            } else {
+                if (typeof EnableSound !== 'undefined' && EnableSound == 'True') { 
+                    if (document.getElementById('error')) {
+                        document.getElementById('error').play(); 
+                    }
+                }
+                toastr.error(successMessage);
+            }
+        }
+    });
+</script>
+

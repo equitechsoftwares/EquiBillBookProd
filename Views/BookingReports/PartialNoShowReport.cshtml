@@ -1,0 +1,93 @@
+@{
+    var bookings = ViewBag.Bookings as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var currentPageIndex = ViewBag.CurrentPageIndex ?? 1;
+    var pageCount = ViewBag.PageCount ?? 0;
+}
+
+<thead id="thead">
+    <tr>
+        <th>Booking No</th>
+        <th>Booking Date</th>
+        <th>Booking Time</th>
+        <th>Table</th>
+        <th>Customer</th>
+        <th>Mobile</th>
+        <th>No. of Guests</th>
+        <th>Hours Past Booking</th>
+        <th>Deposit Amount</th>
+        <th>Status</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (bookings != null && bookings.Count > 0)
+    {
+        foreach (var booking in bookings)
+        {
+            var bookingDateTime = booking.BookingDate != null && booking.BookingTime != null 
+                ? ((DateTime)booking.BookingDate).Add((TimeSpan)booking.BookingTime) 
+                : DateTime.MinValue;
+            var hoursPast = bookingDateTime != DateTime.MinValue 
+                ? Math.Round((DateTime.Now - bookingDateTime).TotalHours, 1)
+                : (double?)null;
+            var depositAmount = booking.DepositAmount != null ? (decimal)booking.DepositAmount : 0;
+            
+            <tr>
+                <td><a href="/tablebooking/details/@booking.BookingId">@booking.BookingNo</a></td>
+                <td>@(booking.BookingDate != null ? ((DateTime)booking.BookingDate).ToString("dd/MM/yyyy") : "")</td>
+                <td>@(booking.BookingTime != null ? ((TimeSpan)booking.BookingTime).ToString(@"hh\:mm") : "")</td>
+                <td>@(booking.TableNo ?? "-")</td>
+                <td>@(booking.CustomerName ?? "-")</td>
+                <td>@(booking.CustomerMobile ?? "-")</td>
+                <td>@(booking.NoOfGuests ?? 0)</td>
+                <td>@(hoursPast.HasValue ? hoursPast.Value.ToString("N1") + " hrs" : "-")</td>
+                <td>@depositAmount.ToString("N2")</td>
+                <td><span class="badge badge-warning">No-Show</span></td>
+            </tr>
+        }
+    }
+</tbody>
+<tbody class="hide noPrint">
+    <tr></tr>
+    <tr>
+        <td colspan="10">
+            <div class="dataTables_info" id="tblNoShowReport_info_custom" role="status" aria-live="polite">Showing @((currentPageIndex - 1) * pageSize + 1) to @(Math.Min(currentPageIndex * pageSize, totalCount)) of @totalCount entries</div>
+            @if (pageCount > 1)
+            {
+                int j = 0;
+                <div class="dataTables_paginate paging_simple_numbers" id="tblNoShowReport_paginate_custom" style="float:right">
+                    <ul class="pagination">
+                        @if (currentPageIndex > 1)
+                        {
+                            <li class="paginate_button page-item previous" id="tblNoShowReport_previous">
+                                <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblNoShowReport" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                            </li>
+                            <li class="paginate_button page-item previous" id="tblNoShowReport_previous">
+                                <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblNoShowReport" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                            </li>
+                        }
+                        @for (int i = currentPageIndex; i <= pageCount; i++)
+                        {
+                            <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblNoShowReport" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                            </li>
+                            if (j == 10)
+                            {
+                                i = pageCount + 1;
+                            }
+                            j++;
+                        }
+                        @if (currentPageIndex < pageCount)
+                        {
+                            <li class="paginate_button page-item next" id="tblNoShowReport_next">
+                                <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblNoShowReport" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </td>
+    </tr>
+</tbody>
+

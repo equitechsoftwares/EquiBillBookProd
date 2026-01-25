@@ -1,0 +1,80 @@
+﻿
+    <table id="tblPayments" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Sales Date</th>
+                <th>Invoice No</th>
+                <th>Invoice Amount</th>
+                <th>Invoice Due</th>
+                <th>Payment Amount</th>
+            </tr>
+        </thead>
+        <tbody id="divCombo" class="rows">
+            @{
+                if (ViewBag.Sales != null)
+                {
+                    var index = 1;
+                    foreach (var item in ViewBag.Sales)
+                    {
+                        <tr id="divCombo@(item.SalesId)">
+                            <td>@index</td>
+                            <td>
+                                @item.SalesDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                            </td>
+                            <td>
+                                @(item.Type == "Customer Opening Balance Payment" ? "Customer Opening Balance" : item.InvoiceNo)
+                            </td>
+                            <td>
+                                @item.GrandTotal
+                            </td>
+                            <td>
+                                @item.Due
+                            </td>
+                            <td>
+                                <div class="input-group" style="min-width:180px">
+                                    <input type="number" class="form-control divAmount@(item.SalesId)_M_ctrl" id="txtAmount@(item.SalesId)" onkeypress="return onlyDecimalKey(event)" onchange="setIndividualAmounts(@item.SalesId)">
+                                    <input type="hidden" id="hdnSalesAmount@(item.SalesId)" value="@item.GrandTotal" />
+                                    <input type="hidden" id="hdnSalesId@(item.SalesId)" value="@item.SalesId" />
+                                    <input type="hidden" id="hdnType@(item.SalesId)" value="@item.Type" />
+                                    <input type="hidden" id="hdnCustomerId@(item.SalesId)" value="@item.CustomerId" />
+                                    <input type="hidden" id="hdnDue@(item.SalesId)" value="@item.Due" />
+
+                                </div>
+                                <small class="text-red font-weight-bold errorText" id="divAmount@(item.SalesId)_M"></small>
+                            </td>
+                        </tr>
+                        index++;
+                    }
+                }
+            }
+
+        </tbody>
+    </table>
+    <div class="col-sm-12">
+
+        <div class="col-md-4 float-right">
+            <div class="row" id="divCalculationSummary">
+                <div class="col-12">
+                    <div class="row">
+                        <label for="inputEmail3" class="col-8 col-form-label text-right">Amount Received :</label>
+                        <label for="inputEmail3" class="col-4 col-form-label text-left" id="divAmountReceived">
+                        </label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="row">
+                        <label for="inputEmail3" class="col-8 col-form-label text-right">Amount Used For Payments :</label>
+                        <label for="inputEmail3" class="col-4 col-form-label text-left" id="divAmountUsedForPayments"></label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="row">
+                        <label for="inputEmail3" class="col-8 col-form-label text-right text-danger">Amount In Excess :</label>
+                        <label for="inputEmail3" class="col-4 col-form-label text-left text-danger" id="divAmountInExcess"></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>

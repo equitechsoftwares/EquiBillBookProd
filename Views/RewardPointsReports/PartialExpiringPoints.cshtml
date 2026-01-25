@@ -1,0 +1,54 @@
+
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th>Sln</th>
+            <th>Customer Name</th>
+            <th>Points</th>
+            <th>Earned Date</th>
+            <th>Expiry Date</th>
+            <th>Days Until Expiry</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @if (ViewBag.ExpiringPoints != null)
+        {
+            foreach (var item in ViewBag.ExpiringPoints)
+            {
+                var daysUntilExpiry = (item.ExpiryDate.Value - DateTime.Now).Days;
+                <tr>
+                    <td>@(ViewBag.PageSize * (ViewBag.CurrentPageIndex - 1) + count)</td>
+                    <td>@item.CustomerName</td>
+                    <td><strong class="text-warning">@String.Format("{0:0.##}", item.Points)</strong></td>
+                    <td>@item.TransactionDate.ToString("dd-MM-yyyy")</td>
+                    <td>@item.ExpiryDate.Value.ToString("dd-MM-yyyy")</td>
+                    <td>
+                        @if (daysUntilExpiry <= 0)
+                        {
+                            <span class="badge badge-danger">Expired</span>
+                        }
+                        else if (daysUntilExpiry <= 7)
+                        {
+                            <span class="badge badge-warning">@daysUntilExpiry days</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-info">@daysUntilExpiry days</span>
+                        }
+                    </td>
+                    <td>@(item.Notes ?? "-")</td>
+                </tr>
+                count++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="7" class="text-center">No points expiring in the selected period</td>
+            </tr>
+        }
+    </tbody>
+}
+

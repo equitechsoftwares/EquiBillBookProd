@@ -1,0 +1,989 @@
+﻿
+<div class="modal-header">
+    <h4 class="modal-title">@ViewBag.Item.ItemType Details</h4>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body">
+    <div class="card-body">
+        <div class="card card-outline">
+            <div class="card-header">
+                <h3 class="card-title">Item Info</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Item Type </label>
+                            @if (ViewBag.Item.ItemType == "Product")
+                            {
+                                <span>Product</span>
+                            }
+                            else if (ViewBag.Item.ItemType == "Service")
+                            {
+                                <span>Service</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Product Type </label>
+                            @{
+                                if (ViewBag.Item.ProductType == "Single")
+                                {
+                                    <span>Single</span>
+                                }
+                                else if (ViewBag.Item.ProductType == "Variable")
+                                {
+                                    <span>Variable</span>
+                                }
+                                else if (ViewBag.Item.ProductType == "Combo")
+                                {
+                                    <span>Combo</span>
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <!-- text input -->
+                        <label id="lblSkuCode">Sku Code / Product Code</label>
+                        <span>@ViewBag.Item.SkuCode</span>
+                    </div>
+                    <div class="col-sm-4">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label id="lblHsnCode">Hsn Code </label>
+                            @foreach (var item in ViewBag.ItemCodes)
+                            {
+                                if (ViewBag.Item.ItemCodeId == item.ItemCodeId)
+                                {
+                                    <span>@item.Code</span>
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label id="lblProductName">Product Name </label>
+                            <span>@ViewBag.Item.ItemName</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Unit </label>
+                            @foreach (var item in ViewBag.Units)
+                            {
+                                if (ViewBag.Item.UnitId == item.UnitId)
+                                {
+                                    <span>@item.UnitName</span>
+                                }
+                            }
+                        </div>
+                    </div>
+                    @if (ViewBag.Item.SecondaryUnitId != 0)
+                    {
+                        <div class="col-sm-4 service">
+                            <div class="form-group">
+                                <div class="checkbox icheck-turquoise">
+                                    @if (ViewBag.Item.SecondaryUnitId != 0)
+                                    {
+                                        <input checked disabled type="checkbox" id="chkEnableSecondaryUnit" onchange="fetchActiveSecondaryUnits()" />
+                                    }
+                                    else
+                                    {
+                                        <input disabled type="checkbox" id="chkEnableSecondaryUnit" onchange="fetchActiveSecondaryUnits()" />
+                                    }
+                                    <label for="chkEnableSecondaryUnit" class="mt-2">Enable Secondary Unit</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 divSecondaryUnit @(ViewBag.Item.SecondaryUnitId == 0 ? "hidden" : "") service ">
+                            <div class="form-group">
+                                <label>Secondary Unit</label>
+                                @{
+                                    if (ViewBag.SecondaryUnits != null)
+                                    {
+                                        foreach (var item in ViewBag.SecondaryUnits)
+                                        {
+                                            if (ViewBag.Item.SecondaryUnitId == item.SecondaryUnitId)
+                                            {
+                                                <span>@item.SecondaryUnitName</span>
+                                            }
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <div class="col-sm-4 divSecondaryUnit @(ViewBag.Item.SecondaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-append">
+                                        <a href="javascript:void(0)" class="btn bg-gray txtUnit">1 @ViewBag.Item.UnitName = </a>
+                                    </span>
+                                    <input disabled type="number" class="form-control" id="txtUToSValue" placeholder="Conversion Rate" value="@ViewBag.Item.UToSValue">
+                                    <span class="input-group-append">
+                                        <a href="javascript:void(0)" class="btn bg-gray txtSecondaryUnit">@ViewBag.Item.SecondaryUnitName </a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (ViewBag.Item.TertiaryUnitId != 0)
+                    {
+                        <div class="col-sm-4 divSecondaryUnit @(ViewBag.Item.SecondaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <div class="checkbox icheck-turquoise">
+                                    @if (ViewBag.Item.TertiaryUnitId != 0)
+                                    {
+                                        <input checked disabled type="checkbox" id="chkEnableTertiaryUnit" onchange="fetchActiveTertiaryUnits()" />
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" id="chkEnableTertiaryUnit" onchange="fetchActiveTertiaryUnits()" checked />
+                                    }
+
+                                    <label for="chkEnableTertiaryUnit" class="mt-2">Enable Tertiary Unit</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 divTertiaryUnit @(ViewBag.Item.TertiaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <label>Tertiary Unit </label>
+                                @{
+                                    if (ViewBag.TertiaryUnits != null)
+                                    {
+                                        foreach (var item in ViewBag.TertiaryUnits)
+                                        {
+                                            if (ViewBag.Item.TertiaryUnitId == item.TertiaryUnitId)
+                                            {
+                                                <span>@item.TertiaryUnitName</span>
+                                            }
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <div class="col-sm-4 divTertiaryUnit @(ViewBag.Item.TertiaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-append">
+                                        <a href="javascript:void(0)" class="btn bg-gray txtSecondaryUnit_">1 @ViewBag.Item.SecondaryUnitName = </a>
+                                    </span>
+                                    <input disabled type="number" class="form-control" id="txtSToTValue" placeholder="Conversion Rate" value="@ViewBag.Item.SToTValue">
+                                    <span class="input-group-append">
+                                        <a href="javascript:void(0)" class="btn bg-gray txtTertiaryUnit">@ViewBag.Item.TertiaryUnitName </a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (ViewBag.Item.QuaternaryUnitId != 0)
+                    {
+                        <div class="col-sm-4 divTertiaryUnit @(ViewBag.Item.TertiaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <div class="checkbox icheck-turquoise">
+                                    @if (ViewBag.Item.QuaternaryUnitId != 0)
+                                    {
+                                        <input checked disabled type="checkbox" id="chkEnableQuaternaryUnit" onchange="fetchActiveQuaternaryUnits()" />
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" id="chkEnableQuaternaryUnit" onchange="fetchActiveQuaternaryUnits()" />
+                                    }
+
+                                    <label for="chkEnableQuaternaryUnit" class="mt-2">Enable Quaternary Unit</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 divQuaternaryUnit @(ViewBag.Item.QuaternaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <label>Quaternary Unit </label>
+                                @{
+                                    if (ViewBag.QuaternaryUnits != null)
+                                    {
+                                        foreach (var item in ViewBag.QuaternaryUnits)
+                                        {
+                                            if (ViewBag.Item.QuaternaryUnitId == item.QuaternaryUnitId)
+                                            {
+                                                <span>@item.QuaternaryUnitName</span>
+                                            }
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <div class="col-sm-4 divQuaternaryUnit @(ViewBag.Item.QuaternaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-append">
+                                        <a href="javascript:void(0)" class="btn bg-gray txtTertiaryUnit_">1 @ViewBag.Item.TertiaryUnitName = </a>
+                                    </span>
+                                    <input disabled type="number" class="form-control" id="txtTToQValue" placeholder="Conversion Rate" value="@ViewBag.Item.TToQValue">
+                                    <span class="input-group-append">
+                                        <a href="javascript:void(0)" class="btn bg-gray txtQuaternaryUnit">@ViewBag.Item.QuaternaryUnitName </a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (ViewBag.ItemSetting.EnableBrands == true)
+                    {
+                        <div class="col-sm-4 service">
+                            <div class="form-group">
+                                <label>Brand</label>
+                                @foreach (var item in ViewBag.Brands)
+                                {
+                                    if (ViewBag.Item.BrandId == item.BrandId)
+                                    {
+                                        <span>@item.Brand</span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Category </label>
+                            @foreach (var item in ViewBag.Categories)
+                            {
+                                if (ViewBag.Item.CategoryId == item.CategoryId)
+                                {
+                                    <span>@item.Category</span>
+                                }
+                            }
+                        </div>
+                    </div>
+                    @if (ViewBag.ItemSetting.EnableSubCategory == true)
+                    {
+                        <div class="col-sm-4" id="p_SubCategories_Dropdown">
+                            <div class="form-group">
+                                <label>Sub Category </label>
+                                @{
+                                    if (ViewBag.SubCategories != null)
+                                    {
+                                        foreach (var item in ViewBag.SubCategories)
+                                        {
+                                            if (ViewBag.Item.SubCategoryId == item.SubCategoryId)
+                                            {
+                                                <span>@item.SubCategory</span>
+                                            }
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                    @if (ViewBag.ItemSetting.EnableSubSubCategory == true)
+                    {
+                        <div class="col-sm-4" id="p_SubSubCategories_Dropdown">
+                            <div class="form-group">
+                                <label>Sub Sub Category </label>
+                                @{
+                                    if (ViewBag.SubSubCategories != null)
+                                    {
+                                        foreach (var item in ViewBag.SubSubCategories)
+                                        {
+                                            if (ViewBag.Item.SubSubCategoryId == item.SubSubCategoryId)
+                                            {
+                                                <span>@item.SubSubCategory</span>
+                                            }
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                    <div class="col-sm-4 service">
+                        <div class="form-group">
+                            <div class="checkbox icheck-turquoise">
+                                @if (ViewBag.Item.IsManageStock == true)
+                                {
+                                    <input type="checkbox" id="chkIsManageStock" onchange="CheckManageStock()" checked disabled />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" id="chkIsManageStock" onchange="CheckManageStock()" disabled />
+                                }
+                                <label for="chkIsManageStock">Manage Stock <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Enable or disable stock management for a product."></i></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 @(ViewBag.Item.IsManageStock == true?"":"hidden")" id="divAlertQuantity">
+                        <div class="form-group">
+                            <label>Alert Quantity</label>
+                            <span>@(String.Format("{0:0.##}", ViewBag.Item.AlertQuantity))</span>
+                        </div>
+                    </div>
+                    @if (ViewBag.ItemSetting.EnableItemExpiry == true && ViewBag.ItemSetting.ExpiryType == 2)
+                    {
+                        <div class="col-sm-4 service @(ViewBag.Item.IsManageStock == true ? "" :"hidden")">
+                            <div class="form-group">
+                                <label>Expires in</label>
+                                <span>@ViewBag.Item.ExpiryPeriod</span>
+                                @if (ViewBag.Item.ExpiryPeriodType == "Year")
+                                {
+                                    <span>Year</span>
+                                }
+                                else if (ViewBag.Item.ExpiryPeriodType == "Month")
+                                {
+                                    <span>Month</span>
+                                }
+                                else if (ViewBag.Item.ExpiryPeriodType == "Days")
+                                {
+                                    <span>Days</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                    @if (ViewBag.ItemSetting.EnableWarranty == true)
+                    {
+                        <div class="col-sm-4 service">
+                            <div class="form-group">
+                                <label>Warranty</label>
+                                @foreach (var item in ViewBag.Warrantys)
+                                {
+                                    if (ViewBag.Item.WarrantyId == item.WarrantyId)
+                                    {
+                                        <span>@item.Warranty</span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <div class="checkbox icheck-turquoise">
+                                @if (ViewBag.Item.EnableImei == true)
+                                {
+                                    <input disabled type="checkbox" id="chkEnableImei" checked />
+                                }
+                                else
+                                {
+                                    <input disabled type="checkbox" id="chkEnableImei" />
+                                }
+                                <label for="chkEnableImei" class="mt-2">
+                                    Enable Item IMEI, Serial number or other informations
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label id="lblProductImage">Product Image </label>
+                            <img id="blahProductImage" src="@ViewBag.Item.ProductImage" alt="" height="60" style="padding-top:10px;">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12" style="display:@(ViewBag.ItemSetting.EnableProductDescription == true ? "block":"none")">
+                        <div class="form-group">
+                            <label id="lblProductDescription">Product Description</label>
+                            <span>@Html.Raw(ViewBag.Item.Description)</span>
+                        </div>
+                    </div>
+                </div>
+                <label style="display:@((ViewBag.Branchs.Count==1 && ViewBag.ItemSetting.EnableRacks == false)?"none":"")">Check all the Business Locations where this product is available </label>
+                <div class="row mt-1" style="display:@((ViewBag.Branchs.Count==1 && ViewBag.ItemSetting.EnableRacks == false)?"none":"")">
+                    <div class="col-sm-12 table-responsive ">
+                        <table id="" class="table table-bordered table-striped">
+                            <thead id="thead">
+                                <tr>
+                                    <th></th>
+                                    <th>Business Location </th>
+                                    @if (ViewBag.ItemSetting.EnableRacks == true)
+                                    {
+                                        <th class="service">Rack (Optional)</th>
+                                    }
+                                    @if (ViewBag.ItemSetting.EnableRow == true)
+                                    {
+                                        <th class="service">Row (Optional)</th>
+                                    }
+                                    @if (ViewBag.ItemSetting.EnablePosition == true)
+                                    {
+                                        <th class="service">Position (Optional)</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody class="table-body">
+                                @foreach (var item in ViewBag.Item.Branchs)
+                                {
+                                    <tr class="divBranch" id="tr@(item.BranchId)">
+                                        <td>
+                                            <div class="form-group">
+                                                <div class="checkbox icheck-turquoise">
+                                                    @if (item.IsChecked == true)
+                                                    {
+                                                        <input disabled type="checkbox" id="chkBranch@(item.BranchId)" value="@item.BranchId" checked />
+                                                    }
+                                                    else
+                                                    {
+                                                        <input disabled type="checkbox" id="chkBranch@(item.BranchId)" value="@item.BranchId" />
+                                                    }
+
+                                                    <label for="chkBranch@(item.BranchId)" class="mt-2"></label>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@item.Branch</td>
+                                        @if (ViewBag.ItemSetting.EnableRacks == true)
+                                        {
+                                            <td class="service">
+                                                <div class="form-group">
+                                                    <span>@item.Rack</span>
+                                                </div>
+                                            </td>
+                                        }
+                                        @if (ViewBag.ItemSetting.EnableRow == true)
+                                        {
+                                            <td class="service">
+                                                <div class="form-group">
+                                                    <span>@item.Row</span>
+                                                </div>
+                                            </td>
+                                        }
+                                        @if (ViewBag.ItemSetting.EnablePosition == true)
+                                        {
+                                            <td class="service">
+                                                <div class="form-group">
+                                                    <span>@item.Position</span>
+                                                </div>
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- item info -->
+            <hr />
+            <!-- tax info -->
+            <div class="card-header">
+                <h3 class="card-title">Tax Info</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <!-- text input -->
+                        <label>Applicable Tax</label>
+                        @foreach (var item in ViewBag.Taxs)
+                        {
+                            if (ViewBag.Item.TaxId == item.TaxId)
+                            {
+                                <span>@item.Tax@@@(String.Format("{0:0.##}", item.TaxPercent))</span>
+                            }
+                        }
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>Selling Price Tax Type </label>
+                            @{
+                                if (ViewBag.Item.TaxType == "Inclusive")
+                                {
+                                    <span value="Inclusive" selected>Inclusive</span>
+                                }
+                                else if (ViewBag.Item.TaxType == "Exclusive")
+                                {
+                                    <span value="Exclusive" selected>Exclusive</span>
+                                }
+                            }
+                        </div>
+                    </div>
+                   
+
+                </div>
+            </div>
+            <!-- tax info -->
+            <hr />
+            <div class="card-header">
+                <h3 class="card-title">
+                    Item List
+                </h3>
+            </div>
+            <!-- form start -->
+            <div class="card-body">
+
+                <div class="row">
+                    <div class="col-12">
+                        <!--Single Product--->
+                        @{
+                            if (ViewBag.Item.ProductType == "Single")
+                            {
+                                <input type="hidden" id="hdnItemDetailsId" value="@ViewBag.Item.ItemDetails[0].VariationDetails[0].ItemDetailsId" />
+                                <div id="singleproduct">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered add-product-price-table table-condensed ">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Default Purchase Price</th>
+                                                    <th>x Margin(%) <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Default profit margin for the product. <br><small class='text-muted'>(<i>You can manage default profit margin in Business Settings.</i>)</small>"></i></th>
+                                                    <th>Default Selling Price</th>
+                                                    <th style="display:@(ViewBag.ItemSetting.EnableMrp == false ? "none" : "")">Default MRP</th>
+                                                    <th>Product image</th>
+                                                </tr>
+                                                <tr>
+                                                    <td style="min-width:125px">
+                                                        <div class="row">
+                                                            <div class="col-sm-6">
+                                                                <label for="single_dpp">Exc. tax:</label>
+                                                                <span>
+                                                                    @{
+                                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                        {
+                                                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].PurchaseExcTax))
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            @(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].PurchaseExcTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                        }
+                                                                    }
+                                                                </span>
+                                                            </div>
+
+                                                            <div class="col-sm-6">
+                                                                <label for="single_dpp_inc_tax">Inc. tax:</label>
+                                                                <span>
+                                                                    @{
+                                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                        {
+                                                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].PurchaseIncTax))
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            @(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].PurchaseIncTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                        }
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td style="min-width:125px">
+                                                        <label>Default Profit Margin </label>
+                                                        <span>
+                                                            @(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].DefaultProfitMargin))
+                                                        </span>
+                                                    </td>
+
+                                                    <td style="min-width:125px">
+                                                        <div class="col-sm-12 divSellingPriceExcTax @(ViewBag.Item.TaxType == "Exclusive" ? "" : "hidden")" id="">
+                                                            <label for="single_dpp">Exc. Tax:</label>
+
+                                                            <span>
+                                                                @{
+                                                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                    {
+                                                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesExcTax))
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesExcTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                    }
+                                                                }
+                                                            </span>
+                                                        </div>
+
+                                                        <div class="col-sm-12 divSellingPriceIncTax @(ViewBag.Item.TaxType == "Inclusive" ? "" : "hidden")" id="">
+                                                            <label for="single_dpp_inc_tax">Inc. Tax:</label>
+
+                                                            <span>
+                                                                @{
+                                                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                    {
+                                                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesIncTax))
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesIncTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                    }
+                                                                }
+                                                            </span>
+                                                        </div>
+
+                                                    </td>
+                                                    <td style="min-width:125px;display:@(ViewBag.ItemSetting.EnableMrp == false ? "none" : "")">
+                                                        <span>
+                                                            @{
+                                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                {
+                                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].DefaultMrp))
+                                                                }
+                                                                else
+                                                                {
+                                                                    @(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].DefaultMrp))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                }
+                                                            }
+                                                        </span>
+                                                    </td>
+                                                    <td style="min-width:170px">
+                                                        <div class="">
+                                                            @*<label>Product Image </label>*@
+
+                                                            <img id="blahProductImage0" src="@ViewBag.Item.ItemDetails[0].VariationDetails[0].ProductImage" alt="" height="60">
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <hr />
+                                </div>
+                            }
+
+                            if (ViewBag.Item.ProductType == "Variable")
+                            {
+                                <div id="variableproduct" class="@(ViewBag.Item.ProductType == "Variable" ?"":"hidden")">
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <div class="form-group">
+                                                <div class="input-group">
+                                                    <label class="w-50">Variation Values</label>
+
+                                                </div>
+                                                <div id="addrow">
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="table-responsive" id="divVariation">
+                                                @{
+                                                    var count = 100000000; var innerCount = 100000000;
+                                                    foreach (var item in ViewBag.Item.ItemDetails)
+                                                    {
+                                                        <table class="table table-bordered add-product-price-table table-condensed" id="product_variation_form_part@(count)">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">Variation</th>
+                                                                    <th class="col-sm-10">Variation Values </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="variation_row">
+                                                                    <td style="min-width:250px">
+                                                                        @foreach (var ddl in ViewBag.Variations)
+                                                                        {
+                                                                            if (item.VariationId == ddl.VariationId)
+                                                                            {
+                                                                                <span>@ddl.Variation</span>
+                                                                            }
+                                                                        }
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <table class="table table-bordered table-striped blue-header variation_value_table">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th>SKU </th>
+                                                                                    <th>Value </th>
+                                                                                    <th class="">
+                                                                                        Default Purchase Price<br>
+
+                                                                                    </th>
+                                                                                    <th class="">x Margin(%)</th>
+                                                                                    <th class="">
+                                                                                        Default Selling Price <br>
+                                                                                        <small><i><span class="dsp_label">Exc. Tax</span></i></small>
+                                                                                    </th>
+                                                                                    <th style="display:@(ViewBag.ItemSetting.EnableMrp == false ? "none" : "")">
+                                                                                        Default MRP *<br>
+                                                                                    </th>
+                                                                                    <th>Variation Images </th>
+                                                                                    @*<th><button type="button" class="btn btn-success btn-sm" onclick="AddNewInnerVariation(@count)"><i class="fas fa-plus"></i></button></th>*@
+                                                                                </tr>
+                                                                            </thead>
+
+                                                                            <tbody id="divInnerVariation@(count)">
+                                                                                @foreach (var inner in item.VariationDetails)
+                                                                                {
+                                                                                <tr id="product_variation_form_part_inner@(innerCount)">
+                                                                                    <td style="min-width:200px">
+                                                                                        <span>@inner.SKU</span>
+                                                                                    </td>
+                                                                                    <td style="min-width:200px">
+                                                                                        <span>@inner.VariationDetails</span>
+                                                                                    </td>
+                                                                                    <td class="" style="min-width:300px">
+                                                                                        <div class="row">
+                                                                                            <div class="col-6">
+                                                                                                <span>
+                                                                                                    @{
+                                                                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                                                        {
+                                                                                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", inner.PurchaseExcTax))
+                                                                                                        }
+                                                                                                        else
+                                                                                                        {
+                                                                                                            @(String.Format("{0:0.##}", inner.PurchaseExcTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                                                        }
+                                                                                                    }
+                                                                                                </span>
+                                                                                            </div>
+
+                                                                                            <div class="col-6">
+                                                                                                <span>
+                                                                                                    @{
+                                                                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                                                        {
+                                                                                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", inner.PurchaseIncTax))
+                                                                                                        }
+                                                                                                        else
+                                                                                                        {
+                                                                                                            @(String.Format("{0:0.##}", inner.PurchaseIncTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                                                        }
+                                                                                                    }
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td class="" style="min-width:200px">
+                                                                                        <div class="input-group">
+                                                                                            <span>
+                                                                                                @(String.Format("{0:0.##}", inner.DefaultProfitMargin))
+                                                                                            </span>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td class="" style="min-width:300px">
+                                                                                        <span class="@(ViewBag.Item.TaxType == "Exclusive"?"" :"hidden" )">
+                                                                                            @{
+                                                                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                                                {
+                                                                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", inner.SalesExcTax))
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    @(String.Format("{0:0.##}", inner.SalesExcTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                                                }
+                                                                                            }
+                                                                                        </span>
+                                                                                        <span class="@(ViewBag.Item.TaxType == "Inclusive"?"" :"hidden" )">
+                                                                                            @{
+                                                                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                                                {
+                                                                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", inner.SalesIncTax))
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    @(String.Format("{0:0.##}", inner.SalesIncTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                                                }
+                                                                                            }
+                                                                                        </span>
+                                                                                    </td>
+                                                                                    <td class="" style="min-width:200px;display:@(ViewBag.ItemSetting.EnableMrp == false ? "none" : "")">
+                                                                                        <div class="input-group">
+                                                                                            <span >
+                                                                                                @{
+                                                                                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                                                    {
+                                                                                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", inner.DefaultMrp))
+                                                                                                    }
+                                                                                                    else
+                                                                                                    {
+                                                                                                        @(String.Format("{0:0.##}", inner.DefaultMrp))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                                                    }
+                                                                                                }
+                                                                                            </span>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td style="min-width:300px">
+                                                                                        <img id="blahProductImage@(innerCount)" src="@inner.ProductImage" alt="" height="60" style="padding-top:10px;">
+                                                                                    </td>
+                                                                                </tr>
+                                                                                    innerCount++;
+                                                                                }
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        count++;
+                                                    }
+                                                }
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr />
+                                </div>
+
+                            }
+                        }
+
+                        <!--Single Product--->
+                        <!--Combo Product--->
+                        <div id="comboproduct" class="@(ViewBag.Item.ProductType == "Combo"?"":"hidden")">
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center">
+                                                        Product Name
+                                                    </th>
+                                                    <th class="text-center">
+                                                        Quantity
+                                                    </th>
+                                                    <th class="text-center">
+                                                        Purchase Price (Excluding Tax)
+                                                    </th>
+                                                    <th class="text-center">
+                                                        Total Amount (Exc. Tax)
+                                                    </th>
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+                                                    var a = 100000000;
+                                                    if (ViewBag.Item.ItemDetails.Count != 0)
+                                                    {
+                                                        foreach (var item in ViewBag.Item.ItemDetails[0].VariationDetails)
+                                                        {
+                                                            <tr id="divCombo@(a)">
+                                                                <td class="text-center">
+                                                                    <span>
+                                                                        @(item.ComboProductName)
+                                                                        @if (item.ComboVariationName!= null && item.ComboVariationName !="")
+                                                                        {
+                                                                        <span>(@(item.ComboVariationName))</span>
+                                                                        } - @item.ComboSku
+                                                                    </span>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <div class="input-group">
+                                                                        <span> @(String.Format("{0:0.##}", item.Quantity)) @item.ComboUnitName</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    @{
+                                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                        {
+                                                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.ComboPurchaseExcTax))
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            @(String.Format("{0:0.##}", item.ComboPurchaseExcTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                        }
+                                                                    }
+                                                                </td>
+                                                                <td class="text-center" id="divComboTotalAmount@(a)">
+
+                                                                    @{
+                                                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                        {
+                                                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.TotalCost))
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            @(String.Format("{0:0.##}", item.TotalCost))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                        }
+                                                                    }
+                                                                </td>
+
+                                                            </tr>
+                                                            a++;
+                                                        }
+                                                    }
+                                                }
+                                            </tbody>
+                                            <tfoot class="combo_product_table_footer">
+                                                <tr>
+                                                    <td></td>
+                                                    <td class="text-center">
+                                                    </td>
+                                                    <td><b style="text-align:center;display:block"> Net Total Amount:</b> </td>
+                                                    <td class="text-center">
+                                                        <span class="item_level_purchase_price_total display_currency" data-currency_symbol="true" id="divComboNetAmount">
+                                                            @{
+                                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                {
+                                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Item.TotalCost))
+                                                                }
+                                                                else
+                                                                {
+                                                                    @(String.Format("{0:0.##}", ViewBag.Item.TotalCost))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                }
+                                                            }
+
+
+                                                        </span>
+                                                    </td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="4">
+                                                        <div class="row">
+                                                            <div class="col-sm-4">
+
+                                                            </div>
+                                                            <div class="col-sm-4">
+                                                                <!-- text input -->
+                                                                <div class="form-group">
+                                                                    <label>x Margin(%): </label>
+                                                                    <span>
+                                                                        @(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].DefaultProfitMargin))
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-sm-4">
+                                                                <!-- text input -->
+                                                                <div class="form-group">
+                                                                    <label>Default Selling Price: </label>
+                                                                    <span class="@(ViewBag.Item.TaxType == "Exclusive" ? "": "hidden")">
+                                                                        @{
+                                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                            {
+                                                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesExcTax))
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                @(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesExcTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                            }
+                                                                        }
+                                                                    </span>
+                                                                    <span class="@(ViewBag.Item.TaxType == "Inclusive" ? "": "hidden")">
+                                                                        @{
+                                                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                                            {
+                                                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesIncTax))
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                @(String.Format("{0:0.##}", ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesIncTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                                            }
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--Combo Product--->
+                    </div>
+                </div>
+
+
+            </div>
+            <!-- /.card-body -->
+        </div>
+
+    </div>
+</div>
+

@@ -1,0 +1,630 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Purchase Quotation List";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Purchase Quotation List @(ViewBag.SupplierName != null ? "By "+ViewBag.SupplierName : "")</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Purchase Quotation List</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                @if (ViewBag.MenuPermission.IsAdd)
+                {
+                    <a id="btnNew" href="/purchasequotation/add" class="btn btn-primary float-sm-right mr-2"><i class="fas fa-plus"></i> Add New</a>
+                    @*<a id="btnImport" href="/purchase/purchaseImport" class="btn btn-info float-sm-right mr-2"><i class="fas fa-upload"></i> Import</a>*@
+                }
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+            <div class="col-sm-12">
+                <span id="divAsof" class="text-gray"></span>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    @*<div class="container-fluid">
+
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>150</h3>
+                            <p>Total Invoice</p>
+                        </div>
+                        <div class="icon">
+                            <i class="ion ion-bag"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>53.58</h3>
+                            <p>Total Invoices Amount</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3>44</h3>
+                            <p>Total Received Amount</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-undo"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3>65</h3>
+                            <p>Total purchase Due</p>
+                        </div>
+                        <div class="icon">
+
+                            <i class="fas fa-hourglass"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+            </div>
+
+        </div>*@
+
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                @*<div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                        <h5><i class="fas fa-info"></i> Note:</h5>
+                        This page has been enhanced for printing. Click the print button at the bottom of the invoice to test.
+                    </div>*@
+                <div class="card  card-primary card-outline collapsed-card">
+                    <div class="card-header" data-card-widget="collapse" title="Collapse">
+                        <h3 class="card-title">Filter</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                <div class="form-group">
+                                    <label>Business Location</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlBranch" onchange="fetchActiveUsers(false)">
+                                        <option value="0">All</option>
+                                        @foreach (var item in ViewBag.Branchs)
+                                        {
+                                            @*if (ViewBag.BranchId == item.BranchId)
+                                                {
+                                                    <option value="@item.BranchId" selected>@item.Branch</option>
+                                                }
+                                                else
+                                                {*@
+                                            <option value="@item.BranchId">@item.Branch</option>
+                                            @*}*@
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Supplier Name</label>
+                                    <div class="input-group divSupplier">
+                                        <select class="form-control select2" style="width: 100%;" id="ddlSupplier">
+                                            <option value="">All</option>
+                                            @foreach (var item in ViewBag.Users)
+                                            {
+                                                if (ViewBag.SupplierId == item.UserId)
+                                                {
+                                                    <option value="@item.UserId" selected>
+                                                        @item.Name
+                                                        @if (item.MobileNo != null && item.MobileNo != "")
+                                                        {
+                                                            <span>- @item.MobileNo</span>
+                                                        }
+                                                    </option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.UserId">
+                                                        @item.Name
+                                                        @if (item.MobileNo != null && item.MobileNo != "")
+                                                        {
+                                                            <span>- @item.MobileNo</span>
+                                                        }
+                                                    </option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Date Range:</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="far fa-calendar-alt"></i>
+                                            </span>
+                                        </div>
+                                        <input type="text" class="form-control float-right" id="txtDateRange" value="@(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) +" - "+ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]))">
+                                    </div>
+                                </div>
+                            </div>
+                            @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>From Date</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                </span>
+                                            </div>
+                                            <input type="date" class="form-control float-right" id="txtFromDate" value="@(ViewBag.FromDate == null ? ViewBag.FromDate : ViewBag.FromDate.ToString("yyyy-MM-dd"))">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>To Date</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                </span>
+                                            </div>
+                                            <input type="date" class="form-control float-right" id="txtToDate" value="@(ViewBag.FromDate == null ? ViewBag.FromDate : ViewBag.FromDate.ToString("yyyy-MM-dd"))">
+                                        </div>
+                                    </div>
+                                </div>*@
+
+
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <select class="form-control" id="ddlStatus" style="width: 100%;">
+                                        <option value="">All</option>
+                                        <option value="Draft">Draft</option>
+                                        <option value="Sent">Sent</option>
+                                        <option value="Accepted">Accepted</option>
+                                        <option value="Invoiced">Invoiced</option>
+                                        <option value="Declined">Declined</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Reference No.</label>
+                                    <input type="text" class="form-control" id="txtReferenceNo">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary float-right mt-2" onclick="fetchList(1)">Search</button>
+                        <button type="submit" class="btn btn-warning float-right mt-2 mr-2" onclick="window.location.reload()">Refresh</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+
+                <!-- /.card -->
+                <div class="card  card-primary card-outline">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h5>
+                                    <span class="success" id="divTotalCount">
+                                        Total : 0
+                                    </span>
+                                    |
+                                    <span class="primary" id="divActiveCount">
+                                        Active : 0
+                                    </span>
+                                    |
+                                    <span class="danger" id="divInactiveCount">In-Active : 0</span>
+                                </h5>
+                            </div>
+                            @*@if (ViewBag.Branchs.Count > 1)
+                                {
+                                    <div class="col-sm-6 text-right noPrint">
+                                        <label>Business Location :</label>
+                                        <label class="mb-0 font-weight-normal">
+                                            <select class="form-control select2" style="width: 100%;" id="ddlBranch" onchange="fetchList(1)">
+
+                                                @foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    if (ViewBag.BranchId == item.BranchId)
+                                                    {
+                                                        <option value="@item.BranchId" selected>@item.Branch</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.BranchId">@item.Branch</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </label>
+                                    </div>
+                                }*@
+                        </div>
+
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                            <div class="dataTables_length noPrint" id="tblUserRole_length">
+                                <label>
+                                    Show
+                                    <select name="tblUserRole_length" aria-controls="tblUserRole" class="custom-select custom-select-sm form-control form-control-sm"
+                                            onchange="fetchList(1)" id="txtPageSize">
+                                        @{
+                                            if (ViewBag.PageSize == 10)
+                                            {
+                                                <option value="10" selected>10</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="10">10</option>
+                                            }
+                                            if (ViewBag.PageSize == 25)
+                                            {
+                                                <option value="25" selected>25</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="25">25</option>
+                                            }
+                                            if (ViewBag.PageSize == 50)
+                                            {
+                                                <option value="50" selected>50</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="50">50</option>
+                                            }
+                                            if (ViewBag.PageSize == 100)
+                                            {
+                                                <option value="100" selected>100</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="100">100</option>
+                                            }
+                                            if (ViewBag.PageSize == 500)
+                                            {
+                                                <option value="500" selected>500</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="500">500</option>
+                                            }
+                                        }
+                                    </select> entries
+                                </label>
+                            </div>
+                            @if (ViewBag.MenuPermission.IsExport)
+                            {
+                                <div class="dt-buttons btn-group flex-wrap noPrint">
+                                    <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+                                    <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+                                    <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+                                    <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+                                </div>
+                            }
+                            <div id="tblUserRole_filter" class="dataTables_filter noPrint invisible"><label>Search:<input type="text" class="form-control form-control-sm" placeholder="" aria-controls="tblUserRole" id="txtSearch" onkeyup="fetchList(1)"></label></div>
+                            <div class="row mt-1">
+                                <div class="col-sm-12 table-responsive">
+                                    <table id="tblData" class="table table-bordered table-striped">
+                                        @Html.Partial("PartialPurchaseQuotation")
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="purchaseStatusModal">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Update Status</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label> Status <span class="danger">*</span> <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Products in this purchase will be available for sale only if the <b>Order Status</b> is <b>Items Received</b>."></i></label>
+                            <select class="form-control" id="ddlPurchaseStatus_M">
+                                <option value="Sent">Sent</option>
+                                <option value="Accepted">Accepted</option>
+                                <option value="Declined">Declined</option>
+                            </select>
+                            <small class="text-red font-weight-bold errorText" id="divPurchaseStatus"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="UpdatePurchaseStatus()"><i class="fas fa-edit"></i> Update</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">What is product purchase?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    Your purchasing decision may be influenced by the manner in which you can purchase and receive the product. For example, you may purchase a product through a particular store because the product can be financed, is available immediately, or can be delivered quickly.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do businesses manage purchase order?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    When the order is placed with the suppliers for the supply of goods, the items, quantities, date of receipt, and so on, details are given with the purchase order number. Later, when these goods are received, the purchase order is tracked for the order details either in the receipt note or in the purchase invoice. Next, the purchase invoice is tracked with the payment that is made to the vendor.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Purchase order vs purchase invoice</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    The following table highlights the key difference between purchase order and purchase invoice
+                                    <table>
+                                        <tr>
+                                            <td>
+                                                Purchase order
+                                            </td>
+                                            <td>
+                                                Invoice
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Purchase order is a contract or confirmation of that the order for such a material is placed
+                                            </td>
+                                            <td>
+                                                Purchase invoice is a bill issued after fulling the delivery and request for the payment
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Buyer initiates and sends to the supplier
+                                            </td>
+                                            <td>
+                                                Purchase invoice is a bill issued after fulling the delivery and request for the payment
+                                                Supplier initiates and sends it to the buyer
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                It is issued before receiving the goods
+                                            </td>
+                                            <td>
+                                                It is issued after or along with the delivery of goods by the supplier
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="ViewModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" id="divView">
+            @Html.Partial("PartialPurchaseQuotationView")
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="InvoiceCopyModal">
+    <div class="modal-dialog modal-l">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="lblInvoiceNo"> </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="input-group" id="divInvoiceInputs">
+                                <input disabled type="text" class="form-control" id="lblInvoiceUrl" placeholder="" style="width:80%">
+                                <button type="button" class="btn btn-secondary" onclick="copyCode()" style="width:20%">COPY</button>
+                            </div>
+                            <small class="text-red font-weight-bold">Link to view the invoice without login.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between" id="divInvoiceButtons">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="PrintInvoice()" id="btnInvoiceView">View</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="invoiceModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Print Invoice</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="height:75vh">
+                <iframe id="lblInvoice" style="border:0;width:100%;height:100%"></iframe>
+            </div>
+            @*<div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Ok</button>
+                </div>*@
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="NotificationModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Send Notification </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12" id="divNotification">
+                        @*@Html.Partial("PartialNotificationModule");*@
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="SendNotifications()">Send</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade bd-example-modal-lg" id="purchaseInvoicesModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Invoices</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- left column -->
+                            <div class="col-md-12">
+                                <!-- jquery validation -->
+                                <div class="card card-primary card-outline">
+                                    <div class="card-body" id="divPurchaseInvoices">
+                                        @if (ViewBag.OpenPurchaseInvoicesModal == true)
+                                        {
+                                            
+                                                        @Html.Partial("PartialPurchaseInvoices");
+                                                    
+                                        }
+
+                                    </div>
+                                </div>
+                                <!-- /.card -->
+                            </div>
+                            <!--/.col (left) -->
+
+                        </div>
+                        <!-- /.row -->
+                    </div><!-- /.container-fluid -->
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary hidden paymentAdd" onclick="insertPayment()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Content/JQuery/Customer/Purchase/PurchaseQuotation.js"></script>

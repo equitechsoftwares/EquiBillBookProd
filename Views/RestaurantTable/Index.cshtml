@@ -1,0 +1,322 @@
+@using System.Web
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Tables";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Restaurant Tables</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl))
+                        {
+                            <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        }
+                        else
+                        {
+                            <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        }
+                        <li class="breadcrumb-item active">Restaurant Tables</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl))
+                {
+                    <a id="btnBack" href="@ViewBag.ReturnUrl" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>
+                }
+                else
+                {
+                    <a id="btnBack" href="/settings/index" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>
+                }
+                @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsAdd)
+                {
+                    <a id="btnNew" href="/restauranttable/add" class="btn btn-primary float-sm-right mr-2"><i class="fas fa-plus"></i> Add New</a>
+                    <a id="btnLayout" href="/restauranttable/tablelayout" class="btn btn-info float-sm-right mr-2"><i class="fas fa-th"></i> Table Layout</a>
+                    <a id="btnStatus" href="/restauranttable/tablestatus" class="btn btn-success float-sm-right mr-2"><i class="fas fa-chart-line"></i> Table Status</a>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline collapsed-card">
+                    <div class="card-header" data-card-widget="collapse">
+                        <h3 class="card-title">Filter</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 @(ViewBag.Branchs != null && ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+                                <div class="form-group">
+                                    <label>Business Location</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlBranch">
+                                        <option value="0">All</option>
+                                        @if (ViewBag.Branchs != null)
+                                        {
+                                            foreach (var item in ViewBag.Branchs)
+                                            {
+                                                if (ViewBag.BranchId != null && ViewBag.BranchId == item.BranchId)
+                                                {
+                                                    <option value="@item.BranchId" selected>@item.Branch</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.BranchId">@item.Branch</option>
+                                                }
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Floor</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlFloor">
+                                        <option value="">All</option>
+                                        @if (ViewBag.Floors != null)
+                                        {
+                                            foreach (var item in ViewBag.Floors)
+                                            {
+                                                <option value="@item.FloorId">@item.FloorName</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Table Type</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlTableType">
+                                        <option value="">All</option>
+                                        @if (ViewBag.TableTypes != null)
+                                        {
+                                            foreach (var item in ViewBag.TableTypes)
+                                            {
+                                                <option value="@item.TableTypeId">@item.TableTypeName</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlStatus">
+                                        <option value="" @(ViewBag.FilterStatus == null || ViewBag.FilterStatus == "" ? "selected" : "")>All</option>
+                                        <option value="Available" @(ViewBag.FilterStatus == "Available" ? "selected" : "")>Available</option>
+                                        <option value="Reserved" @(ViewBag.FilterStatus == "Reserved" ? "selected" : "")>Reserved</option>
+                                        <option value="Occupied" @(ViewBag.FilterStatus == "Occupied" ? "selected" : "")>Occupied</option>
+                                        <option value="Booked" @(ViewBag.FilterStatus == "Booked" ? "selected" : "")>Booked</option>
+                                        <option value="Maintenance" @(ViewBag.FilterStatus == "Maintenance" ? "selected" : "")>Maintenance</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Search</label>
+                                    <input type="text" class="form-control" id="txtSearch" placeholder="Table No / Name">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary float-right mt-2" onclick="fetchList(1)">Search</button>
+                        <button type="submit" class="btn btn-warning float-right mt-2 mr-2" onclick="window.location.reload()">Refresh</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h5>
+                                    <span class="success" id="divTotalCount">Total : @(ViewBag.TotalCount ?? 0)</span> |
+                                    <span class="primary" id="divActiveCount">Active : @(ViewBag.ActiveCount ?? 0)</span> |
+                                    <span class="danger" id="divInactiveCount">In-Active : @(ViewBag.InactiveCount ?? 0)</span>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table id="tblTables" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Sln</th>
+                                    <th class="hide noPrint">Action</th>
+                                    <th>Table No</th>
+                                    <th>Table Name</th>
+                                    <th>Capacity</th>
+                                    <th>Branch</th>
+                                    <th>Floor</th>
+                                    <th>Table Type</th>
+                                    <th class="hidden">Status</th>
+                                    <th class="hide">Status</th>
+                                    <th>Table Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.Tables != null)
+                                {
+                                    var count = 1;
+                                    foreach (var item in ViewBag.Tables)
+                                    {
+                                        <tr>
+                                            <td>@(ViewBag.PageSize * (ViewBag.CurrentPageIndex - 1) + count)</td>
+                                            <td class="hide noPrint">
+                                                @{
+                                                    string qrImage = Convert.ToString(item.QRCodeImage);
+                                                    bool hasQrImage = !string.IsNullOrEmpty(qrImage);
+                                                    string safeTableNo = HttpUtility.JavaScriptStringEncode(Convert.ToString(item.TableNo));
+                                                    string tableSlug = Convert.ToString(item.TableSlug);
+                                                    string tableUrl = !string.IsNullOrWhiteSpace(tableSlug) 
+                                                        ? "/booktable/" + tableSlug 
+                                                        : "/publicbooking/booktable?tableId=" + item.TableId;
+                                                    string safeTableSlug = HttpUtility.JavaScriptStringEncode(tableSlug ?? "");
+                                                }
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-info">Action</button>
+                                                    <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <div class="dropdown-menu" role="menu">
+                                                        @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsEdit)
+                                                        {
+                                                            <a class="dropdown-item" href="/restauranttable/edit/@item.TableId"><i class="fas fa-edit"></i> Edit</a>
+                                                        }
+                                                        @if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsDelete)
+                                                        {
+                                                            <a class="dropdown-item" href="javascript:void(0)" onclick="deleteTable(@item.TableId)"><i class="far fa-trash-alt"></i> Delete</a>
+                                                        }
+                                                        <div class="dropdown-divider"></div>
+                                                        @if (item.IsActive)
+                                                        {
+                                                            <a class="dropdown-item" href="@tableUrl" target="_blank"><i class="fas fa-external-link-alt"></i> View Public Booking</a>
+                                                            <a class="dropdown-item" href="javascript:void(0)" onclick="copyTableUrl(@item.TableId, '@safeTableSlug')"><i class="fas fa-copy"></i> Copy Public URL</a>
+                                                            <a class="dropdown-item" href="javascript:void(0)" onclick="shareTable(@item.TableId, '@safeTableSlug')"><i class="fas fa-share-alt"></i> Share</a>
+                                                            <div class="dropdown-divider"></div>
+                                                            if (hasQrImage)
+                                                            {
+                                                                <a class="dropdown-item" href="javascript:void(0)" onclick="viewTableQRCode(@item.TableId, '@safeTableNo')"><i class="fas fa-qrcode"></i> View QR Code</a>
+                                                                <a class="dropdown-item" href="@Url.Content(qrImage)" download="Table-@safeTableNo-QRCode.png"><i class="fas fa-download"></i> Download QR Code</a>
+                                                            }
+                                                            else
+                                                            {
+                                                                <a class="dropdown-item" href="javascript:void(0)" onclick="generateTableQRCode(@item.TableId, '@safeTableNo')"><i class="fas fa-qrcode"></i> Generate QR Code</a>
+                                                            }
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>@item.TableNo</td>
+                                            <td>@(item.TableName ?? "-")</td>
+                                            <td>@item.Capacity</td>
+                                        <td>@(item.BranchName ?? "-")</td>
+                                            <td>@(item.FloorName ?? "-")</td>
+                                            <td>@(item.TableTypeName ?? "-")</td>
+                                            <td class="hidden">@(item.IsActive == true ? "Active" : "Inactive")</td>
+                                            <td class="hide">
+                                                @if (item.IsActive)
+                                                {
+                                                    if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsEdit)
+                                                    {
+                                                        <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.TableId, false, @item.BranchId)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                                                    }
+                                                    else
+                                                    {
+                                                        <input disabled class="chkIsActive" type="checkbox" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (ViewBag.MenuPermission != null && ViewBag.MenuPermission.IsEdit)
+                                                    {
+                                                        <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.TableId, true, @item.BranchId)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                                                    }
+                                                    else
+                                                    {
+                                                        <input disabled class="chkIsActive" type="checkbox" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                                                    }
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-@(item.Status == "Available" ? "success" : item.Status == "Occupied" ? "danger" : item.Status == "Reserved" ? "warning" : item.Status == "Booked" ? "info" : item.Status == "Maintenance" ? "secondary" : "info")" style="@(item.Status == "Booked" ? "background-color: #6f42c1 !important; border-color: #5a32a3 !important;" : "")">
+                                                    @item.Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        count++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Customer/Restaurant/RestaurantTable.js"></script>
+<script>
+    $(document).ready(function () {
+        // Initialize toggle switches
+        $('.chkIsActive').bootstrapToggle();
+        
+        // Initialize select2 for all select elements
+        $('.select2').select2();
+        
+        // Check for success message in query parameter
+        var urlParams = new URLSearchParams(window.location.search);
+        var successMessage = urlParams.get('success');
+        if (successMessage) {
+            if (EnableSound == 'True') { document.getElementById('success').play(); }
+            toastr.success(decodeURIComponent(successMessage));
+            // Clean up URL by removing query parameter
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+        
+        // Auto-trigger search if filter parameter is present
+        var filter = urlParams.get('filter');
+        if (filter) {
+            // Map filter to status value
+            var statusValue = '';
+            if (filter.toLowerCase() === 'available') {
+                statusValue = 'Available';
+            } else if (filter.toLowerCase() === 'occupied') {
+                statusValue = 'Occupied';
+            } else if (filter.toLowerCase() === 'all') {
+                statusValue = '';
+            }
+            
+            // Set the Status dropdown value and wait for select2 to update
+            if ($('#ddlStatus').length) {
+                $('#ddlStatus').val(statusValue).trigger('change');
+            }
+            
+            // Wait for select2 to initialize and update, then trigger search
+            setTimeout(function() {
+                fetchList(1);
+            }, 800);
+        }
+    });
+</script>
+
+

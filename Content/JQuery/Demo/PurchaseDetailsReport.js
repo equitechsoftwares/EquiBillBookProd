@@ -1,0 +1,101 @@
+﻿$(function () {
+    $('#tblData').DataTable({
+        lengthChange: false,
+        searching: false,
+        autoWidth: false,
+        responsive: true,
+        paging: false,
+        bInfo: false
+    });
+
+    $('.select2').select2();
+
+    //Date range picker
+    $('#txtDate').daterangepicker({
+        locale: {
+            format: 'DD-MM-YYYY'
+        }
+    });
+});
+
+var EnableSound = Cookies.get('SystemSetting').split('&')[4].split('=')[1];
+
+var _PageIndex = 1;
+
+function fetchList(PageIndex) {
+
+    var det = {
+        PageIndex: PageIndex == undefined ? _PageIndex : PageIndex,
+        PageSize: $('#txtPageSize').val(),
+    };
+    _PageIndex = det.PageIndex;
+    $("#divLoading").show();
+    $.ajax({
+        url: '/reports/PurchaseDetails',
+        datatype: "json",
+        data: det,
+        type: "post",
+        success: function (data) {
+            $("#tblData").html(data);
+            $('.chkIsActive').bootstrapToggle();
+            $("#divLoading").hide();
+
+            $('#tblData').DataTable({
+                lengthChange: false,
+                searching: false,
+                autoWidth: false,
+                responsive: false,
+                paging: false,
+                bInfo: false,
+                "bDestroy": true
+            });
+        },
+        error: function (xhr) {
+            $("#divLoading").hide();
+        }
+    });
+};
+
+function exportToExcel() {
+    $('.hide').remove();
+    TableToExcel.convert(document.getElementById("tblData"), {
+        name: "Purchase Details Report.xlsx",
+        sheet: {
+            name: "Sheet1"
+        }
+    });
+    fetchList();
+}
+
+function exportToCsv() {
+    $('.hide').remove();
+    TableToExcel.convert(document.getElementById("tblData"), {
+        name: "Purchase Details Report.csv",
+        sheet: {
+            name: "Sheet1"
+        }
+    });
+    fetchList();
+}
+
+function exportToPdf() {
+    $('.hidden').show();
+    $('.hide').hide();
+    $('.responsive-table').css('height', '100%');
+    html2canvas($('#tblData')[0], {
+        onrendered: function (canvas) {
+            var data = canvas.toDataURL();
+            var docDefinition = {
+                content: [{
+                    image: data,
+                    width: 500
+                }]
+            };
+
+            pdfMake.createPdf(docDefinition).download("Purchase Details Report.pdf");
+            $('.responsive-table').css('height', '400px');
+            $('.hide').show();
+            $('.hidden').hide();
+        }
+    });
+}

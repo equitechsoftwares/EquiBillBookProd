@@ -1,0 +1,336 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Import Purchase Return";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Import Purchase Return</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/purchase/purchasereturn">Purchase Return List</a></li>
+                        <li class="breadcrumb-item active">Import Purchase Return</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/purchase/purchasereturn" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 noPrint">
+                @*<div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                        <h5><i class="fas fa-info"></i> Note:</h5>
+                        This page has been enhanced for printing. Click the print button at the bottom of the invoice to test.
+                    </div>*@
+                <div class="card  card-primary card-outline ">
+                    @*<div class="card-header" data-card-widget="collapse" title="Collapse">
+                            <h3 class="card-title">Filter</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+
+                            </div>
+                        </div>*@
+
+                    <div class="card-body">
+                        <div class="row">
+
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <label>Choose File To Import </label>
+                                    <div class="input-group">
+                                        <input type="file" id="excelfile" accept=".xlsx, .xls, .csv" style="padding:0px" onchange="uploadExcel()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-3 @(ViewBag.Branchs.Count > 1?"":"hidden")">
+                                <div class="form-group">
+                                    <label>Business Location </label>
+                                    <div class="input-group">
+                                        <select class="form-control" id="ddlBranch" onchange="fetchList(1)">
+                                            @foreach (var item in ViewBag.Branchs)
+                                            {
+                                                if (ViewBag.BranchId == item.BranchId)
+                                                {
+                                                    <option value="@item.BranchId" selected>@item.Branch</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.BranchId">@item.Branch</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-footer">
+
+                        <button type="submit" class="btn btn-primary float-right mt-2" onclick="BulkInsert(1)">Submit</button>
+                        <button type="submit" class="btn btn-success float-right mt-2 mr-2" onclick="BulkInsert(2)">Submit & Add Another</button>
+                        <a class="btn btn-warning float-right mt-2 mr-2" href="~/Content/Excel/Income.xlsx" download>Download Sample</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+
+                <!-- /.card -->
+                <div class="card  card-primary card-outline">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h5>
+                                    <span id="divTotalCount">
+                                        Instructions
+                                    </span>
+                                </h5>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <div id="tblUserRole_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
+                            <div class="dataTables_length noPrint" id="tblUserRole_length">
+                                <label>
+                                    <b>Follow the instructions carefully before importing the file.</b><br />
+                                    The columns of the file should be in the following order.
+
+                                </label>
+                            </div>
+
+                            <div class="row mt-1">
+                                <div class="col-sm-12 table-responsive">
+                                    <table id="tblData" class="table table-bordered table-striped">
+                                        <thead id="thead">
+                                            <tr>
+                                                <th>Column No</th>
+                                                <th>Column Name</th>
+                                                <th>Instruction</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="table-body">
+                                            <tr>
+                                                <td>1</td>
+                                                <td>Date (Required)</td>
+                                                <td>Income Date in format yyyy-mm-dd . Example: 2022-04-21</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2</td>
+                                                <td>Time (Optional)</td>
+                                                <td>
+                                                    Income Time in format hh:mm . If it is 1.30 PM then it should be 13:30 and vise versa.
+                                                    And if left empty then it will take the default value as 12 AM automatically.
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>3</td>
+                                                <td>IncomeFor (Optional)</td>
+                                                <td>User Code of the User</td>
+                                            </tr>
+                                            <tr>
+                                                <td>4</td>
+                                                <td>Category (Required)</td>
+                                                <td>
+                                                    Name of the Category
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>5</td>
+                                                <td>SubCategory (Optional)</td>
+                                                <td>
+                                                    Name of the Sub Category
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>6</td>
+                                                <td>ReferenceNo (Optional)</td>
+                                                <td>Income Referene No. If blank, it will be automatically generated</td>
+                                            </tr>
+                                            <tr>
+                                                <td>7</td>
+                                                <td>Tax (Optional)</td>
+                                                <td>
+                                                    Name of the Tax
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>8</td>
+                                                <td>Amount (Required)</td>
+                                                <td>Income amount. Must be numeric value</td>
+                                            </tr>
+                                            <tr>
+                                                <td>9</td>
+                                                <td>AttachDocument (Optional)</td>
+                                                <td>This can be any image or document file</td>
+                                            </tr>
+                                            <tr>
+                                                <td>10</td>
+                                                <td>Notes (Optional)</td>
+                                                <td>This can be any short description</td>
+                                            </tr>
+                                            @*<tr>
+                                                    <td>10</td>
+                                                    <td>Payment Amount (Optional)</td>
+                                                    <td>This can be the full or partial income amount which is already received</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>11</td>
+                                                    <td>Paid On (Required if Payment Amount is given)</td>
+                                                    <td>Payment Date in format dd-mm-yyyy</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>12</td>
+                                                    <td>Payment Method (Required if Payment Amount is given)</td>
+                                                    <td>
+                                                        Name of the Payment Method
+                                                        (If not found new Payment Method with the given name will be created)
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>13</td>
+                                                    <td>Payment Attach Document (Optional)</td>
+                                                    <td>This can be any image or document file</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>14</td>
+                                                    <td>Payment Notes (Optional)</td>
+                                                    <td></td>
+                                                </tr>*@
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Is this online, or do I download software?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    You can sign in to QuickBooks from your web browser. Or download the iPhone or Android app and run your business from anywhere.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.7.7/xlsx.core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xls/0.7.4-a/xls.core.min.js"></script>
+<script src="~/Content/JQuery/Income.js"></script>

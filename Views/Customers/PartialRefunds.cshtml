@@ -1,0 +1,387 @@
+﻿
+<div class="refundAdd hide">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="text-danger">
+                <label>Balance</label>
+                <span id="txtAdvBalance">
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@ViewBag.CustomerPayment.AmountRemaining
+                        }
+                        else
+                        {
+                            @ViewBag.CustomerPayment.AmountRemaining@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </span>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        @*<div class="col-sm-3">
+            <div class="form-group">
+                <label>Advance Balance</label>
+                <input type="number" class="form-control" id="txtAdvBalance" disabled>
+            </div>
+        </div>*@
+        <div class="col-sm-3 @(ViewBag.Branchs.Count > 1 ? "" : "hidden")">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Business Location <span class="danger">*</span> </label>
+                <div class="input-group">
+                    @*<select class="form-control select2" style="width: 100%;" id="ddlBranch">
+                        <option value="0">Select</option>*@
+                        @foreach (var item in ViewBag.Branchs)
+                        {
+                            if (ViewBag.CustomerPayment.BranchId == item.BranchId)
+                            {
+                                <span>@item.Branch</span>
+                            }
+                            @*else
+                            {
+                                <option value="@item.BranchId">@item.Branch</option>
+                            }*@
+                        }
+                    @*</select>*@
+                </div>
+                <small class="text-red font-weight-bold errorText" id="divBranch"></small>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Customer Name <span class="danger">*</span></label>
+                <div class="input-group divSupplier">
+                    @*<select class="form-control select2" id="ddlCustomer" onchange="fetchDue()">
+                        <option value="0">Select</option>*@
+                        @foreach (var item in ViewBag.Users)
+                        {
+                            if (ViewBag.CustomerPayment.CustomerId == item.UserId)
+                            {
+                                <span>
+                                    @item.Name
+                                    @if (item.MobileNo != null && item.MobileNo != "")
+                                    {
+                                        <span>- @item.MobileNo</span>
+                                    }
+                                </span>
+                            }
+                            @*else
+                            {
+                                <option value="@item.UserId">
+                                    @item.Name
+                                    @if (item.MobileNo != null && item.MobileNo != "")
+                                    {
+                                        <span>- @item.MobileNo</span>
+                                    }
+                                </option>
+                            }*@
+                        }
+                    @*</select>*@
+                    @*@if (ViewBag.CustomersPermission.IsAdd == true)
+                    {
+                        <span class="input-group-append">
+                            <a href="javascript:void(0)" class="btn btn-info" onclick="openCustomerModal()">+ </a>
+                        </span>
+                    }*@
+
+                </div>
+                <small class="text-red font-weight-bold" id="divDue"></small>
+                <small class="text-red font-weight-bold errorText" id="divCustomer_M"></small>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Amount <span class="danger">*</span></label>
+                <input type="number" class="form-control divAmount_M_ctrl" id="txtAmount">
+                <small class="text-red font-weight-bold errorText" id="divAmount_M"></small>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Refunded On <span class="danger">*</span></label>
+                <div class="input-group date" id="_RefundDate" data-target-input="nearest">
+                    <input id="txtRefundDate" type="text" class="form-control datetimepicker-input divRefundDate_M_ctrl" data-target="#_RefundDate" />
+                    <div class="input-group-append" data-target="#_RefundDate" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                    </div>
+                </div>
+                @*<input type="datetime-local" class="form-control" id="txtPaymentDate">*@
+                <small class="text-red font-weight-bold errorText" id="divRefundDate_M"></small>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="form-group">
+                <label>Payment Method <span class="danger">*</span></label>
+                <div class="input-group divPaymentType_M_ctrl">
+                    <select class="form-control select2" style="width: 100%;" id="ddlPaymentType">
+                        @{
+                            <option value="0">Select</option>
+                            if (ViewBag.PaymentTypes != null)
+                            {
+                                foreach (var item in ViewBag.PaymentTypes)
+                                {
+                                    if (item.IsDefault == true)
+                                    {
+                                        <option value="@item.PaymentTypeId" selected>@item.PaymentType</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@item.PaymentTypeId">@item.PaymentType</option>
+                                    }
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+                <small class="text-red font-weight-bold errorText" id="divPaymentType_M"></small>
+            </div>
+        </div>
+        <div class="col-sm-3 divLAccount @(ViewBag.IsAccountsAddon == true ? "" : "hidden")">
+            <!-- text input -->
+            <div class="form-group">
+                <label>From Account <span class="danger">*</span></label>
+                <div class="input-group">
+                    <select class="form-control select2" id="ddlLAccount">
+                        @*<option value="0">Select</option>*@
+                        @{
+                            if (ViewBag.AccountSubTypes != null)
+                            {
+                                foreach (var item in ViewBag.AccountSubTypes)
+                                {
+                                    if (item.Accounts.Count > 0)
+                                    {
+                                        <optgroup label="@item.DisplayAs">
+                                            @foreach (var inner in item.Accounts)
+                                            {
+                                                if (inner.Type == "Petty Cash")
+                                                {
+                                                    <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                }
+                                            }
+                                        </optgroup>
+                                    }
+                                }
+                            }
+                        }
+                    </select>
+
+                    @*@if (ViewBag.AccountsPermission.IsAdd == true)
+                        {
+                            <span class="input-group-append">
+                                <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#AccountModal">+ </a>
+                            </span>
+                        }*@
+
+                </div>
+                <small class="text-red font-weight-bold errorText" id="divAccount_M"></small>
+            </div>
+        </div>
+        @*@if (ViewBag.SaleSetting.EnableSms)
+            {
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label>Send SMS </label>
+                        <div class="input-group">
+                            <select class="form-control" style="width: 100%;" id="ddlSmsSettings">
+                                <option value="0">Dont Send</option>
+                                @foreach (var item in ViewBag.SmsSettings)
+                                {
+                                    if (item.IsDefault == true)
+                                    {
+                                        <option selected value="@item.SmsSettingsId">@item.SaveAs</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@item.SmsSettingsId">@item.SaveAs</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (ViewBag.SaleSetting.EnableEmail)
+            {
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label>Send Email </label>
+                        <div class="input-group">
+                            <select class="form-control" style="width: 100%;" id="ddlEmailSettings">
+                                <option value="0">Dont Send</option>
+                                @foreach (var item in ViewBag.EmailSettings)
+                                {
+                                    if (item.IsDefault == true)
+                                    {
+                                        <option selected value="@item.EmailSettingsId">@item.SaveAs</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@item.EmailSettingsId">@item.SaveAs</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (ViewBag.SaleSetting.EnableWhatsapp)
+            {
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label>Send Whatsapp </label>
+                        <div class="input-group">
+                            <select class="form-control" style="width: 100%;" id="ddlWhatsappSettings">
+                                <option value="0">Dont Send</option>
+                                @foreach (var item in ViewBag.WhatsappSettings)
+                                {
+                                    if (item.IsDefault == true)
+                                    {
+                                        <option selected value="@item.WhatsappSettingsId">@item.SaveAs</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@item.WhatsappSettingsId">@item.SaveAs</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            }*@
+       
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <label>Attach Document</label>
+                    <div class="custom-file">
+                        <input type="file" id="PaymentAttachDocument" class="custom-file-input" accept='image/*' onchange="getPaymentAttachDocumentBase64()">
+                        <label class="custom-file-label" for="Logo">Choose file</label>
+                    </div>
+                    <img id="blahPaymentAttachDocument" alt="" height="60" style="padding-top:10px;">
+                </div>
+            </div>
+        <div class="col-sm-3 divReferenceNo">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Reference No <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                <input type="text" class="form-control" id="txtMReferenceNo" />
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea rows="2" class="form-control" id="txtPaymentNotes" placeholder="Enter Notes"></textarea>
+            </div>
+        </div>
+    </div>
+    <!-- /.card-body -->
+</div>
+
+<div class="refundList hide">
+    @if (ViewBag.CustomerRefundPermission.IsExport)
+    {
+        <div class="dt-buttons btn-group flex-wrap noPrint">
+            <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToCsv('@ViewBag.Title')"><span>CSV</span></button>
+            <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToExcel('@ViewBag.Title')"><span>Excel</span></button>
+            <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="tblUserRole" type="button" onclick="exportToPdf('@ViewBag.Title')"><span>PDF</span></button>
+            <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="tblUserRole" type="button" onclick="printDiv('@ViewBag.Title')"><span>Print</span></button>
+        </div>
+    }
+    <div class="table-responsive">
+        <table id="tblPayments" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Paid On</th>
+                    <th>Reference No</th>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                    <th>Added By</th>
+                    <th>Added On</th>
+                    @if (ViewBag.CustomerRefundPermission.IsDelete)
+                    {
+                        <th>Action</th>
+                    }
+                </tr>
+            </thead>
+            <tbody id="order_item_table" class="rows">
+                @{
+                    if (ViewBag.CustomerPayments != null)
+                    {
+                        var index = 1;
+                        var refNo = "";
+                        foreach (var item in ViewBag.CustomerPayments)
+                        {
+                            <tr id="tr_@(item.CustomerPaymentId)">
+                                <td>@index</td>
+                                <td>
+                                    @item.PaymentDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                                </td>
+                                <td>
+                                    @if (item.ParentReferenceNo != "" && item.ParentReferenceNo != null)
+                                    {
+                                        @item.ParentReferenceNo
+                                        refNo = @item.ParentReferenceNo;
+                                    }
+                                    else
+                                    {
+                                        @item.ReferenceNo
+                                        refNo = @item.ReferenceNo;
+                                    }
+
+                                    @if (item.Type == "Change Return")
+                                    {
+                                        <i tabindex="0" class="fa fa-info-circle text-danger hover-q no-print" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="@item.Type" data-original-title=""></i>
+                                    }
+                                </td>
+                                <td>
+                                    @item.Amount
+                                </td>
+                                <td>
+                                    @item.PaymentType
+                                </td>
+                                <td>@item.AddedByCode</td>
+                                <td>@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+
+                                <td>
+                                    @if (ViewBag.CustomerRefundPermission.IsDelete)
+                                    {
+                                        <a href="javascript:void(0)" onclick="deleteRefund(@item.CustomerPaymentId)" class="btn btn-danger btn-sm" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                                        <a href="javascript:void(0)" onclick="ViewRefund(@item.CustomerPaymentId)" class="btn btn-primary btn-sm" id="View" data-toggle="tooltip" data-placement="bottom" title="View"><i class="far fa-eye"></i></a>
+                                        <a href="javascript:void(0)" onclick="openNotificationModal('Sales Payment',@item.CustomerPaymentId)" class="btn btn-warning btn-sm" id="View" data-toggle="tooltip" data-placement="bottom" title="Send Notification"><i class="far fa-envelope"></i></a>
+                                    }
+                                    @if (ViewBag.Type == "sales payment")
+                                    {
+                                        @*<a href="javascript:void(0)" onclick="PrintInvoice('@ViewBag.InvoiceUrl/sales/PaymentReceipt?ReferenceId=@item.ReferenceId')" class="btn btn-info btn-sm" id="View" data-toggle="tooltip" data-placement="bottom" title="Print"><i class="fas fa-file"></i></a>
+                                            <a href="javascript:void(0)" onclick="copyCode('@ViewBag.InvoiceUrl/sales/PaymentReceipt?ReferenceId=@item.ReferenceId')" class="btn btn-secondary btn-sm" id="View" data-toggle="tooltip" data-placement="bottom" title="Copy"><i class="fas fa-copy"></i></a>*@
+                                        <a href="javascript:void(0)" onclick="openInvoiceCopyModal('@ViewBag.InvoiceUrl/sales/PaymentReceipt?ReferenceId=@item.ReferenceId','@refNo')" class="btn btn-secondary btn-sm" id="View" data-toggle="tooltip" data-placement="bottom" title="Receipt Url"><i class="fas fa-copy"></i></a>
+                                    }
+                                    else
+                                    {
+                                        @*<a href="javascript:void(0)" onclick="PrintInvoice('@ViewBag.InvoiceUrl/sales/ReturnPaymentReceipt?ReferenceId=@item.ReferenceId')" class="btn btn-info btn-sm" id="View" data-toggle="tooltip" data-placement="bottom" title="Print"><i class="fas fa-file"></i></a>
+                                            <a href="javascript:void(0)" onclick="copyCode('@ViewBag.InvoiceUrl/sales/ReturnPaymentReceipt?ReferenceId=@item.ReferenceId')" class="btn btn-secondary btn-sm" id="View" data-toggle="tooltip" data-placement="bottom" title="Copy"><i class="fas fa-copy"></i></a>*@
+                                        <a href="javascript:void(0)" onclick="openInvoiceCopyModal('@ViewBag.InvoiceUrl/sales/ReturnPaymentReceipt?ReferenceId=@item.ReferenceId','@refNo')" class="btn btn-secondary btn-sm" id="View" data-toggle="tooltip" data-placement="bottom" title="Receipt Url"><i class="fas fa-copy"></i></a>
+                                    }
+                                </td>
+                            </tr>
+                            index++;
+                        }
+                    }
+                }
+
+            </tbody>
+
+        </table>
+    </div>
+
+</div>

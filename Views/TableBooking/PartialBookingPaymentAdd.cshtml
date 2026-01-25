@@ -1,0 +1,113 @@
+<div class="paymentAdd hide">
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Amount <span class="danger">*</span></label>
+                <input type="number" class="form-control divAmount_M_ctrl" id="txtAmount" onkeypress="return onlyDecimalKey(event)">
+                <small class="text-red font-weight-bold errorText" id="divAmount_M"></small>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Paid On <span class="danger">*</span></label>
+                <div class="input-group date" id="_PaymentDate" data-target-input="nearest">
+                    <input id="txtPaymentDate" type="text" class="form-control datetimepicker-input divPaymentDate_M_ctrl" data-target="#_PaymentDate" />
+                    <div class="input-group-append" data-target="#_PaymentDate" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                    </div>
+                </div>
+                <small class="text-red font-weight-bold errorText" id="divPaymentDate_M"></small>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group divPaymentType_M_ctrl">
+                <label>Payment Method <span class="danger">*</span></label>
+                <select class="form-control select2" style="width: 100%;" id="ddlPaymentType">
+                    <option value="0">Select</option>
+                    @{
+                        if (ViewBag.PaymentTypes != null)
+                        {
+                            foreach (var item in ViewBag.PaymentTypes)
+                            {
+                                if (item.IsDefault == true)
+                                {
+                                    <option value="@item.PaymentTypeId" selected>@item.PaymentType</option>
+                                }
+                                else
+                                {
+                                    <option value="@item.PaymentTypeId">@item.PaymentType</option>
+                                }
+                            }
+                        }
+                    }
+                </select>
+                <small class="text-red font-weight-bold errorText" id="divPaymentType_M"></small>
+            </div>
+        </div>
+        <div class="col-sm-4 divLAccount @(ViewBag.IsAccountsAddon == true ? "" : "hidden")">
+            <div class="form-group">
+                <label>Deposit To</label>
+                <div class="input-group divAccount_M_ctrl">
+                    <select class="form-control select2" id="ddlLAccount">
+                        @{
+                            if (ViewBag.Accounts != null)
+                            {
+                                foreach (var item in ViewBag.Accounts)
+                                {
+                                    if (item.Type == "Petty Cash")
+                                    {
+                                        <option value="@item.AccountId" selected>@item.DisplayAs</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@item.AccountId">@item.DisplayAs</option>
+                                    }
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+                <small class="text-red font-weight-bold errorText" id="divAccount_M"></small>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Attach Document</label>
+                <div class="custom-file">
+                    <input type="file" id="PaymentAttachDocument" class="custom-file-input" accept='image/*' onchange="getBookingPaymentAttachDocumentBase64()">
+                    <label class="custom-file-label" for="PaymentAttachDocument">Choose file</label>
+                </div>
+                <img id="blahBookingPaymentAttachDocument" alt="" height="60" style="padding-top:10px;">
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Reference No <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                <input type="text" class="form-control" id="txtMReferenceNo" />
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Payment Transaction ID</label>
+                <input type="text" class="form-control" id="txtPaymentTransactionId" placeholder="Gateway transaction ID (if online payment)" />
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label>Payment Gateway</label>
+                <select class="form-control" id="ddlPaymentGatewayType">
+                    <option value="">None</option>
+                    <option value="Razorpay">Razorpay</option>
+                    <option value="PayPal">PayPal</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea rows="2" class="form-control" id="txtPaymentNotes" placeholder="Enter Notes"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+

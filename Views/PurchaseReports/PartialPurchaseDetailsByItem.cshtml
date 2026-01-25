@@ -1,0 +1,67 @@
+﻿
+
+
+
+
+@{
+    <thead id="thead">
+        <tr>
+            <th>Date</th>
+            <th>Invoice No</th>
+            <th>Purchase Amount</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.BankPayments)
+        {
+            <tr>
+                <td>@item.AddedOn</td>
+                <td>
+                    @if (ViewBag.PurchasePermission.IsView)
+                    {
+                        <a href="javascript:void(0)" onclick="ViewPurchase(@item.Id)">@item.ReferenceNo</a>
+                    }
+                    else
+                    {
+                        @item.ReferenceNo
+                    }
+                </td>
+                <td>
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.TransactionAmount))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", item.TransactionAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+    <tbody class="table-body">
+        <tr>
+            <td colspan="2" class="text-right">Total</td>
+            <td>
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalTransactionAmount))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalTransactionAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+     $('#divAsof').text('Showing Results: (' + @Html.Raw(Json.Encode(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    @*$('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));*@
+</script>

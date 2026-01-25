@@ -1,0 +1,659 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Business Settings";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Business Settings</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item active">Business Settings</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/settings/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+                            <div class="row mt-3">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Business Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divBusinessName_ctrl" id="txtBusinessName" placeholder="" value="@ViewBag.BusinessSetting.BusinessName">
+                                        <small class="text-red font-weight-bold errorText" id="divBusinessName"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Website Url </label>
+                                        <input type="text" class="form-control" id="txtWebsiteUrl" placeholder="" value="@ViewBag.BusinessSetting.WebsiteUrl">
+                                        @*<small class="text-red font-weight-bold errorText" id="divWebsiteUrl"></small>*@
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Start Date</label>
+                                        <div class="input-group date" id="_StartDate" data-target-input="nearest">
+                                            <input id="txtStartDate" value="@(ViewBag.BusinessSetting.StartDate != null ? ViewBag.BusinessSetting.StartDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]):DateTime.Now)" type="text" class="form-control datetimepicker-input" data-target="#_StartDate" />
+                                            <div class="input-group-append" data-target="#_StartDate" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                        @*<input type="date" class="form-control" id="txtStartDate" placeholder="" value="@(ViewBag.BusinessSetting.StartDate != null ? ViewBag.BusinessSetting.StartDate.ToString("yyyy-MM-dd") : DateTime.Now)">*@
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group divIndustryType_ctrl">
+                                        <label>Industry Type <span class="danger">*</span></label>
+                                        <select class="form-control select2" id="ddlIndustryType">
+                                            <option value="0" disabled selected>Industry Type *</option>
+                                            @foreach (var item in ViewBag.IndustryTypes)
+                                            {
+                                                if (item.IndustryTypeId == ViewBag.BusinessSetting.IndustryTypeId)
+                                                {
+                                                    <option selected value="@item.IndustryTypeId">@item.Name</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.IndustryTypeId">@item.Name</option>
+                                                }
+                                            }
+                                        </select>
+                                        <small class="text-red font-weight-bold errorText" id="divIndustryType"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group ">
+                                        <label>Business Type <span class="danger">*</span></label>
+                                        <div class="input-group divBusinessType_ctrl">
+                                            <select class="form-control select2" id="ddlBusinessType" multiple>
+                                                <option disabled value="0">Select multiple if applicable</option>
+                                                @foreach (var item in ViewBag.BusinessTypes)
+                                                {
+                                                    <option value="@item.BusinessTypeId">@item.Name </option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divBusinessType"></small>
+                                    </div>
+
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Country</label>
+                                        @*<input disabled type="text" class="form-control" id="" placeholder="" value="@ViewBag.BusinessSetting.Country - @ViewBag.BusinessSetting.CurrencyName (@ViewBag.BusinessSetting.CurrencySymbol)">*@
+                                        <input disabled type="text" class="form-control" id="" placeholder="" value="@ViewBag.BusinessSetting.Country">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Time Zone</label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" style="width: 100%;" id="ddlTimeZone" onchange="TimeZone()">
+                                                @foreach (var item in ViewBag.TimeZones)
+                                                {
+                                                    if (ViewBag.BusinessSetting.TimeZoneId == item.TimeZoneId)
+                                                    {
+                                                        <option value="@item.TimeZoneId" selected>(UTC@(item.Utc)) @item.DisplayName </option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.TimeZoneId">(UTC@(item.Utc)) @item.DisplayName </option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <small class="text-red font-weight-bold"><a href="javascript:void(0)" onclick="CheckTime()">Check Time Now</a></small>
+                                    </div>
+                                    @*<div class="form-group">
+                                            <label>Time Zone </label>
+                                            <input disabled type="text" class="form-control" id="txtTimeZoneDisplayName" placeholder="" value="@ViewBag.BusinessSetting.TimeZoneDisplayName">
+                                        </div>*@
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divEnableDaylightSavingTime" style="display:@(ViewBag.BusinessSetting.SupportsDaylightSavingTime == true ? "block":"none")">
+                                    <br />
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.BusinessSetting.EnableDaylightSavingTime)
+                                            {
+                                                <input type="checkbox" id="chkEnableDaylightSavingTime" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkEnableDaylightSavingTime">
+                                            }
+                                            <label for="chkEnableDaylightSavingTime" class="mt-2">
+                                                Adjust for daylight saving time automatically
+                                                <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Enable this to add Terms & Conditions / Notes in invoice footer of purchase."></i>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label>Country <span class="danger">*</span></label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" style="width: 100%;" id="ddlCountry" disabled>
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.Countrys)
+                                                    {
+                                                        if (ViewBag.BusinessSetting.CountryId == item.CountryId)
+                                                        {
+                                                            <option value="@item.CountryId" selected>@item.Country - @item.CurrencyName (@item.CurrencyCode)</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.CountryId">@item.Country - @item.CurrencyName (@item.CurrencyCode)</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Currency Symbol Placement</label>
+                                        <div class="input-group">
+                                            <select class="form-control " style="width: 100%;" id="ddlCurrencySymbolPlacement">
+                                                @{
+                                                    if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 1)
+                                                    {
+                                                        <option value="1" selected>Before Amount</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="1">Before Amount</option>
+                                                    }
+                                                    if (ViewBag.BusinessSetting.CurrencySymbolPlacement == 2)
+                                                    {
+                                                        <option value="2" selected>After Amount</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="2">After Amount</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label>Time Zone<span class="danger">*</span></label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlCurrency">
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>*@
+
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Financial Year Start  <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Starting month of The Financial Year for your business"></i> </label>
+                                        <select class="form-control select2" style="width: 100%;" id="ddlFinancialYearStartMonth">
+                                            @{
+                                                if (ViewBag.BusinessSetting.FinancialYearStartMonth == 1)
+                                                {
+                                                    <option value="1" selected>January</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="1">January</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.FinancialYearStartMonth == 2)
+                                                {
+                                                    <option value="2" selected>February</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="2">February</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.FinancialYearStartMonth == 3)
+                                                {
+                                                    <option value="3" selected>March</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="3">March</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.FinancialYearStartMonth == 4)
+                                                {
+                                                    <option value="4" selected>April</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="4">April</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.FinancialYearStartMonth == 5)
+                                                {
+                                                    <option value="5" selected>May</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="5">May</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.FinancialYearStartMonth == 6)
+                                                {
+                                                    <option value="6" selected>June</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="6">June</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.FinancialYearStartMonth == 7)
+                                                {
+                                                    <option value="7" selected>July</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="7">July</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.FinancialYearStartMonth == 8)
+                                                {
+                                                    <option value="8" selected>August</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="8">August</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.FinancialYearStartMonth == 9)
+                                                {
+                                                    <option value="9" selected>September</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="9">September</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.FinancialYearStartMonth == 10)
+                                                {
+                                                    <option value="10" selected>October</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="10">October</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.FinancialYearStartMonth == 11)
+                                                {
+                                                    <option value="11" selected>November</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="11">November</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.FinancialYearStartMonth == 12)
+                                                {
+                                                    <option value="12" selected>December</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="12">December</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                                @*<div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label>Transaction Edit Days<span class="danger">*</span> <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Number of days from Transaction Date till which a transaction can be edited."></i> </label>
+                                            <input type="number" class="form-control" id="ddlTransactionEditDays" placeholder="" value="@ViewBag.BusinessSetting.TransactionEditDays">
+                                        </div>
+                                    </div>*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Date Format</label>
+                                        <select class="form-control select2" style="width: 100%;" id="ddlDateFormat" value="@ViewBag.BusinessSetting.DateFormat">
+                                            @{
+                                                if (ViewBag.BusinessSetting.DateFormat == "dd-MM-yyyy")
+                                                {
+                                                    <option value="dd-MM-yyyy" selected>dd-mm-yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="dd-MM-yyyy">dd-mm-yyyy</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "MM-dd-yyyy")
+                                                {
+                                                    <option value="MM-dd-yyyy" selected>mm-dd-yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="MM-dd-yyyy">mm-dd-yyyy</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "yyyy-MM-dd")
+                                                {
+                                                    <option value="yyyy-MM-dd" selected>yyyy-mm-dd</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy-MM-dd">yyyy-mm-dd</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "yyyy-dd-MM")
+                                                {
+                                                    <option value="yyyy-dd-MM" selected>yyyy-dd-mm</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy-dd-MM">yyyy-dd-mm</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "yyyy-MM")
+                                                {
+                                                    <option value="yyyy-MM" selected>yyyy-mm</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy-MM">yyyy-mm</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "MM-yyyy")
+                                                {
+                                                    <option value="MM-yyyy" selected>mm-yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="MM-yyyy">mm-yyyy</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "dd/MM/yyyy")
+                                                {
+                                                    <option value="dd/MM/yyyy" selected>dd/mm/yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="dd/MM/yyyy">dd/mm/yyyy</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "MM/dd/yyyy")
+                                                {
+                                                    <option value="MM/dd/yyyy" selected>mm/dd/yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="MM/dd/yyyy">mm/dd/yyyy</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "yyyy/MM/dd")
+                                                {
+                                                    <option value="yyyy/MM/dd" selected>yyyy/mm/dd</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy/MM/dd">yyyy/mm/dd</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "yyyy/dd/MM")
+                                                {
+                                                    <option value="yyyy/dd/MM" selected>yyyy/dd/mm</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy/dd/MM">yyyy/dd/mm</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "yyyy/MM")
+                                                {
+                                                    <option value="yyyy/MM" selected>yyyy/mm</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy/MM">yyyy/mm</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "MM/yyyy")
+                                                {
+                                                    <option value="MM/yyyy" selected>mm/yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="MM/yyyy">mm/yyyy</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "dd MM yyyy")
+                                                {
+                                                    <option value="dd MM yyyy" selected>dd mm yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="dd MM yyyy">dd mm yyyy</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "MM dd yyyy")
+                                                {
+                                                    <option value="MM dd yyyy" selected>mm dd yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="MM dd yyyy">mm dd yyyy</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "yyyy MM dd")
+                                                {
+                                                    <option value="yyyy MM dd" selected>yyyy mm dd</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy MM dd">yyyy mm dd</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "yyyy dd MM")
+                                                {
+                                                    <option value="yyyy dd MM" selected>yyyy dd mm</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy dd MM">yyyy dd mm</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "yyyy MM")
+                                                {
+                                                    <option value="yyyy MM" selected>yyyy mm</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="yyyy MM">yyyy mm</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.DateFormat == "MM yyyy")
+                                                {
+                                                    <option value="MM yyyy" selected>mm yyyy</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="MM yyyy">mm yyyy</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Time Format</label>
+                                        <select class="form-control " style="width: 100%;" id="ddlTimeFormat" value="@ViewBag.BusinessSetting.TimeFormat">
+                                            @{
+                                                if (ViewBag.BusinessSetting.TimeFormat == "hh:mm tt")
+                                                {
+                                                    <option value="hh:mm tt" selected>12 Hour</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="hh:mm tt">12 Hour</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.TimeFormat == "HH:mm")
+                                                {
+                                                    <option value="HH:mm" selected>24 Hour</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="HH:mm">24 Hour</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                @*@if (ViewBag.BusinessRegistrationNames != null && ViewBag.BusinessRegistrationNames.Count > 0)
+                                    {*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <br>
+                                    <div class="form-group">
+                                        <div class="checkbox icheck-turquoise">
+                                            @if (ViewBag.BusinessSetting.IsBusinessRegistered == 1)
+                                            {
+                                                <input type="checkbox" id="chkIsBusinessRegistered" checked onchange="toggleBusinessRegistrationType()">
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" id="chkIsBusinessRegistered" onchange="toggleBusinessRegistrationType()">
+                                            }
+                                            <label for="chkIsBusinessRegistered" class="mt-2">
+                                                Is Business Registered?
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*}*@
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divBusinessRegistrationType" style="display:@(ViewBag.BusinessSetting.IsBusinessRegistered == 1 ? "" : "none")">
+                                    <div class="form-group">
+                                        <label>Business Registration Type</label>
+                                        <select class="form-control " style="width: 100%;" id="ddlBusinessRegistrationType" value="@ViewBag.BusinessSetting.BusinessRegistrationType">
+                                            @{
+                                                if (ViewBag.BusinessSetting.BusinessRegistrationType == "Regular")
+                                                {
+                                                    <option value="Regular" selected>Regular Scheme</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="Regular">Regular Scheme</option>
+                                                }
+                                                if (ViewBag.BusinessSetting.BusinessRegistrationType == "Composition")
+                                                {
+                                                    <option value="Composition" selected>Composition Scheme</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="Composition">Composition Scheme</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Upload Logo </label>
+                                        <div class="custom-file">
+                                            <input type="file" class="custom-file-input" id="ProfilePic" accept='.png,.jpg,.jpeg' onchange="getProfilePicBase64()">
+                                            <label class="custom-file-label" for="ProfilePic">Choose file</label>
+                                        </div>
+                                        <img id="blahProfilePic" src="@ViewBag.BusinessSetting.BusinessLogo" alt="" height="60" style="padding-top:10px;">
+                                    </div>
+                                </div>
+                                @*<div class="col-sm-4">
+                                        <br />
+                                        <div class="form-group">
+                                            <div class="checkbox icheck-turquoise">
+                                                @if (ViewBag.BusinessSetting.AllowOnlinePayment == true)
+                                                {
+                                                    <input type="checkbox" id="chkAllowOnlinePayment" checked>
+                                                }
+                                                else
+                                                {
+                                                    <input type="checkbox" id="chkAllowOnlinePayment">
+                                                }
+                                                <label for="chkAllowOnlinePayment" class="mt-2">Allow Online Payments</label>
+                                            </div>
+                                        </div>
+                                    </div>*@
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary float-right" onclick="businessInformationUpdate()"><i class="fas fa-edit"></i> Update</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I add and update product categories?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    •	To add a new product category, click on the ‘Add New’ button at the top of the screen
+                                    •	To update an existing product category, click on 'Edit' button beside the name of product category you want to change, make your changes and then click the ‘Save’ button at the bottom of the screen.
+                                    •	To delete an existing product category, tick the box that is to the left of the product category you would like to delete and then click the ‘Delete’ button at the top of the list.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I make a product category inactive?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    IMS allows you stop an entire product category from displaying in your catalogue, by marking it as inactive. This is sometimes better than deleting all those products since all the product information is retained but the products are not shown in the catalogue. To mark a product category as inactive, follow these steps:
+
+                                    •	Click on the name of the product category that you want to make active.
+                                    •	Change the status field from ‘Active’ to ‘Inactive’.
+                                    •	Click the ‘Save’ button at the bottom of the page.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/settings/OrganizationSettings/BusinessSettings.js"></script>
+
+<script>
+    $('#ddlBusinessType').val(@Html.Raw(Json.Encode(ViewBag.BusinessSetting.BusinessTypes)));
+</script>

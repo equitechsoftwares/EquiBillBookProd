@@ -1,0 +1,86 @@
+@model EquiBillBook.Models.ClsInvoiceTemplateLabelCategoryMaster
+
+@{
+    ViewBag.Title = "Edit Label Category";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var invoiceTemplateMasterId = ViewBag.InvoiceTemplateMasterId as long? ?? 0;
+    var templateName = ViewBag.TemplateName as string ?? $"Pre-defined Template #{invoiceTemplateMasterId}";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Label Category</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/admindashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/admintemplatemaster/index">Template Masters</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("LabelCategories", "AdminTemplateMaster", new { invoiceTemplateMasterId = invoiceTemplateMasterId })">Label Categories</a></li>
+                        <li class="breadcrumb-item active">Edit Category</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        @using (Html.BeginForm("EditLabelCategory", "AdminTemplateMaster", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.InvoiceTemplateLabelCategoryMasterId)
+            @Html.HiddenFor(m => m.InvoiceTemplateMasterId)
+
+            <div class="card card-primary card-outline">
+                <div class="card-body">
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.CategoryKey) <span class="text-danger">*</span>
+                        @Html.TextBoxFor(m => m.CategoryKey, new { @class = "form-control divCategoryKey_ctrl", id = "txtCategoryKey", placeholder = "e.g., Header, Company, Customer" })
+                        <small class="text-red font-weight-bold errorText" id="divCategoryKey"></small>
+                        <small class="form-text text-muted">Unique key identifier for the category (e.g., Header, Company, Customer)</small>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.CategoryName) <span class="text-danger">*</span>
+                        @Html.TextBoxFor(m => m.CategoryName, new { @class = "form-control divCategoryName_ctrl", id = "txtCategoryName", placeholder = "e.g., Header Section, Company Section" })
+                        <small class="text-red font-weight-bold errorText" id="divCategoryName"></small>
+                        <small class="form-text text-muted">Display name for the category</small>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Icon)
+                        @Html.TextBoxFor(m => m.Icon, new { @class = "form-control", id = "txtIcon", placeholder = "e.g., fas fa-heading, fas fa-building" })
+                        <small class="form-text text-muted">Font Awesome icon class (e.g., fas fa-heading, fas fa-building)</small>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Description)
+                        @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 3, id = "txtDescription", placeholder = "Optional description for this category" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.SortOrder)
+                        @Html.TextBoxFor(m => m.SortOrder, new { @class = "form-control", id = "txtSortOrder", type = "number" })
+                        <small class="form-text text-muted">Display order (lower numbers appear first)</small>
+                    </div>
+
+                    <div class="form-group form-check">
+                        <label class="form-check-label">
+                            @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
+                            Active
+                        </label>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button id="btnUpdate" type="submit" class="btn btn-primary float-right"><i class="fas fa-edit"></i> Update</button>
+                    <a href="@Url.Action("LabelCategories", "AdminTemplateMaster", new { invoiceTemplateMasterId = invoiceTemplateMasterId })" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Admin/AdminTemplateMaster.js"></script>
+

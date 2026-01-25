@@ -1,0 +1,126 @@
+﻿
+
+
+@{
+    var count = 1;
+    <thead id="thead">
+        <tr>
+            <th>Sln</th>
+            <th>Type</th>
+            <th>Code</th>
+            <th>Description</th>
+            <th>Intra State Tax</th>
+            <th>Inter State Tax</th>
+            <th class="hidden">Status</th>
+            <th class="hide">Status</th>
+            @*<th>Added By</th>
+            <th>Added On</th>
+            <th>Last Modified By</th>
+            <th>Last Modified On</th>*@
+            <th class="hide noPrint">Action</th>
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.ItemCodes)
+        {
+            <tr>
+                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1)+count)</td>
+                <td>@item.ItemCodeType</td>
+                <td>@item.Code</td>
+                <td>@item.Description</td>
+                <td>@item.IntraStateTax</td>
+                <td>@item.InterStateTax</td>
+                <td class="hidden">@(item.IsActive==true?"Active":"Inactive")</td>
+                <td class="hide">
+                    @if (item.IsActive)
+                    {
+                        if (ViewBag.MenuPermission.IsEdit)
+                        {
+                            <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.ItemCodeId,false)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                        else
+                        {
+                            <input disabled class="chkIsActive" type="checkbox" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                    }
+                    else
+                    {
+                        if (ViewBag.MenuPermission.IsEdit)
+                        {
+                            <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.ItemCodeId,true)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                        else
+                        {
+                            <input disabled class="chkIsActive" type="checkbox" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+
+                    }
+                </td>
+                @*<td>@item.AddedByCode</td>
+                <td>@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                <td>@item.ModifiedByCode</td>
+                <td>@(item.ModifiedOn != null ? item.ModifiedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1]) : "")</td>*@
+                <td class="hide noPrint">
+                    @if (ViewBag.MenuPermission.IsEdit)
+                    {
+                        <a href="/othersettings/ItemCodeedit?ItemCodeId=@item.ItemCodeId" class="btn btn-success btn-sm" id="Edit" data-toggle="tooltip" data-placement="bottom" title="Edit"> <i class="fas fa-edit"></i></a>
+                    }
+                    @if (ViewBag.MenuPermission.IsDelete)
+                    {
+                        <a href="javascript:void(0)" onclick="Delete(@item.ItemCodeId,'@Html.Raw(HttpUtility.JavaScriptStringEncode(item.Code))')" class="btn btn-danger btn-sm" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                    }
+                </td>
+            </tr>
+            count++;
+        }
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="9">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    $('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));
+</script>
+
+

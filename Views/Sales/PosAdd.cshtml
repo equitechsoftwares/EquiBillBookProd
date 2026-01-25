@@ -1,0 +1,1100 @@
+﻿
+
+@{
+    Layout = "";
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] | POS</title>
+    <link rel="shortcut icon" href="~/Content/web-assets/images/favicon.jpg" type="image/x-icon">
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="~/Content/plugins/fontawesome-free/css/all.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <!-- iCheck -->
+    <link rel="stylesheet" href="~/Content/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+    <!-- daterange picker -->
+    <link rel="stylesheet" href="~/Content/plugins/daterangepicker/daterangepicker.css">
+    <link href="~/Content/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
+    <!-- DataTables -->
+    <link rel="stylesheet" href="~/Content/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/Content/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/Content/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/scroller/2.0.5/css/scroller.bootstrap4.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="~/Content/plugins/select2/css/select2.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="~/Content/assets/css/adminlte.min.css">
+    <link href="~/Content/assets/css/admin.css" rel="stylesheet" />
+    <!-- Toastr -->
+    <link rel="stylesheet" href="~/Content/plugins/toastr/toastr.min.css">
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+    <!-- jQuery -->
+
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <!-- date-range-picker -->
+    <!-- DataTables  & Plugins -->
+    <script src="~/Content/plugins/datatables/jquery.dataTables.min.js"></script>
+
+    <link rel="stylesheet" href="~/Content/assets/css/pos.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.9/summernote-bs4.css" rel="stylesheet">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed @(Request.Cookies["SystemSetting"]["EnableDarkMode"] == "True" ? "dark-mode" : "")">
+    <div class="wrapper ">
+        <section class="p-2 header-section">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-12 col-md-3 text-center text-md-left">
+                        <h5 class="mb-2 mb-md-0 text-muted">
+                            @ViewBag.Name - @ViewBag.Branch
+                        </h5>
+                    </div>
+                    <div class="col-12 col-md-9 text-center text-md-right">
+                        <div class="d-flex flex-column flex-md-row justify-content-center justify-content-md-end align-items-center">
+                            <div class="col-12 col-sm-6 col-md-2 mb-2 mb-md-0" style="display: @(ViewBag.PosSetting.EnableTransactionDate == true?"block":"none")">
+                                <div class="form-group mb-0">
+                                    <div class="input-group date" id="_SalesDate" data-target-input="nearest">
+                                        <input id="txtSalesDate" type="text" class="form-control datetimepicker-input" data-target="#_SalesDate" />
+                                        <div class="input-group-append" data-target="#_SalesDate" data-toggle="datetimepicker">
+                                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input type="hidden" id="ddlBranch" value="@ViewBag.BranchId" />
+                            <input type="hidden" id="hdnStateId" value="@ViewBag.StateId" />
+
+                            @if (ViewBag.PosSetting.DontShowRecentTransactions == false)
+                            {
+                                <a style="margin: 0 5px;" href="javascript:void(0)" class="btn btn-outline-primary bg-purple" onclick="fetchSalesByUser()" id="btnRecentTransactions" title="Recent Transactions"><i class="fas fa-history"></i></a>
+                            }
+
+                            <a style="margin: 0 5px;" class="btn bg-warning btn-warning" data-toggle="dropdown" href="#" id="btnHoldList" title="Hold List">
+                                <i class="far fa-bell"></i>
+                                <span class="badge badge-light navbar-badge" id="HoldBadge">@ViewBag.HoldTotalCount</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-xl dropdown-menu-right">
+                                @*<span class="dropdown-item dropdown-header" id="HoldCount">@ViewBag.HoldTotalCount Orders On Hold</span>*@
+
+                                <span class="dropdown-item dropdown-header text-center font-weight-bold text-primary">Hold List</span>
+                                <div class="dropdown-divider"></div>
+                                <div id="divPartialPosHold">
+                                    @Html.Partial("PartialPosHoldList")
+                                </div>
+                                @*<a href="#" class="dropdown-item dropdown-footer">See All Hold List</a>*@
+                            </div>
+                            <a style="margin: 0 5px;" href="javascript:void(0)" class="btn btn-success" onclick="openCalculator()" id="btnCalculator" title="Calculator"><i class="fas fa-calculator"></i></a>
+                            <a style="margin: 0 5px;" href="javascript:void(0)" class="btn btn-primary" onclick="fetchCurrentRegister()" id="btnRegisterDetails" title="Register Details"><i class="fas fa-cash-register"></i></a>
+                            <a style="margin: 0 5px;" href="javascript:void(0)" class="btn btn-secondary" data-widget="control-sidebar" data-slide="true" role="button" title="Shortcut Keys"><i class="fa fa-keyboard"></i></a>
+                            <a style="margin: 0 5px;" href="/sales/index" class="btn btn-danger" id="btnPosExit" title="Exit"><i class="fas fa-sign-out-alt"></i></a>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content vh-90">
+            <div class="container-fluid h-100">
+                <div class="row h-100">
+                    <div class="col-md-6 h-100">
+                        <!-- jquery validation -->
+                        <div class="card card-primary card-outline">
+
+                            <div class="card-body">
+                                <div class="row" style="height:auto">
+                                    @{
+                                        bool showTable = ViewBag.PosSetting != null && ViewBag.PosSetting.EnableKot && ViewBag.PosSetting.EnableTableBooking;
+                                        bool showPlaceOfSupply = ViewBag.PosSetting != null && ViewBag.PosSetting.EnablePlaceOfSupply;
+                                        bool showSellingPriceGroup = ViewBag.PosSetting != null && ViewBag.PosSetting.EnableSellingPriceGroup;
+                                        
+                                        // Count visible optional fields (customer and search are always visible)
+                                        int optionalFieldsCount = 0;
+                                        if (showPlaceOfSupply) { optionalFieldsCount++; }
+                                        if (showSellingPriceGroup) { optionalFieldsCount++; }
+                                        if (showTable) { optionalFieldsCount++; }
+                                        
+                                        // Total visible fields = customer (1) + optional fields + search (1)
+                                        int totalVisibleFields = 1 + optionalFieldsCount + 1;
+                                        
+                                        // Calculate column sizes dynamically
+                                        int totalCols = 12;
+                                        int searchColSize;
+                                        int otherColSize;
+                                        
+                                        // Distribute columns based on number of visible fields
+                                        if (totalVisibleFields == 2) // Only customer and search
+                                        {
+                                            otherColSize = 3;
+                                            searchColSize = 9;
+                                        }
+                                        else if (totalVisibleFields == 3) // Customer + 1 optional + search
+                                        {
+                                            otherColSize = 3;
+                                            searchColSize = 6;
+                                        }
+                                        else if (totalVisibleFields == 4) // Customer + 2 optional + search
+                                        {
+                                            otherColSize = 2;
+                                            searchColSize = 6;
+                                        }
+                                        else // 5 fields: Customer + 3 optional + search
+                                        {
+                                            otherColSize = 2;
+                                            searchColSize = 4;
+                                        }
+                                        
+                                        // Assign column sizes
+                                        string customerCol = "col-md-" + otherColSize;
+                                        string placeOfSupplyCol = showPlaceOfSupply ? "col-md-" + otherColSize : "";
+                                        string sellingPriceGroupCol = showSellingPriceGroup ? "col-md-" + otherColSize : "";
+                                        string tableCol = showTable ? "col-md-" + otherColSize : "";
+                                        string searchCol = "col-md-" + searchColSize;
+                                    }
+                                    <div class="@customerCol col-12">
+                                        <div class="form-group">
+                                            <div class="input-group ddlCustomer">
+                                                <select class="form-control select2" id="ddlCustomer" onchange="FetchUserCurrency()">
+                                                    @*<option value="0">Select</option>*@
+                                                    @foreach (var item in ViewBag.Users)
+                                                    {
+                                                        <option value="@item.UserId">
+                                                            @item.Name
+                                                            @if (item.MobileNo != null && item.MobileNo != "")
+                                                            {
+                                                                <span>- @item.MobileNo</span>
+                                                            }
+                                                        </option>
+                                                    }
+                                                </select>
+                                                @if (ViewBag.CustomersPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" onclick="openCustomerModal()">+</a>
+                                                    </span>
+                                                }
+                                            </div>
+                                            @*<small class="text-red font-weight-bold" id="divCustomer"></small>*@
+                                        </div>
+                                    </div>
+                                    @if (showPlaceOfSupply)
+                                    {
+                                        <div class="@placeOfSupplyCol col-12 divPlaceOfSupply">
+                                            <!-- text input -->
+                                            <div class="form-group">
+                                                <div class="input-group divPlaceOfSupply_ctrl">
+                                                    <select class="form-control select2" id="ddlPlaceOfSupply" onchange="fetchUpdatedItems()">
+                                                        <option value="0">Select</option>
+                                                        @foreach (var item in ViewBag.PlacesOfSupply)
+                                                        {
+                                                            if (ViewBag.StateId == item.StateId)
+                                                            {
+                                                                <option value="@item.StateId" selected>@item.State</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.StateId">@item.State</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <small class="text-red font-weight-bold errorText" id="divPlaceOfSupply"></small>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (showSellingPriceGroup)
+                                    {
+                                        <div class="@sellingPriceGroupCol col-12">
+                                            <div class="form-group">
+                                                <div class="input-group">
+                                                    <select class="form-control select2" id="ddlSellingPriceGroup" onchange="changeSellingPriceGroup()">
+                                                        <option value="0">Default Selling Price</option>
+                                                        @foreach (var item in ViewBag.SellingPriceGroups)
+                                                        {
+                                                            <option value="@item.SellingPriceGroupId">@item.SellingPriceGroup</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (showTable)
+                                    {
+                                        <div class="@tableCol col-12" id="divTableSelection">
+                                            <div class="form-group">
+                                                <div class="input-group">
+                                                    <select class="form-control select2" id="ddlTableId" style="width: 100%;" onchange="onTableSelected()">
+                                                        <option value="0">Select Table</option>
+                                                    </select>
+                                                    <span class="input-group-append">
+                                                        <button type="button" class="btn btn-info" onclick="loadTables()" title="Refresh Tables"><i class="fas fa-sync-alt"></i></button>
+                                                    </span>
+                                                </div>
+                                                <small class="text-muted" id="divTableStatus"></small>
+                                                <small class="text-muted" id="divTableBooking" style="display:none;"></small>
+                                                <input type="hidden" id="hdnBookingId" value="0">
+                                                <input type="hidden" id="hdnKotId" value="0">
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="@searchCol col-12">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" placeholder="Sku Code/ Item Name" id="txttags" name="txttags">
+                                        </div>
+                                    </div>
+
+
+                                </div><!-- row end -->
+                                <div class="row" style="display:none">
+                                    <div class="col-sm-4 divCurrencyExchange">
+                                        <div class="form-group">
+                                            <label>Exchange Rate</label>
+                                            <div class="input-group">
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn bg-gray">1 <span class="lblCurrencySymbol"></span> = </a>
+                                                </span>
+                                                <input type="number" class="form-control" id="txtExchangeRate" placeholder="Conversion Rate"
+                                                       onkeypress="return onlyDecimalKey(event)" onchange="updateCurrencyExchange()" value="1">
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn bg-gray"><span class="lblDefaultCurrencySymbol"></span> </a>
+                                                </span>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divExchangeRate"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Payment Term</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlPaymentTerm_M" onchange="setDueDate()">
+                                                    @{
+                                                        foreach (var item in ViewBag.PaymentTerms)
+                                                        {
+                                                            if (item.IsDueUponReceipt == true)
+                                                            {
+                                                                <option value="@item.PaymentTermId" selected> @item.PaymentTerm </option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@item.PaymentTermId"> @item.PaymentTerm </option>
+                                                            }
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                        <div class="form-group">
+                                            <label>Due Date <span class="danger">*</span></label>
+                                            <div class="input-group date" id="_DueDate" data-target-input="nearest">
+                                                <input id="txtDueDate" value="" type="text" class="form-control datetimepicker-input divDueDate_ctrl" data-target="#_DueDate" />
+                                                <div class="input-group-append" data-target="#_DueDate" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divDueDate"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row flex-grow-1">
+                                    <div class="col-md-12 mt-3 mt-sm-0">
+                                        <div class="form-group h-100 d-flex flex-column table-container">
+                                            <div class="col-sm-12 flex-grow-1 table-responsive" style="border: 1px solid rgb(226 229 233); min-height: 0; height: calc(100vh - 135px) !important; max-height: calc(100vh - 143px) !important; overflow-y: auto !important; overflow-x: auto !important;">
+                                                <table class="table table-bordered table-striped dataTable no-footer" style="">
+                                                    <thead class="bg-secondary">
+                                                        <tr>
+                                                            <th width="35%">Item Name</th>
+                                                            <th width="40%">Qty</th>
+                                                            <th width="20%">Subtotal</th>
+                                                            <th width="5%" class="text-center">
+                                                                <i class="fa fa-times" onclick="deleteFullCombo()"></i>
+                                                                <input type="hidden" id="hdnSalePriceIsMinSellingPrice" value="@(ViewBag.PosSetting.SalePriceIsMinSellingPrice.ToString())" />
+                                                                <input type="hidden" id="hdnEnableLotNo" value="@(ViewBag.ItemSetting.EnableLotNo.ToString())" />
+                                                                <input type="hidden" id="hdnEnableItemExpiry" value="@(ViewBag.ItemSetting.EnableItemExpiry.ToString())" />
+                                                                <input type="hidden" id="hdnOnItemExpiry" value="@(ViewBag.ItemSetting.OnItemExpiry)" />
+                                                                <input type="hidden" id="hdnEnableFreeQuantity" value="@ViewBag.PosSetting.EnableFreeQuantity.ToString()" />
+                                                                <input type="hidden" id="hdnEnableSecondaryUnit" value="@(ViewBag.ItemSetting.EnableSecondaryUnit.ToString())" />
+                                                                <input type="hidden" id="hdnEnableWarranty" value="@ViewBag.ItemSetting.EnableWarranty.ToString()" />
+                                                                <input type="hidden" id="hdnEnableRoundOff" value="@ViewBag.PosSetting.EnableRoundOff.ToString()" />
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="divCombo" style="font-size: 16px;font-weight: bold;overflow: scroll;">
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <!-- footer code -->
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="@(ViewBag.PosSetting.DontShowProductSuggestion == true ? "hidden":"col-md-3") h-100">
+                        <!-- Financial Summary Card -->
+                        <div class="card card-primary card-outline">
+                            <div class="card-body h-100 product-grid-container pt-0">
+                                <div class="summary-content">
+                                    <!-- Additional Charges Section -->
+                                    <div class="charges-section mb-3 @(ViewBag.BusinessSetting.IsBusinessRegistered == 1
+&& ViewBag.BusinessRegistrationType == "Composition" ? "hidden" : "")">
+                                        <h6 class="text-muted mb-2">
+                                            <i class="fas fa-plus-circle mr-1"></i>Additional Charges
+                                        </h6>
+                                        <div id="divAdditionalCharges">
+                                        </div>
+                                    </div>
+
+                                    <!-- Reward Points Section -->
+                                    @if (ViewBag.RewardPointSetting != null && ViewBag.RewardPointSetting.EnableRewardPoint == true)
+                                    {
+                                        <div class="charges-section mb-3" id="divRewardPointsInputSection">
+                                            <h6 class="text-muted mb-2">
+                                                <i class="fas fa-star mr-1"></i>Reward Points
+                                                <span id="rewardPointsDisplayNameHeader">@(ViewBag.RewardPointSetting.DisplayName ?? "Points")</span>
+                                            </h6>
+                                            <div class="row">
+                                                <div class="col-12 mb-2">
+                                                    <label class="mb-0 text-sm">Available Points:</label>
+                                                    <input type="text" class="form-control form-control-sm" id="txtAvailablePoints" 
+                                                           style="background-color: #f8f9fa; font-weight: bold;" value="0" disabled>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="mb-0 text-sm">Redeem Points:</label>
+                                                    <input type="number" class="form-control form-control-sm" id="txtRedeemPoints"
+                                                           placeholder="Enter points to redeem"
+                                                           onchange="calculatePointsDiscount()"
+                                                           min="0">
+                                                    <small class="text-muted" id="pointsDiscountInfo"></small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <!-- Amount Summary Section -->
+                                    <div class="amount-summary">
+                                        <h6 class="text-muted mb-2">
+                                            <i class="fas fa-receipt mr-1"></i>Amount Summary
+                                        </h6>
+                                        <div class="amount-list">
+                                            @*<div class="amount-item d-flex justify-content-between align-items-center py-1">
+                                                    <label class="mb-0 text-sm">Total Quantity:</label>
+                                                    <span class="text-bold tot_qty divTotalQty" id="divTotalQty">0</span>
+                                                </div>*@
+
+                                            <div class="amount-item d-flex justify-content-between align-items-center py-1">
+                                                <label class="mb-0 text-sm">Gross Amount:</label>
+                                                <span class="font-weight-bold text-dark" style="font-size: 16px;" id="divTotalAmount">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]0</span>
+                                                <input type="hidden" id="hdndivTotalAmount" />
+                                            </div>
+
+                                            @if (ViewBag.PosSetting.DisableDicount == false)
+                                            {
+                                                <div class="amount-item d-flex justify-content-between align-items-center py-1">
+                                                    <label class="mb-0 text-sm">
+                                                        Discount:
+                                                        <a href="javascript:void(0)" data-toggle="modal" data-target="#discount" class="ml-2 text-primary"> <i class="fa fa-edit"></i></a>
+                                                    </label>
+                                                    <span class="font-weight-bold text-danger" style="font-size: 16px;" id="divDiscount">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]0</span>
+                                                    <input type="hidden" id="hdndivDiscount" />
+                                                </div>
+                                            }
+
+                                            <div class="no_reversecharge" id="divTaxSummary">
+                                            </div>
+
+                                            @if (ViewBag.PosSetting.EnableSpecialDiscount == true)
+                                            {
+                                                <div class="amount-item d-flex justify-content-between align-items-center py-1">
+                                                    <label class="mb-0 text-sm">
+                                                        Special Discount:
+                                                        <a href="javascript:void(0)" data-toggle="modal" data-target="#specialDiscount" class="ml-2 text-primary"> <i class="fa fa-edit"></i></a>
+                                                    </label>
+                                                    <span class="font-weight-bold text-danger" style="font-size: 16px;" id="divSpecialDiscount">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]0</span>
+                                                    <input type="hidden" id="hdndivSpecialDiscount" />
+                                                </div>
+                                            }
+
+                                            @if (ViewBag.RewardPointSetting != null && ViewBag.RewardPointSetting.EnableRewardPoint == true)
+                                            {
+                                                <div class="amount-item d-flex justify-content-between align-items-center py-1" id="divRewardPointsSection">
+                                                    <label class="mb-0 text-sm">
+                                                        Points Discount(-):
+                                                    </label>
+                                                    <span class="font-weight-bold text-success" style="font-size: 16px;" id="divPointsDiscount">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]0</span>
+                                                    <input type="hidden" id="hdnRedeemPoints" value="0" />
+                                                </div>
+                                                <div class="amount-item d-flex justify-content-between align-items-center py-1" id="divPointsEarnedInfo" style="display: none;">
+                                                    <small class="text-muted">You'll earn <span id="pointsEarned">0</span> <span id="rewardPointsDisplayName">@(ViewBag.RewardPointSetting.DisplayName ?? "Points")</span> on this order</small>
+                                                </div>
+                                            }
+
+                                            <div class="amount-item d-flex justify-content-between align-items-center py-1">
+                                                <label class="mb-0 text-sm">Net Amount:</label>
+                                                <span class="font-weight-bold text-info" style="font-size: 16px;" id="divNetAmount">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]0</span>
+                                            </div>
+
+                                            @if (ViewBag.PosSetting.EnableRoundOff == true)
+                                            {
+                                                <div class="amount-item d-flex justify-content-between align-items-center py-1">
+                                                    <label class="mb-0 text-sm">Round Off:</label>
+                                                    <span class="font-weight-bold text-warning" style="font-size: 16px;" id="divRoundOff">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]0</span>
+                                                </div>
+                                            }
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card-footer">
+                                    <!-- Total Amount - Highlighted -->
+                                    <div class="amount-item d-flex justify-content-between align-items-center py-2 border-top border-primary mb-3">
+                                        <label class="mb-0 font-weight-bold text-primary" style="font-size: 18px;">TOTAL:</label>
+                                        <span class="font-weight-bold text-primary" style="font-size: 20px;margin-right:10px;" id="divGrandTotal">@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]0</span>
+                                    </div>
+                                    <div class="row d-flex flex-wrap" style="padding: 0 5px; gap: 5px;">
+                                        @{
+                                            if (ViewBag.PosSetting.DisableCreditSale == false)
+                                            {
+                                                <button onclick="insert('Due','')" type="button" id="btnCreditSale" name="" class="font-weight-bold btn btn-sm btn-outline-primary bg-purple" title="Hold Invoice [Ctrl+H]" style="height: 50px; width: calc(33.333% - 3.33px); margin-bottom: 5px;">
+                                                    <i class="fa fa-hand-paper-o" aria-hidden="true"></i>
+                                                    Credit Sale
+                                                </button>
+                                            }
+                                            if (ViewBag.PosSetting.DisableHold == false)
+                                            {
+                                                <button onclick="ValidateStock('Draft','','modal-hold')" type="button" id="btnHold" name="" class="font-weight-bold btn btn-sm btn-outline-primary bg-warning" title="Hold Invoice [Ctrl+H]" style="height: 50px; width: calc(33.333% - 3.33px); margin-bottom: 5px;">
+                                                    <i class="fa fa-hand-paper-o" aria-hidden="true"></i>
+                                                    Hold
+                                                </button>
+                                            }
+                                            if (ViewBag.PosSetting.DisableMultiplePay == false)
+                                            {
+                                                <button onclick="ValidateStock('Due','','modal-multiple')" type="button" id="btnMultiple" name="" class="font-weight-bold btn btn-sm btn-outline-primary bg-success show_payments_modal" title="Multiple Payments [Ctrl+M]" style="height: 50px; width: calc(33.333% - 3.33px); margin-bottom: 5px;">
+                                                    Pay
+                                                </button>
+                                            }
+                                            if (ViewBag.PosSetting.DisableExpressCheckout == false)
+                                            {
+                                                foreach (var item in ViewBag.PaymentTypes)
+                                                {
+                                                    if (item.IsAdvance == false)
+                                                    {
+                                                        if (item.IsPosShown == true)
+                                                        {
+                                                            <button onclick="insertDirect('Due',@item.PaymentTypeId)" type="button" id="btnPaymentType@(item.PaymentTypeId)" name="" class="font-weight-bold btn btn-sm btn-outline-primary bg-info ctrl_c" title="By Cash &amp; Save [Ctrl+C]" style="height: 50px; width: calc(33.333% - 3.33px); margin-bottom: 5px;">
+                                                                <i class="fa fa-money" aria-hidden="true"></i>
+                                                                @item.PaymentType
+                                                            </button>
+                                                        }
+                                                    }
+
+                                                }
+                                            }
+                                        }
+                                        <button onclick="cancel()" type="button" id="btnCancel" name="" class="font-weight-bold btn btn-sm btn-outline-danger bg-danger ctrl_a" title="Cancel & Create New[Ctrl+A]" style="height: 50px; width: calc(33.333% - 3.33px); margin-bottom: 5px;">
+                                            <i class="fa md-money" aria-hidden="true"></i>
+                                            New
+                                        </button>
+
+                                        <input type="hidden" value="@ViewBag.BusinessSetting.CountryId" id="hdnCountryId" />
+                                        <input type="hidden" id="hdnIsBusinessRegistered" value="@(ViewBag.BusinessSetting.IsBusinessRegistered)" />
+                                        <input type="hidden" id="hdnBusinessRegistrationType" value="@(ViewBag.BusinessSetting.BusinessRegistrationType)" />
+                                        <input type="hidden" id="hdnEnablePlaceOfSupply" value="@(ViewBag.PosSetting.EnablePlaceOfSupply.ToString())" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="@(ViewBag.PosSetting.DontShowProductSuggestion == true ? "hidden":"col-md-3") h-100">
+                        <!-- jquery validation -->
+                        <div class="card card-primary card-outline">
+                            <div class="card-body h-100 product-grid-container">
+
+                                <div class="row mb-3" style="height:auto;" id="divCategory_Brand">
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-primary btn-block" id="btnCategory" onclick="fetchActiveCategories()">
+                                            <i class="fas fa-th-large fa-sm"></i> Category
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-success btn-block" id="btnBrand" onclick="fetchActiveBrands()">
+                                            <i class="fas fa-tags fa-sm"></i> Brand
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-warning btn-block" id="btnReset" onclick="resetItemsPos()">
+                                            <i class="fas fa-undo fa-sm"></i> Reset
+                                        </button>
+                                    </div>
+                                </div><!-- row end -->
+
+                                <div class="flex-grow-1" style="min-height: 0; overflow-y: auto; overflow-x: hidden;">
+                                    <div class="row" id="divPartialItemsPos">
+                                        @Html.Partial("PartialItemsPos")
+                                    </div>
+                                    <div class="row" id="divPartialBrandsPos">
+                                        @Html.Partial("PartialBrandsPos")
+                                    </div>
+                                    <div class="row" id="divPartialCategoriesPos">
+                                        @Html.Partial("PartialCategoriesPos")
+                                    </div>
+                                    <div class="row" id="divPartialSubCategoriesPos">
+                                        @Html.Partial("PartialSubCategoriesPos")
+                                    </div>
+                                    <div class="row" id="divPartialSubSubCategoriesPos">
+                                        @Html.Partial("PartialSubSubCategoriesPos")
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        <!-- Control Sidebar -->
+        <aside class="control-sidebar control-sidebar-dark">
+            <!-- Control sidebar content goes here -->
+        </aside>
+        <!-- /.control-sidebar -->
+    </div>
+
+    <aside class="control-sidebar control-sidebar-light  @(Request.Cookies["SystemSetting"]["EnableDarkMode"] == "True" ? "control-sidebar-dark" : "control-sidebar-light")  divShortcutKeys" style="bottom: 57px; display: none; width:300px">
+        <div class="p-3 control-sidebar-content" style="height: 422px;">
+            <div class="widget-user-header">
+                <div class="row">
+                    <div class="col-md-8 col-sm-8 col-8">
+                        <h5 class="">Shortcut Keys</h5>
+                    </div>
+                    <div class="col-md-4 col-sm-4 col-4">
+                        <a class=" float-right pr-2" data-widget="control-sidebar" data-slide="true" href="#" role="button" title="Shortcut Keys">
+                            @*<i class="fas fa-th-large"></i>*@
+                            <i class="text-dark fa fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-sm-12 ">
+                    <ul class="nav flex-column tShortcutKeys">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- /.control-sidebar -->
+
+    <div id="modalContainer">
+        <!-- Modal will load here -->
+    </div>
+
+    <div class="modal fade" id="discount">
+        <div class="modal-dialog ">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"> Edit Discount</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+
+                        <div class="col-md-6">
+                            <div class="">
+                                <label for="payment_note_1">Discount On All</label>
+                                <input type="number" class="form-control" id="txtDiscAll" onchange="updateExtraDiscounts()">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="">
+                                <label for="payment_note_1">Discount Type</label>
+                                <select class="form-control" style="width: 100%;" id="ddlDiscAll" onchange="updateExtraDiscounts()">
+                                    <option value="Fixed">Fixed</option>
+                                    <option value="Percentage">Percentage</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
+    <div class="modal fade" id="specialDiscount">
+        <div class="modal-dialog ">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"> Edit Special Discount</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+
+                        <div class="col-md-6">
+                            <div class="">
+                                <label for="payment_note_1">Special Discount</label>
+                                <input type="number" class="form-control" id="txtSpecialDiscount" onchange="updateExtraDiscounts()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
+    <div class="modal fade" id="modal-multiple">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Payments</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        <!-- LEFT HAND -->
+                        <div class="col-md-8">
+                            <div>
+
+                                <div class="col-md-12" id="payments_div">
+                                    <div>
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-group text-success">
+                                                    <label>Unused Credits</label>
+                                                    <span id="txtAdvBalance">
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card card-solid bg-gray-light" id="divMultiplePayments1">
+                                        <div class="card-body">
+                                            <div style="display:block;text-align:right">
+                                                <a href="javascript:void(0)" class="btn btn-danger" onclick="deletePayment(0,1)" id="Delete" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="far fa-trash-alt"></i></a>
+                                            </div>
+                                            <div class="row">
+
+                                                <div class="col-md-3">
+                                                    <div class="">
+                                                        <label for="amount_1">Amount <span class="danger">*</span></label>
+                                                        <input type="number" class="form-control text-right payment" id="txtMultipleAmount1" name="amount_1" placeholder="" onchange="calculate_payments(1)">
+                                                        <span id="amount_1_msg" style="display:none" class="text-danger"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label>Payment Method <span class="danger">*</span></label>
+                                                        <select class="form-control select2" style="width: 100%;" id="ddlMultiplePaymentType1">
+                                                            @foreach (var item in ViewBag.PaymentTypes)
+                                                            {
+                                                                if (item.IsDefault == true)
+                                                                {
+                                                                    <option value="@item.PaymentTypeId" selected>@item.PaymentType</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@item.PaymentTypeId">@item.PaymentType</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-3 @(ViewBag.IsAccountsAddon == true ? "" : "hidden")">
+                                                    <div class="form-group">
+                                                        <label>Deposit To </label>
+                                                        <select class="form-control select2" style="width: 100%;" id="ddlAccount1">
+                                                            <option value="0">Select</option>
+                                                            @{
+                                                                if (ViewBag.AccountSubTypes != null)
+                                                                {
+                                                                    foreach (var item in ViewBag.AccountSubTypes)
+                                                                    {
+                                                                        if (item.Accounts.Count > 0)
+                                                                        {
+                                                                            <optgroup label="@item.DisplayAs">
+                                                                                @foreach (var inner in item.Accounts)
+                                                                                {
+                                                                                    if (inner.Type == "Petty Cash")
+                                                                                    {
+                                                                                        <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                                    }
+                                                                                }
+                                                                            </optgroup>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="">
+                                                        <label for="payment_note_1">Payment Note</label>
+                                                        <textarea style="height:37px" type="text" class="form-control" id="txtMultipleNotes1" name="payment_note_1" placeholder=""></textarea>
+                                                        <span id="payment_note_1_msg" style="display:none" class="text-danger"></span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="clearfix"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="row col-md-12 divChangeReturn hidden">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Change Return Payment Method <span class="danger">*</span></label>
+                                            <select class="form-control" style="width: 100%;" id="ddlChangeReturnPaymentType">
+                                                @foreach (var item in ViewBag.PaymentTypes)
+                                                {
+                                                    if (item.PaymentType != "Advance")
+                                                    {
+                                                        if (item.IsDefault == true)
+                                                        {
+                                                            <option value="@item.PaymentTypeId" selected>@item.PaymentType</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.PaymentTypeId">@item.PaymentType</option>
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 @(ViewBag.IsAccountsAddon == true ? "" : "hidden")">
+                                        <div class="form-group">
+                                            <label>Change Return Deposit To </label>
+                                            <select class="form-control select2" style="width: 100%;" id="ddlChangeReturnAccount">
+                                                <option value="0">Select</option>
+                                                @{
+                                                    if (ViewBag.AccountSubTypes != null)
+                                                    {
+                                                        foreach (var item in ViewBag.AccountSubTypes)
+                                                        {
+                                                            if (item.Accounts.Count > 0)
+                                                            {
+                                                                <optgroup label="@item.DisplayAs">
+                                                                    @foreach (var inner in item.Accounts)
+                                                                    {
+                                                                        if (inner.Type == "Petty Cash")
+                                                                        {
+                                                                            <option value="@inner.AccountId" selected>@inner.DisplayAs</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="@inner.AccountId">@inner.DisplayAs</option>
+                                                                        }
+                                                                    }
+                                                                </optgroup>
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="col-md-12">
+                                        <div class="col-md-12" style="display: block;">
+                                            <button type="button" class="btn btn-primary btn-block" id="add_payment_row" onclick="addNewPayment()">Add Payment Row</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- col-md-9 -->
+                        <!-- RIGHT HAND -->
+                        <div class="col-md-4">
+                            <div class="col-md-12">
+
+                                <div class="card card-solid">
+                                    <div class="card-body">
+                                        @*<div class="row ">
+                                                <div class="col-md-12 text-center btn-block bg-primary btn-lg rounded-0">
+                                                    <span class="col-md-6 text-right text-bold ">Total Items:</span>
+                                                    <span class="col-md-6 text-right text-bold  custom-font-size sales_div_tot_qty divTotalQty">1</span>
+                                                </div>
+                                            </div>*@
+
+                                        @*<div class="row ">
+                                                <div class="col-md-12 text-center btn-block bg-primary btn-lg rounded-0">
+                                                    <span class="col-md-6 text-right text-bold ">Total:</span>
+                                                    <span class="col-md-6 text-right text-bold  custom-font-size sales_div_tot_amt divTotalAmount">0</span>
+                                                </div>
+                                            </div>*@
+                                        <!--  -->
+                                        @*<div class="row ">
+                                                <div class="col-md-12 text-center btn-block bg-primary btn-lg rounded-0">
+                                                    <span class="col-md-6 text-right text-bold ">Discount(-):</span>
+                                                    <span class="col-md-6 text-right text-bold  custom-font-size sales_div_tot_discount divDiscount">0</span>
+                                                </div>
+                                            </div>*@
+                                        <!--  -->
+                                        <div class="row">
+                                            <div class="col-md-12 text-center btn-block bg-danger btn-lg rounded-0">
+                                                <span class="col-md-6 text-right text-bold ">Total Payable:</span>
+                                                <span class="col-md-6 text-right text-bold  custom-font-size sales_div_tot_payble divGrandTotal">0</span>
+                                            </div>
+                                        </div>
+                                        <!--  -->
+                                        <div class="row ">
+                                            <div class="col-md-12  text-center btn-block bg-primary btn-lg rounded-0">
+                                                <span class="col-md-6 text-right text-bold ">Total Paying:</span>
+                                                <span class="col-md-6 text-right text-bold custom-font-size TotalPaying" id="TotalPaying">0</span>
+                                            </div>
+                                        </div>
+                                        <!--  -->
+                                        <!--  -->
+                                        <!--  -->
+                                        <div class="row ">
+                                            <div class="col-md-12  text-center btn-block bg-warning btn-lg rounded-0">
+                                                <span class="col-md-6 text-right text-bold ">Change Return:</span>
+                                                <span class="col-md-6 text-right text-bold custom-font-size ChangeReturn" id="ChangeReturn">0</span>
+                                            </div>
+                                        </div>
+                                        <div class="row ">
+                                            <div class="col-md-12 text-center btn-block bg-primary btn-lg rounded-0">
+                                                <span class="col-md-6 text-right text-bold ">Balance:</span>
+                                                <span class="col-md-6 text-right text-bold  custom-font-size Balance" id="Balance">0</span>
+                                            </div>
+                                        </div>
+                                        <!--  -->
+
+                                    </div>
+                                    <!-- /.card-body -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="finalizePayment('Due','Multiple')" id="btnFinalise">Finalize Payment</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; z-index: 30001; opacity: 0.8;display:none">
+        <div class="overlay-wrapper">
+            <div class="overlay"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
+        </div>
+    </div>
+
+    <audio id="success"><source src="~/Content/Audio/success.mp3"></audio>
+    <audio id="error"><source src="~/Content/Audio/error.mp3"></audio>
+    <audio id="others"><source src="~/Content/Audio/other.mp3"></audio>
+    <!-- ./wrapper -->
+    <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+    @*<script>
+            $.widget.bridge('uibutton', $.ui.button)
+        </script>*@
+    <!-- Bootstrap 4 -->
+    <script src="~/Content/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/moment.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="~/Content/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <!-- Toastr -->
+    <script src="~/Content/plugins/toastr/toastr.min.js"></script>
+    <!-- Select2 -->
+    <script src="~/Content/plugins/select2/js/select2.full.min.js"></script>
+    <script src="~/Content/plugins/daterangepicker/daterangepicker.js"></script>
+    <script src="~/Content/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="~/Content/assets/js/adminlte.js"></script>
+    <!-- AdminLTE for demo purposes -->
+
+    <link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+          rel="stylesheet">
+    <script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+    @*<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>*@
+    <script src="~/Content/JQuery/Customer/Common/MouseTrap.min.js"></script>
+    <script>
+        var ViewBagRewardPointSetting = @Html.Raw(Json.Encode(ViewBag.RewardPointSetting));
+    </script>
+    <script src="~/Content/JQuery/Customer/Sales/Pos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.9/summernote-bs4.js"></script>
+    <!-- Dynamic responsive scrolling fix -->
+    <script>
+        setTimeout(function () {
+            //$("#divLoading").show();
+            $.ajax({
+                url: '/Sales/LoadPosModals',
+                datatype: "json",
+                data: {},
+                type: "post",
+                success: function (data) {
+                    $("#divLoading").hide();
+                    $("#modalContainer").html(data);
+
+                    $('#ddlPlaceOfSupply_M').val($('#hdnStateId').val());
+                    $('.select2').select2();
+                },
+                error: function (xhr) {
+                    $("#divLoading").hide();
+                }
+            });
+
+        }, 500);
+
+        $(document).ready(function () {
+            // Function to calculate optimal heights based on screen size
+            function calculateOptimalHeights() {
+                var screenHeight = $(window).height();
+                var screenWidth = $(window).width();
+                var isMobile = screenWidth <= 768;
+                var isTablet = screenWidth > 768 && screenWidth <= 1024;
+                var isDesktop = screenWidth > 1024;
+
+                var tableHeight, productGridHeight;
+
+                if (isMobile) {
+                    // Mobile: Use reasonable height that will show scrollbar
+                    tableHeight = Math.max(300, Math.min(400, screenHeight - 300));
+                    productGridHeight = Math.max(250, Math.min(350, screenHeight - 300));
+                } else if (isTablet) {
+                    // Tablet: Use reasonable height that will show scrollbar
+                    tableHeight = Math.max(350, Math.min(450, screenHeight - 250));
+                    productGridHeight = Math.max(300, Math.min(400, screenHeight - 250));
+                } else {
+                    // Desktop: Use fixed height that will show scrollbar with 8+ rows
+                    tableHeight = 400; // Fixed height to ensure scrolling with multiple rows
+                    productGridHeight = Math.max(350, Math.min(450, screenHeight - 250));
+                }
+
+                return {
+                    tableHeight: tableHeight,
+                    productGridHeight: productGridHeight,
+                    isMobile: isMobile,
+                    isTablet: isTablet,
+                    isDesktop: isDesktop
+                };
+            }
+
+            // Function to apply dynamic scrolling
+            function applyDynamicScrolling() {
+                var heights = calculateOptimalHeights();
+
+                // Apply to main items table - FORCE scrolling with full page height
+                $('.form-group.h-100 .table-responsive').each(function () {
+                    var $this = $(this);
+                    var tableHeight = Math.max(400, $(window).height() - 143);
+                    $this.css({
+                        'overflow-y': 'auto !important',
+                        'overflow-x': 'auto !important',
+                        'height': tableHeight + 'px !important',
+                        'max-height': tableHeight + 'px !important',
+                        'min-height': '300px !important',
+                        'flex': 'none !important'
+                    });
+                });
+
+                // Apply to product grid
+                $('.product-grid-container .flex-grow-1').each(function () {
+                    $(this).css({
+                        'overflow-y': 'auto',
+                        'overflow-x': 'hidden',
+                        'height': heights.productGridHeight + 'px',
+                        'min-height': '250px',
+                        'max-height': 'none'
+                    });
+                });
+
+                // Apply to all table-responsive elements (excluding product grid)
+                $('.table-responsive').each(function () {
+                    if (!$(this).closest('.product-grid-container').length) {
+                        var $this = $(this);
+                        var tableHeight = Math.max(400, $(window).height() - 143);
+                        $this.css({
+                            'overflow-y': 'auto !important',
+                            'overflow-x': 'auto !important',
+                            'height': tableHeight + 'px !important',
+                            'max-height': tableHeight + 'px !important',
+                            'min-height': '300px !important',
+                            'flex': 'none !important'
+                        });
+                    }
+                });
+            }
+
+            // Apply on page load
+            applyDynamicScrolling();
+
+            // Reapply on window resize
+            $(window).resize(function () {
+                clearTimeout(window.resizeTimeout);
+                window.resizeTimeout = setTimeout(applyDynamicScrolling, 250);
+            });
+
+            // Reapply after any dynamic content changes
+            setTimeout(applyDynamicScrolling, 1000);
+            setTimeout(applyDynamicScrolling, 3000);
+
+            // Also apply when new items are added (if there's an add function)
+            $(document).on('DOMNodeInserted', function () {
+                setTimeout(applyDynamicScrolling, 100);
+            });
+            
+            // Load tables if KOT is enabled
+            @if (ViewBag.PosSetting != null && ViewBag.PosSetting.EnableKot && ViewBag.PosSetting.EnableTableBooking)
+            {
+                <text>
+                setTimeout(function() {
+                    if ($('#ddlTableId').length > 0) {
+                        loadTables();
+                    }
+                }, 1000);
+                </text>
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

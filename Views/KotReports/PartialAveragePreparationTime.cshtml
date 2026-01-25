@@ -1,0 +1,153 @@
+@{
+    var kots = ViewBag.Kots as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var currentPageIndex = ViewBag.CurrentPageIndex ?? 1;
+    var pageCount = ViewBag.PageCount ?? 0;
+}
+
+@{
+    // Calculate preparation times
+    var prepTimeData = kots
+        .Where(k => k.OrderTime != null && k.ReadyTime != null)
+        .Select(k => {
+            var orderTime = (DateTime)k.OrderTime;
+            var readyTime = (DateTime?)k.ReadyTime;
+            var prepTime = readyTime.HasValue ? (readyTime.Value - orderTime).TotalMinutes : (double?)null;
+            return new {
+                Kot = k,
+                PrepTime = prepTime
+            };
+        })
+        .Where(d => d.PrepTime.HasValue)
+        .ToList();
+    
+    var avgPrepTime = prepTimeData.Count > 0 ? prepTimeData.Average(d => d.PrepTime.Value) : (double?)null;
+    var minPrepTime = prepTimeData.Count > 0 ? prepTimeData.Min(d => d.PrepTime.Value) : (double?)null;
+    var maxPrepTime = prepTimeData.Count > 0 ? prepTimeData.Max(d => d.PrepTime.Value) : (double?)null;
+}
+
+<div class="row mt-1">
+    <div class="col-md-12 mb-3">
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title">Summary Statistics</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-info"><i class="fas fa-clock"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Average Prep Time</span>
+                                <span class="info-box-number">@(avgPrepTime.HasValue ? Math.Round(avgPrepTime.Value, 1).ToString() + " min" : "N/A")</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-success"><i class="fas fa-arrow-down"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Minimum Prep Time</span>
+                                <span class="info-box-number">@(minPrepTime.HasValue ? Math.Round(minPrepTime.Value, 1).ToString() + " min" : "N/A")</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-danger"><i class="fas fa-arrow-up"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Maximum Prep Time</span>
+                                <span class="info-box-number">@(maxPrepTime.HasValue ? Math.Round(maxPrepTime.Value, 1).ToString() + " min" : "N/A")</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-warning"><i class="fas fa-list"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Total Orders</span>
+                                <span class="info-box-number">@prepTimeData.Count</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<thead id="thead">
+    <tr>
+        <th>KOT No</th>
+        <th>Order Time</th>
+        <th>Ready Time</th>
+        <th>Table</th>
+        <th>Preparation Time (min)</th>
+        <th>Status</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (prepTimeData.Count > 0)
+    {
+        foreach (var item in prepTimeData.OrderByDescending(d => d.PrepTime))
+        {
+            var kot = item.Kot;
+            var prepTime = item.PrepTime.Value;
+            var statusClass = prepTime <= 15 ? "success" : prepTime <= 30 ? "warning" : "danger";
+            
+            <tr>
+                <td><a href="/kot/details/@kot.KotId">@kot.KotNo</a></td>
+                <td>@(((DateTime)kot.OrderTime).ToString("dd/MM/yyyy HH:mm"))</td>
+                <td>@(((DateTime?)kot.ReadyTime).Value.ToString("dd/MM/yyyy HH:mm"))</td>
+                <td>@(kot.TableNo ?? "-")</td>
+                <td>
+                    <span class="badge badge-@statusClass">@Math.Round(prepTime, 1) min</span>
+                </td>
+                <td><span class="badge badge-info">@kot.OrderStatus</span></td>
+            </tr>
+        }
+    }
+</tbody>
+<tbody class="hide noPrint">
+    <tr></tr>
+    <tr>
+        <td colspan="6">
+            <div class="dataTables_info" id="tblAveragePreparationTime_info_custom" role="status" aria-live="polite">Showing @((currentPageIndex - 1) * pageSize + 1) to @(Math.Min(currentPageIndex * pageSize, totalCount)) of @totalCount entries</div>
+            @if (pageCount > 1)
+            {
+                int j = 0;
+                <div class="dataTables_paginate paging_simple_numbers" id="tblAveragePreparationTime_paginate_custom" style="float:right">
+                    <ul class="pagination">
+                        @if (currentPageIndex > 1)
+                        {
+                            <li class="paginate_button page-item previous" id="tblAveragePreparationTime_previous">
+                                <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblAveragePreparationTime" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                            </li>
+                            <li class="paginate_button page-item previous" id="tblAveragePreparationTime_previous">
+                                <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblAveragePreparationTime" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                            </li>
+                        }
+                        @for (int i = currentPageIndex; i <= pageCount; i++)
+                        {
+                            <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblAveragePreparationTime" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                            </li>
+                            if (j == 10)
+                            {
+                                i = pageCount + 1;
+                            }
+                            j++;
+                        }
+                        @if (currentPageIndex < pageCount)
+                        {
+                            <li class="paginate_button page-item next" id="tblAveragePreparationTime_next">
+                                <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblAveragePreparationTime" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </td>
+    </tr>
+</tbody>
+

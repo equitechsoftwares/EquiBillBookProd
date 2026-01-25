@@ -1,0 +1,442 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Add Sales Agent";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Sales Agent</h1>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/permission/salesagent" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Sales Agent Code <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                                        <input type="text" class="form-control" id="txtUsername" placeholder="">
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control" id="txtName" placeholder="">
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Mobile <span class="danger">*</span></label>
+                                        <div class="input-group">
+                                            @*<span class="input-group-append">
+                                                <a href="javascript:void(0)" class="btn bg-gray-light"> @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] </a>
+                                            </span>*@
+                                            <input type="text" class="form-control" id="txtMobileNo" placeholder="" 
+                                                   onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <input type="text" class="form-control" id="txtEmailId" placeholder="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Alternative Mobile</label>
+                                        <div class="input-group">
+                                            @*<span class="input-group-append">
+                                                <a href="javascript:void(0)" class="btn bg-gray-light"> @Request.Cookies["data"].Value.Split('&')[6].Split('=')[1] </a>
+                                            </span>*@
+                                            <input type="text" class="form-control" id="txtAltMobileNo" placeholder="" 
+                                                   onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Gender</label>
+                                        <select class="form-control select2" id="ddlGender">
+                                            <option id="Male">Male</option>
+                                            <option id="Female">Female</option>
+                                            <option id="Others">Others</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Date of Birth</label>
+                                        <input type="date" class="form-control" id="txtDOB">
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Joining Date</label>
+                                        <input type="date" class="form-control" id="txtJoiningDate">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Religion</label>
+                                        <select class="form-control select2" id="ddlReligion">
+                                            @foreach (var item in ViewBag.Religions)
+                                            {
+                                                <option id="@item.ReligionId">@item.ReligionName</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Commision Percent </label>
+                                        <input type="number" class="form-control" id="txtCommissionPercent" placeholder="">
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Password <span class="danger">*</span></label>
+                                        <input type="password" class="form-control" id="txtPassword" placeholder="">
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Confirm Password <span class="danger">*</span></label>
+                                        <input type="password" class="form-control" id="txtCPassword" placeholder="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                @if (ViewBag.Branchs.Count > 1)
+                                {
+                                    <div class="col-sm-3">
+                                        <div class="form-group">
+                                            <label>Business Location <span class="danger">*</span></label>
+                                            <select class="select2" data-placeholder="Select a State" style="width: 100%;" id="ddlBranch">
+                                                <option value="0">Select</option>
+                                                @foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    <option value="@item.BranchId">@item.Branch</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-sm-3 hidden">
+                                        <div class="form-group">
+                                            <label>Business Location <span class="danger">*</span></label>
+                                            <select class="select2" data-placeholder="Select a State" style="width: 100%;" id="ddlBranch">
+                                                @foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    <option value="@item.BranchId">@item.Branch</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Upload Image</label>
+                                        <div class="custom-file">
+                                            <input type="file" id="ProfilePic" class="custom-file-input" accept='image/*' onchange="getProfileBase64()">
+                                            <label class="custom-file-label" for="Logo">Choose file</label>
+                                        </div>
+                                        <img id="blah" alt="" height="60" style="padding-top:10px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card card-outline collapsed-card m-3">
+                            <div class="card-header  bg-info" data-card-widget="collapse" title="Expand/Collapse">
+                                <h3 class="card-title">More Info</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Address</label>
+                                            <textarea class="form-control" id="txtAddress" rows="2" placeholder=""></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Country</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlCountry" onchange="fetchActiveStates('')">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.Countrys)
+                                                    {
+                                                        <option value="@item.CountryId">@item.Country</option>
+                                                    }
+                                                </select>
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn btn-info" onclick="openCountryModal('ddlCountry')">+ </a>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3" id="p_States_Dropdown">
+                                        @Html.Partial("PartialStatesDropdown")
+                                    </div>
+                                    <div class="col-sm-3" id="p_Citys_Dropdown">
+                                        @Html.Partial("PartialCitysDropdown")
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Pincode</label>
+                                            <input type="text" class="form-control" id="txtZipcode" placeholder="">
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr />
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Alternative Address</label>
+                                            <textarea class="form-control" id="txtAltAddress" rows="2" placeholder=""></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Country</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlAltCountry" onchange="fetchActiveStates('alt')">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.Countrys)
+                                                    {
+                                                        <option value="@item.CountryId">@item.Country</option>
+                                                    }
+                                                </select>
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn btn-info" onclick="openCountryModal('ddlAltCountry')">+ </a>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3" id="p_Alt_States_Dropdown">
+                                        @Html.Partial("PartialAltStatesDropdown")
+                                    </div>
+                                    <div class="col-sm-3" id="p_Alt_Citys_Dropdown">
+                                        @Html.Partial("PartialAltCitysDropdown")
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Pincode</label>
+                                            <input type="text" class="form-control" id="txtAltZipcode" placeholder="">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary float-right" onclick="insert()">Submit</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="countryModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Country</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Country Code <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                            <input type="text" class="form-control" id="txtCountryCode" placeholder="">
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Country Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control" id="txtCountry" placeholder="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertCountry()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="stateModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add State</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    @*<div class="col-sm-4">
+                        <div class="form-group">
+                            <label>State Code <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                            <input type="text" class="form-control" id="txtStateCode" placeholder="">
+                        </div>
+                    </div>*@
+                    <div class="col-sm-4">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Country <span class="danger">*</span></label>
+                            <div class="input-group">
+                                <select class="form-control select2" style="width: 100%;" id="ddlNewCountry">
+                                    @foreach (var item in ViewBag.Countrys)
+                                    {
+                                        <option value="@item.CountryId">@item.Country</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label>State Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control" id="txtState" placeholder="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertState()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="cityModal">
+    <div class="modal-dialog modal-l">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add City</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    @*<div class="col-sm-6">
+                        <div class="form-group">
+                            <label>City Code <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i></label>
+                            <input type="text" class="form-control" id="txtCityCode" placeholder="">
+                        </div>
+                    </div>*@
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Country <span class="danger">*</span></label>
+                            <div class="input-group">
+                                <select class="form-control select2" style="width: 100%;" id="ddlCityModalCountry" onchange="fetchCityModalActiveStates()">
+                                    <option value="0">Select</option>
+                                    @foreach (var item in ViewBag.Countrys)
+                                    {
+                                        <option value="@item.CountryId">@item.Country</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6" id="p_CityModalStates_Dropdown">
+                        <label>State <span class="danger">*</span></label>
+                        <select class="form-control select2" id="ddlCityModalState" style="width: 100%;">
+                        </select>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>City Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control" id="txtCity" placeholder="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertCity()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+      rel="stylesheet">
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+
+<script src="~/Content/JQuery/salesagent.js"></script>

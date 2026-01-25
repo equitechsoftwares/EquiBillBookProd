@@ -1,0 +1,155 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Table Status";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Table Status Dashboard</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/restauranttable/index">Restaurant Tables</a></li>
+                        <li class="breadcrumb-item active">Table Status</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <a id="btnBack" href="/restauranttable/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                <button type="button" class="btn btn-primary float-sm-right mr-2" onclick="loadTableStatus()" title="Refresh">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card card-primary card-outline collapsed-card">
+                    <div class="card-header" data-card-widget="collapse" title="Collapse">
+                        <h3 class="card-title">Filters</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                <div class="form-group">
+                                    <label>Floor</label>
+                                    <select class="form-control select2" style="width: 100%;" id="ddlFloor">
+                                        <option value="0">All Floors</option>
+                                        @if (ViewBag.Floors != null)
+                                        {
+                                            foreach (var floor in ViewBag.Floors)
+                                            {
+                                                <option value="@floor.FloorId">@floor.FloorName</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row text-center" id="statusSummary">
+                            <div class="col-md col-6 mb-2">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info"><i class="fas fa-table"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total</span>
+                                        <span class="info-box-number" id="totalCount">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md col-6 mb-2">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-check-circle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Available</span>
+                                        <span class="info-box-number" id="availableCount">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md col-6 mb-2">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger"><i class="fas fa-users"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Occupied</span>
+                                        <span class="info-box-number" id="occupiedCount">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md col-6 mb-2">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-clock"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Reserved</span>
+                                        <span class="info-box-number" id="reservedCount">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md col-6 mb-2">
+                                <div class="info-box">
+                                    <span class="info-box-icon" style="background-color: #6f42c1;"><i class="fas fa-calendar-check"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Booked</span>
+                                        <span class="info-box-number" id="bookedCount">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md col-6 mb-2">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-secondary"><i class="fas fa-tools"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Maintenance</span>
+                                        <span class="info-box-number" id="maintenanceCount">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="tableStatusCards">
+            <!-- Table status cards will be rendered here dynamically -->
+        </div>
+    </div>
+</section>
+
+<link href="~/Content/assets/css/table-status-cards.css" rel="stylesheet" />
+
+<script src="~/Content/JQuery/Customer/Restaurant/RestaurantTable.js"></script>
+<script>
+    $(document).ready(function () {
+        // Initialize Select2 for floor dropdown
+        $('#ddlFloor').select2({
+            placeholder: 'Select Floor',
+            allowClear: true
+        });
+        
+        // Refresh table status when floor filter changes
+        $('#ddlFloor').on('change', function () {
+            loadTableStatus();
+        });
+        
+        loadTableStatus();
+    });
+</script>
+
+

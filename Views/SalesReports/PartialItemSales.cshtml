@@ -1,0 +1,793 @@
+﻿
+
+@{
+    var Count = 1;
+
+    if (ViewBag.Type == "Detailed")
+    {
+        <div id="Detailed" class="tab-pane fade show active" role="tabpanel" aria-labelledby="custom-tabs-four-home-tab">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped tblData" id="tblData">
+                    <thead id="thead" class="thead">
+                        <tr>
+                            <th>Sln</th>
+                            <th>Item</th>
+                            <th>SKU</th>
+                            <th>Customer Name</th>
+                            @*<th>Email Id</th>*@
+                            <th>Customer Mobile No</th>
+                            <th>Invoice No</th>
+                            <th>Date</th>
+                            <th>Quantity</th>
+                            <th>Unit Cost</th>
+                            @*<th>Discount</th>*@
+                            <th>Tax</th>
+                            <th>Price Inc. Tax</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyid" class="table-body">
+                        @foreach (var item in ViewBag.SalesDetails)
+                        {
+
+                            <tr>
+                                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + Count)</td>
+                                <td>
+                                    @if (ViewBag.ItemsPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewItem(@item.ItemId)">
+                                            @item.ItemName
+                                            @if (item.VariationName != null)
+                                            {
+                                                <br /><span> Variation: @item.VariationName</span>
+                                            }
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        @item.ItemName
+                                        if (item.VariationName != null)
+                                        {
+                                            <br /><span> Variation: @item.VariationName</span>
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @if (ViewBag.ItemsPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewItem(@item.ItemId)">@item.SKU</a>
+                                    }
+                                    else
+                                    {
+                                        @item.SKU
+                                    }
+                                </td>
+                                <td>
+                                    @if (ViewBag.CustomersPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewCustomer(@item.CustomerId)">@item.Name</a>
+                                    }
+                                    else
+                                    {
+                                        @item.Name
+                                    }
+                                </td>
+                                @*<td>@item.EmailId</td>*@
+                                <td>
+                                    @if (ViewBag.CustomersPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewCustomer(@item.CustomerId)">@item.MobileNo</a>
+                                    }
+                                    else
+                                    {
+                                        @item.MobileNo
+                                    }
+                                </td>
+                                <td>
+                                    @if (ViewBag.SalesPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewSale(@item.SalesId)">@item.InvoiceNo</a>
+                                    }
+                                    else
+                                    {
+                                        @item.InvoiceNo
+                                    }
+                                </td>
+                                <td>@item.SalesDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                                <td>
+                                    @*@(String.Format("{0:0.##}", item.Quantity))*@
+                                    @if (Math.Round(item.Quantity) > 0)
+                                    {
+                                        @(String.Format("{0:0.##}", item.Quantity)) @item.UnitName
+                                    }
+                                    else
+                                    {
+                                        @(String.Format("{0:0.####}", item.Quantity)) @item.UnitName
+                                    }
+                                    @*@if (item.FreeQuantity != 0)
+        {
+            <span> + @(String.Format("{0:0.##}", item.FreeQuantity))</span>
+        }*@
+                                </td>
+                                <td>
+                                    @{
+                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                        {
+                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.PriceExcTax))
+                                        }
+                                        else
+                                        {
+                                            @(String.Format("{0:0.##}", item.PriceExcTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                        }
+                                    }
+                                </td>
+                                @*<td>
+                                    @{
+                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                        {
+                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.Discount))
+                                        }
+                                        else
+                                        {
+                                            @(String.Format("{0:0.##}", item.Discount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                        }
+                                    }
+                                </td>*@
+                                <td>
+                                    @{
+                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                        {
+                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.TaxAmount))
+                                        }
+                                        else
+                                        {
+                                            @(String.Format("{0:0.##}", item.TaxAmount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                        }
+                                    }
+                                    @if (item.TaxPercent != 0)
+                                    {
+                                        <br /> <span>(@item.Tax@@@item.TaxPercent%)</span>
+                                    }
+
+                                </td>
+                                <td>
+                                    @{
+                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                        {
+                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.PriceIncTax))
+                                        }
+                                        else
+                                        {
+                                            @(String.Format("{0:0.##}", item.PriceIncTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                        {
+                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.AmountIncTax))
+                                        }
+                                        else
+                                        {
+                                            @(String.Format("{0:0.##}", item.AmountIncTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                        }
+                                    }
+                                </td>
+
+                            </tr>
+                            Count++;
+                        }
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <td colspan="8" data-title="Total" class="text-right"><b>Total</b></td>
+                            @*<td>
+                                    @(String.Format("{0:0.##}", ViewBag.TotalQuantity))
+                                    @if (ViewBag.TotalFreeQuantity != 0)
+                                    {
+                                        <span> + @(String.Format("{0:0.##}", ViewBag.TotalFreeQuantity))</span>
+                                    }
+                                </td>*@
+                            <td data-title="Due Amount">
+                                @{
+                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                    {
+                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalPriceExcTax))
+                                    }
+                                    else
+                                    {
+                                        @(String.Format("{0:0.##}", ViewBag.TotalPriceExcTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                    }
+                                }
+                            </td>
+                            @*<td data-title="Due Amount">
+                                @{
+                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                    {
+                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalDiscount))
+                                    }
+                                    else
+                                    {
+                                        @(String.Format("{0:0.##}", ViewBag.TotalDiscount))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                    }
+                                }
+                            </td>*@
+                            <td data-title="Due Amount">
+                                @{
+                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                    {
+                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalTaxPercent))
+                                    }
+                                    else
+                                    {
+                                        @(String.Format("{0:0.##}", ViewBag.TotalTaxPercent))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                    }
+                                }
+                            </td>
+                            <td data-title="Due Amount">
+                                @{
+                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                    {
+                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalPriceIncTax))
+                                    }
+                                    else
+                                    {
+                                        @(String.Format("{0:0.##}", ViewBag.TotalPriceIncTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                    }
+                                }
+                            </td>
+                            <td data-title="Due Amount">
+                                @{
+                                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                    {
+                                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalAmountIncTax))
+                                    }
+                                    else
+                                    {
+                                        @(String.Format("{0:0.##}", ViewBag.TotalAmountIncTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody class="hide noPrint">
+                        <tr></tr>
+                        <tr>
+                            <td colspan="13">
+                                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                                @if (ViewBag.PageCount > 1)
+                                {
+                                    int j = 0;
+                                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                                        <ul class="pagination">
+                                            @if (ViewBag.CurrentPageIndex > 1)
+                                            {
+                                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                                </li>
+                                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                                </li>
+                                            }
+                                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                                            {
+                                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                                </li>
+                                                if (j == 10)
+                                                {
+                                                    i = ViewBag.PageCount + 1;
+                                                }
+                                                j++;
+                                            }
+                                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                                            {
+                                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else if (ViewBag.Type == "DetailedWithPurchase")
+    {
+        <div id="DetailedWithPurchase" class="tab-pane fade show active" role="tabpanel" aria-labelledby="custom-tabs-four-home-tab">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped tblData" id="tblData">
+                    <thead id="thead" class="thead">
+                        <tr>
+                            <th>Sln</th>
+                            <th>Item</th>
+                            <th>SKU</th>
+                            <th>Customer Name</th>
+                            <th>Customer Mobile No</th>
+                            <th>Invoice No</th>
+                            <th>Date</th>
+                            <th>Purchase ref. No</th>
+                            <th>Supplier Name</th>
+                            <th>Supplier Mobile No</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyid" class="table-body">
+                        @foreach (var item in ViewBag.SalesDetails)
+                        {
+
+                            <tr>
+                                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + Count)</td>
+                                <td>
+                                    @if (ViewBag.ItemsPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewItem(@item.ItemId)">
+                                            @item.ItemName
+                                            @if (item.VariationName != null)
+                                            {
+                                                <br /><span> Variation: @item.VariationName</span>
+                                            }
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        @item.ItemName
+                                        if (item.VariationName != null)
+                                        {
+                                            <br /><span> Variation: @item.VariationName</span>
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @if (ViewBag.ItemsPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewItem(@item.ItemId)">@item.SKU</a>
+                                    }
+                                    else
+                                    {
+                                        @item.SKU
+                                    }
+                                </td>
+                                <td>
+                                    @if (ViewBag.CustomersPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewCustomer(@item.CustomerId)">@item.CustomerName</a>
+                                    }
+                                    else
+                                    {
+                                        @item.CustomerName
+                                    }
+                                </td>
+                                <td>
+                                    @if (ViewBag.CustomersPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewCustomer(@item.CustomerId)">@item.CustomerMobileNo</a>
+                                    }
+                                    else
+                                    {
+                                        @item.CustomerMobileNo
+                                    }
+                                </td>
+                                <td>
+                                    @if (ViewBag.SalesPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewSale(@item.SalesId)">@item.InvoiceNo</a>
+                                    }
+                                </td>
+                                <td>@item.SalesDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                                <td>
+                                    @if (item.Type == "Purchase")
+                                    {
+                                        if (ViewBag.PurchasePermission.IsView)
+                                        {
+                                            <a href="javascript:void(0)" onclick="ViewPurchase(@item.PurchaseId)">@item.PurchaseInvoiceNo</a>
+                                        }
+                                        else
+                                        {
+                                            @item.PurchaseInvoiceNo
+                                        }
+                                    }
+                                    else if (item.Type == "Stock Transfer")
+                                    {
+                                        if (ViewBag.StockTransferPermission.IsView)
+                                        {
+                                            <a href="javascript:void(0)" onclick="ViewStockTransfer(@item.PurchaseId)">@item.PurchaseInvoiceNo</a>
+                                        }
+                                        else
+                                        {
+                                            @item.PurchaseInvoiceNo
+                                        }
+                                    }
+                                    else
+                                    {
+                                        @item.PurchaseInvoiceNo
+                                    }
+
+                                </td>
+                                <td>
+                                    @if (ViewBag.SuppliersPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewSupplier(@item.SupplierId)">@item.SupplierName</a>
+                                    }
+                                    else
+                                    {
+                                        @item.SupplierName
+                                    }
+                                </td>
+                                <td>
+                                    @if (ViewBag.SuppliersPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewSupplier(@item.SupplierId)">@item.SupplierMobileNo</a>
+                                    }
+                                    else
+                                    {
+                                        @item.SupplierMobileNo
+                                    }
+                                </td>
+                                <td>
+                                    @(String.Format("{0:0.##}", item.Quantity))
+                                    @*@if (item.FreeQuantity != 0)
+                                        {
+                                            <span> + @(String.Format("{0:0.##}", item.FreeQuantity))</span>
+                                        }*@
+                                    @item.UnitName
+                                </td>
+                            </tr>
+                            Count++;
+                        }
+                    </tbody>
+                    @*<tbody>
+                            <tr>
+                                <td colspan="10" data-title="Total" class="text-right"><b>Total</b></td>
+                                <td>
+                                    @(String.Format("{0:0.##}", ViewBag.TotalQuantity))
+                                    @if (ViewBag.TotalFreeQuantity != 0)
+                                    {
+                                        <span> + @(String.Format("{0:0.##}", ViewBag.TotalFreeQuantity))</span>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>*@
+                    <tbody class="hide noPrint">
+                        <tr></tr>
+                        <tr>
+                            <td colspan="11">
+                                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                                @if (ViewBag.PageCount > 1)
+                                {
+                                    int j = 0;
+                                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                                        <ul class="pagination">
+                                            @if (ViewBag.CurrentPageIndex > 1)
+                                            {
+                                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                                </li>
+                                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                                </li>
+                                            }
+                                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                                            {
+                                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                                </li>
+                                                if (j == 10)
+                                                {
+                                                    i = ViewBag.PageCount + 1;
+                                                }
+                                                j++;
+                                            }
+                                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                                            {
+                                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else if (ViewBag.Type == "Item")
+    {
+        <div id="Item" class="tab-pane fade show active" role="tabpanel" aria-labelledby="custom-tabs-four-home-tab">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped tblData" id="tblData">
+                    <thead id="thead" class="thead">
+                        <tr>
+                            <th>Sln</th>
+                            <th>Item</th>
+                            <th>Current stock</th>
+                            <th>Total Unit Sold</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyid" class="table-body">
+                        @foreach (var item in ViewBag.SalesDetails)
+                        {
+
+                            <tr>
+                                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + Count)</td>
+                                <td>
+                                    @if (ViewBag.ItemsPermission.IsView)
+                                    {
+                                        <a href="javascript:void(0)" onclick="ViewItem(@item.ItemId)">
+                                            @item.Name
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        @item.Name
+                                    }
+                                </td>
+                                @*<td><a href="javascript:void(0)" onclick="ViewItem(@item.ItemId)">@item.SKU</a></td>*@
+                                <td>
+                                    @(String.Format("{0:0.##}", item.QuantityRemaining)) @item.UnitName
+                                </td>
+                                <td>
+                                    @(String.Format("{0:0.##}", item.Quantity)) @item.UnitName
+                                </td>
+                                <td>
+                                    @{
+                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                        {
+                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.AmountIncTax))
+                                        }
+                                        else
+                                        {
+                                            @(String.Format("{0:0.##}", item.AmountIncTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                            Count++;
+                        }
+                    </tbody>
+                    <tbody class="hide noPrint">
+                        <tr></tr>
+                        <tr>
+                            <td colspan="7">
+                                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                                @if (ViewBag.PageCount > 1)
+                                {
+                                    int j = 0;
+                                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                                        <ul class="pagination">
+                                            @if (ViewBag.CurrentPageIndex > 1)
+                                            {
+                                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                                </li>
+                                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                                </li>
+                                            }
+                                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                                            {
+                                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                                </li>
+                                                if (j == 10)
+                                                {
+                                                    i = ViewBag.PageCount + 1;
+                                                }
+                                                j++;
+                                            }
+                                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                                            {
+                                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else if (ViewBag.Type == "Category")
+    {
+        <div id="Category" class="tab-pane fade show active" role="tabpanel" aria-labelledby="custom-tabs-four-home-tab">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped tblData" id="tblData">
+                    <thead id="thead" class="thead">
+                        <tr>
+                            <th>Sln</th>
+                            <th>Category</th>
+                            <th>Current stock</th>
+                            <th>Total Unit Sold</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyid" class="table-body">
+                        @foreach (var item in ViewBag.SalesDetails)
+                        {
+
+                            <tr>
+                                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + Count)</td>
+
+                                <td>
+                                    @item.Name
+
+                                </td>
+                                <td>
+                                    @(String.Format("{0:0.##}", item.QuantityRemaining)) @item.UnitName
+                                </td>
+                                <td>@(String.Format("{0:0.##}", item.Quantity)) @item.UnitName</td>
+                                <td>
+                                    @{
+                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                        {
+                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.AmountIncTax))
+                                        }
+                                        else
+                                        {
+                                            @(String.Format("{0:0.##}", item.AmountIncTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                            Count++;
+                        }
+                    </tbody>
+                    <tbody class="hide noPrint">
+                        <tr></tr>
+                        <tr>
+                            <td colspan="7">
+                                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                                @if (ViewBag.PageCount > 1)
+                                {
+                                    int j = 0;
+                                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                                        <ul class="pagination">
+                                            @if (ViewBag.CurrentPageIndex > 1)
+                                            {
+                                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                                </li>
+                                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                                </li>
+                                            }
+                                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                                            {
+                                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                                </li>
+                                                if (j == 10)
+                                                {
+                                                    i = ViewBag.PageCount + 1;
+                                                }
+                                                j++;
+                                            }
+                                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                                            {
+                                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else if (ViewBag.Type == "Brand")
+    {
+        <div id="Brand" class="tab-pane fade show active" role="tabpanel" aria-labelledby="custom-tabs-four-home-tab">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped tblData" id="tblData">
+                    <thead id="thead" class="thead">
+                        <tr>
+                            <th>Sln</th>
+                            <th>Brand</th>
+                            <th>Current stock</th>
+                            <th>Total Unit Sold</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyid" class="table-body">
+                        @foreach (var item in ViewBag.SalesDetails)
+                        {
+
+                            <tr>
+                                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + Count)</td>
+
+                                <td>
+                                    @item.ItemName
+                                </td>
+                                <td>
+                                    @(String.Format("{0:0.##}", item.QuantityRemaining)) @item.UnitName
+                                </td>
+                                <td>@(String.Format("{0:0.##}", item.Quantity)) @item.UnitName</td>
+                                <td>
+                                    @{
+                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                        {
+                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.AmountIncTax))
+                                        }
+                                        else
+                                        {
+                                            @(String.Format("{0:0.##}", item.AmountIncTax))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                            Count++;
+                        }
+                    </tbody>
+                    <tbody class="hide noPrint">
+                        <tr></tr>
+                        <tr>
+                            <td colspan="7">
+                                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1)+1) to @(ViewBag.PageSize* ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                                @if (ViewBag.PageCount > 1)
+                                {
+                                    int j = 0;
+                                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                                        <ul class="pagination">
+                                            @if (ViewBag.CurrentPageIndex > 1)
+                                            {
+                                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                                </li>
+                                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                                </li>
+                                            }
+                                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                                            {
+                                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                                </li>
+                                                if (j == 10)
+                                                {
+                                                    i = ViewBag.PageCount + 1;
+                                                }
+                                                j++;
+                                            }
+                                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                                            {
+                                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}
+<script type="text/javascript">
+    $('#divAsof').text('Showing Results: (' + @Html.Raw(Json.Encode(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    @*$('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));*@
+</script>
+
+
+

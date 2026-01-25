@@ -1,0 +1,1472 @@
+﻿
+<div class="modal-header">
+    <h4 class="modal-title">@ViewBag.Item.ItemType Details</h4>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body">
+    <div class="card card-primary card-outline">
+        <!-- form start -->
+        <div id="quickForm">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                        <div class="form-group">
+                            <label>Item Type </label>
+                            <div class="input-group">
+                                @if (ViewBag.Item.ItemType == "Product")
+                                {
+                                    <span>Product</span>
+                                }
+                                @if (ViewBag.Item.ItemType == "Service")
+                                {
+                                    <span>Service</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Product Type </label>
+                            <div class="input-group">
+                                @{
+                                    if (ViewBag.Item.ProductType == "Single")
+                                    {
+                                        <span>Single</span>
+                                    }
+                                    if (ViewBag.Item.ProductType == "Variable")
+                                    {
+                                        <span>Variable</span>
+                                    }
+                                    if (ViewBag.Item.ProductType == "Combo")
+                                    {
+                                        <span>Combo</span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                        <!-- text input -->
+                        <div class="form-group">
+                            @*<label id="lblSkuCode">SKU/ Barcode</label>*@
+                            <label>SKU/ Barcode </label>
+                            <div class="input-group">
+                                <span>@ViewBag.Item.SkuCode</span>
+                            </div>
+                        </div>
+                    </div>
+                    @if (ViewBag.BusinessSetting.CountryId == 2)
+                    {
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                            <!-- text input -->
+                            @*<div class="form-group">
+                                    <label id="lblHsnCode">Hsn Code </label>
+                                    <input type="text" class="form-control" id="txtHsnCode" placeholder="" value="@ViewBag.Item.HsnCode">
+                                </div>*@
+                            <div class="form-group">
+                                <label id="lblHsnCode">Hsn Code </label>
+                                <div class="input-group" id="p_HsnSac_Dropdown">
+                                    @foreach (var item in ViewBag.ItemCodes)
+                                    {
+                                        if (ViewBag.Item.ItemCodeId == item.ItemCodeId)
+                                        {
+                                            <span>@item.Code</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label id="lblProductName">Product Name </label>
+                            <div class="input-group">
+                                <span>@ViewBag.Item.ItemName</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                        <div class="form-group">
+                            <label>Unit </label>
+                            <div class="input-group divUnit_ctrl">
+                                @foreach (var item in ViewBag.Units)
+                                {
+                                    if (ViewBag.Item.UnitId == item.UnitId)
+                                    {
+                                        <span>@item.UnitShortName</span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    @if (ViewBag.Item.SecondaryUnitId != 0)
+                    {
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 service">
+                            <div class="form-group">
+                                <div class="checkbox icheck-turquoise">
+                                    @if (ViewBag.Item.SecondaryUnitId != 0)
+                                    {
+                                        <input checked disabled type="checkbox" id="chkEnableSecondaryUnit" onchange="fetchActiveSecondaryUnits()" />
+                                    }
+                                    else
+                                    {
+                                        <input disabled type="checkbox" id="chkEnableSecondaryUnit" onchange="fetchActiveSecondaryUnits()" />
+                                    }
+                                    <label for="chkEnableSecondaryUnit">Enable Secondary Unit</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 divSecondaryUnit @(ViewBag.Item.SecondaryUnitId == 0 ? "hidden" : "") service ">
+                            <div class="form-group">
+                                <label>Secondary Unit </label>
+                                <div class="input-group">
+                                    @{
+                                        if (ViewBag.SecondaryUnits != null)
+                                        {
+                                            foreach (var item in ViewBag.SecondaryUnits)
+                                            {
+                                                if (ViewBag.Item.SecondaryUnitId == item.SecondaryUnitId)
+                                                {
+                                                    <span>@item.SecondaryUnitName</span>
+                                                }
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 divSecondaryUnit @(ViewBag.Item.SecondaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-append">
+                                        <a href="javascript:void(0)" class="btn bg-gray txtUnit">1 @ViewBag.Item.UnitShortName = </a>
+                                    </span>
+                                    <input disabled type="number" class="form-control" id="txtUToSValue" placeholder="Conversion Rate" value="@ViewBag.Item.UToSValue">
+                                    <span class="input-group-append">
+                                        <a href="javascript:void(0)" class="btn bg-gray txtSecondaryUnit">@ViewBag.Item.SecondaryUnitShortName </a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (ViewBag.Item.TertiaryUnitId != 0)
+                    {
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 divSecondaryUnit @(ViewBag.Item.SecondaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <div class="checkbox icheck-turquoise">
+                                    @if (ViewBag.Item.TertiaryUnitId != 0)
+                                    {
+                                        <input checked disabled type="checkbox" id="chkEnableTertiaryUnit" onchange="fetchActiveTertiaryUnits()" />
+                                    }
+                                    else
+                                    {
+                                        <input disabled type="checkbox" id="chkEnableTertiaryUnit" onchange="fetchActiveTertiaryUnits()" checked />
+                                    }
+
+                                    <label for="chkEnableTertiaryUnit">Enable Tertiary Unit</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 divTertiaryUnit @(ViewBag.Item.TertiaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <label>Tertiary Unit </label>
+                                <div class="input-group">
+                                    @{
+                                        if (ViewBag.TertiaryUnits != null)
+                                        {
+                                            foreach (var item in ViewBag.TertiaryUnits)
+                                            {
+                                                if (ViewBag.Item.TertiaryUnitId == item.TertiaryUnitId)
+                                                {
+                                                    <span>@item.TertiaryUnitName</span>
+                                                }
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 divTertiaryUnit @(ViewBag.Item.TertiaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-append">
+                                        <a href="javascript:void(0)" class="btn bg-gray txtSecondaryUnit_">1 @ViewBag.Item.SecondaryUnitShortName = </a>
+                                    </span>
+                                    <input disabled type="number" class="form-control" id="txtSToTValue" placeholder="Conversion Rate" value="@ViewBag.Item.SToTValue">
+                                    <span class="input-group-append">
+                                        <a href="javascript:void(0)" class="btn bg-gray txtTertiaryUnit">@ViewBag.Item.TertiaryUnitShortName </a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (ViewBag.Item.QuaternaryUnitId != 0)
+                    {
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 divTertiaryUnit @(ViewBag.Item.TertiaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <div class="checkbox icheck-turquoise">
+                                    @if (ViewBag.Item.QuaternaryUnitId != 0)
+                                    {
+                                        <input checked disabled type="checkbox" id="chkEnableQuaternaryUnit" onchange="fetchActiveQuaternaryUnits()" />
+                                    }
+                                    else
+                                    {
+                                        <input disabled type="checkbox" id="chkEnableQuaternaryUnit" onchange="fetchActiveQuaternaryUnits()" />
+                                    }
+
+                                    <label for="chkEnableQuaternaryUnit">Enable Quaternary Unit</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 divQuaternaryUnit @(ViewBag.Item.QuaternaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <label>Quaternary Unit </label>
+                                <div class="input-group">
+                                    @{
+                                        if (ViewBag.QuaternaryUnits != null)
+                                        {
+                                            foreach (var item in ViewBag.QuaternaryUnits)
+                                            {
+                                                if (ViewBag.Item.QuaternaryUnitId == item.QuaternaryUnitId)
+                                                {
+                                                    <span>@item.QuaternaryUnitName</span>
+                                                }
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 divQuaternaryUnit @(ViewBag.Item.QuaternaryUnitId == 0 ? "hidden" : "") service">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-append">
+                                        <a href="javascript:void(0)" class="btn bg-gray txtTertiaryUnit_">1 @ViewBag.Item.TertiaryUnitShortName = </a>
+                                    </span>
+                                    <input disabled type="number" class="form-control" id="txtTToQValue" placeholder="Conversion Rate" value="@ViewBag.Item.TToQValue">
+                                    <span class="input-group-append">
+                                        <a href="javascript:void(0)" class="btn bg-gray txtQuaternaryUnit">@ViewBag.Item.QuaternaryUnitShortName </a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (ViewBag.ItemSetting.EnableBrands == true)
+                    {
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 service">
+                            <div class="form-group">
+                                <label>Brand</label>
+                                <div class="input-group">
+                                    @foreach (var item in ViewBag.Brands)
+                                    {
+                                        if (ViewBag.Item.BrandId == item.BrandId)
+                                        {
+                                            <span>@item.Brand</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                        <div class="form-group">
+                            <label>Category </label>
+                            <div class="input-group divCategory_ctrl">
+                                @foreach (var item in ViewBag.Categories)
+                                {
+                                    if (ViewBag.Item.CategoryId == item.CategoryId)
+                                    {
+                                        <span>@item.Category</span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    @if (ViewBag.ItemSetting.EnableSubCategory == true)
+                    {
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>Sub Category </label>
+                                <div class="input-group divCategory_ctrl">
+                                    @foreach (var item in ViewBag.SubCategories)
+                                    {
+                                        if (ViewBag.Item.SubCategoryId == item.SubCategoryId)
+                                        {
+                                            <span>@item.SubCategory</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (ViewBag.ItemSetting.EnableSubSubCategory == true)
+                    {
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>Sub Sub Category </label>
+                                <div class="input-group divCategory_ctrl">
+                                    @foreach (var item in ViewBag.SubSubCategories)
+                                    {
+                                        if (ViewBag.Item.SubSubCategoryId == item.SubSubCategoryId)
+                                        {
+                                            <span>@item.SubSubCategory</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 service">
+                        <div class="form-group">
+                            <div class="checkbox icheck-turquoise">
+                                @if (ViewBag.Item.IsManageStock == true)
+                                {
+                                    <input type="checkbox" id="chkIsManageStock" onchange="CheckManageStock()" checked disabled />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" id="chkIsManageStock" onchange="CheckManageStock()" disabled />
+                                }
+                                <label for="chkIsManageStock">Manage Stock </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 @(ViewBag.Item.IsManageStock == true?"":"hidden")" id="divAlertQuantity">
+                        <div class="form-group">
+                            <label>Alert Quantity </label>
+                            <div class="input-group">
+                                <span>@ViewBag.Item.AlertQuantity</span>
+                            </div>
+                        </div>
+                    </div>
+                    @if (ViewBag.ItemSetting.EnableItemExpiry == true && ViewBag.ItemSetting.ExpiryType == 2)
+                    {
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 service @(ViewBag.Item.IsManageStock == true ? "" :"hidden")">
+                            <div class="form-group">
+                                <label>Expires in</label>
+                                <div class="input-group">
+                                    <span>@ViewBag.Item.ExpiryPeriod</span>
+                                    @if (ViewBag.Item.ExpiryPeriodType == "Days")
+                                    {
+                                        <span>Days</span>
+                                    }
+                                    @if (ViewBag.Item.ExpiryPeriodType == "Months")
+                                    {
+                                        <span>Months</span>
+                                    }
+                                    @if (ViewBag.Item.ExpiryPeriodType == "Years")
+                                    {
+                                        <span>Years</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (ViewBag.ItemSetting.EnableWarranty == true)
+                    {
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 service">
+                            <div class="form-group">
+                                <label>Warranty</label>
+                                <div class="input-group">
+                                    @foreach (var item in ViewBag.Warrantys)
+                                    {
+                                        if (ViewBag.Item.WarrantyId == item.WarrantyId)
+                                        {
+                                            <span>@item.Warranty</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @*@if (ViewBag.ItemSetting.EnableImei == true)
+                        {*@
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                        <div class="form-group">
+                            <div class="checkbox icheck-turquoise">
+                                @if (ViewBag.Item.EnableImei == true)
+                                {
+                                    <input type="checkbox" id="chkEnableImei" checked disabled />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" id="chkEnableImei" disabled />
+                                }
+                                <label for="chkIsManageStock">Enable Item IMEI, Serial number or other informations </label>
+                            </div>
+                        </div>
+                    </div>
+                    @*}*@
+                    @if (ViewBag.ItemSetting.EnableSalt == true)
+                    {
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 service">
+                            <div class="form-group">
+                                <label>Salt</label>
+                                <div class="input-group">
+                                    @foreach (var item in ViewBag.Salts)
+                                    {
+                                        if (ViewBag.Item.SaltId == item.SaltId)
+                                        {
+                                            <span>@item.SaltName</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (ViewBag.ItemSetting.EnableItemImage == true)
+                    {
+                        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label id="lblProductImage">Product Image </label>
+                                @*<div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="ProductImage" accept='.png,.jpg,.jpeg' onchange="getProductImageBase64()">
+                                        <label class="custom-file-label" for="ProductImage">Choose file</label>
+                                    </div>*@
+                                <div class="input-group">
+                                    <img id="blahProductImage" src="@ViewBag.Item.ProductImage" alt="" height="60" style="padding-top:10px;">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <hr style="display:@((ViewBag.ItemSetting.EnableProductDescription == true || ViewBag.Branchs.Count>1 || ViewBag.ItemSetting.EnableRacks == true) ? "block":"none")" />
+            <div class="card-body" style="display:@((ViewBag.ItemSetting.EnableProductDescription == true || ViewBag.Branchs.Count>1 || ViewBag.ItemSetting.EnableRacks == true) ? "block":"none")">
+                <div class="row">
+                    <div class="col-sm-6" style="display:@(ViewBag.ItemSetting.EnableProductDescription == true ? "block":"none")">
+                        <div class="form-group">
+                            <label id="lblProductDescription">Product Description</label>
+                            <div class="input-group">
+                                <span>@Html.Raw(ViewBag.Item.Description)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 table-responsive " style="display:@((ViewBag.Branchs.Count==1 && ViewBag.ItemSetting.EnableRacks == false)?"none":"")">
+                        <label>Check all the Business Locations where this product is available </label>
+                        <table id="" class="table table-bordered table-striped divBranches_ctrl">
+                            <thead id="thead">
+                                <tr>
+                                    <th></th>
+                                    <th>Business Location </th>
+                                    @if (ViewBag.ItemSetting.EnableRacks == true)
+                                    {
+                                        <th class="service">Rack (Optional)</th>
+                                    }
+                                    @if (ViewBag.ItemSetting.EnableRow == true)
+                                    {
+                                        <th class="service">Row (Optional)</th>
+                                    }
+                                    @if (ViewBag.ItemSetting.EnablePosition == true)
+                                    {
+                                        <th class="service">Position (Optional)</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody class="table-body">
+                                @foreach (var item in ViewBag.Item.Branchs)
+                                {
+                                    <tr class="divBranch" id="tr@(item.BranchId)">
+                                        <td>
+                                            <div class="form-group">
+                                                <div class="checkbox icheck-turquoise">
+                                                    @if (item.IsChecked == true)
+                                                    {
+                                                        <input disabled type="checkbox" id="chkBranch@(item.BranchId)" value="@item.BranchId" checked />
+                                                    }
+                                                    else
+                                                    {
+                                                        <input disabled type="checkbox" id="chkBranch@(item.BranchId)" value="@item.BranchId" />
+                                                    }
+
+                                                    <label for="chkBranch@(item.BranchId)"></label>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@item.Branch</td>
+                                        @if (ViewBag.ItemSetting.EnableRacks == true)
+                                        {
+                                            <td class="service">
+                                                <div class="form-group">
+                                                    <span>@item.Rack</span>
+                                                </div>
+                                            </td>
+                                        }
+                                        @if (ViewBag.ItemSetting.EnableRow == true)
+                                        {
+                                            <td class="service">
+                                                <div class="form-group">
+                                                    <span>@item.Row</span>
+                                                </div>
+                                            </td>
+                                        }
+                                        @if (ViewBag.ItemSetting.EnablePosition == true)
+                                        {
+                                            <td class="service">
+                                                <div class="form-group">
+                                                    <span>@item.Position</span>
+                                                </div>
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- item info -->
+            <hr />
+            <!-- tax info -->
+            @*<div class="card-header">
+                    <h3 class="card-title">Tax Info</h3>
+                </div>*@
+
+            <div class="card-body">
+
+                <div class="row">
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Tax Preference </label>
+                            <div class="input-group">
+                                @foreach (var item in ViewBag.Taxs)
+                                {
+                                    if (item.CanDelete == false)
+                                    {
+                                        if (ViewBag.Item.TaxPreferenceId == item.TaxId)
+                                        {
+                                            <span>@item.Tax</span>
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    @if (ViewBag.BusinessSetting.CountryId == 2)
+                    {
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divTaxable" style="display: @(ViewBag.Item.TaxPreference == "Taxable" ? "" : "none")">
+                            <!-- text input -->
+                            <div class="form-group">
+                                <label>Intra State Tax </label>
+                                <div class="input-group divTaxable">
+                                    @foreach (var item in ViewBag.Taxs)
+                                    {
+                                        if (item.CanDelete == true)
+                                        {
+                                            if (item.TaxTypeId != 3)
+                                            {
+                                                if (ViewBag.Item.TaxId == item.TaxId)
+                                                {
+                                                    <span>@item.Tax</span>
+                                                }
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divTaxable" style="display: @(ViewBag.Item.TaxPreference == "Taxable" ? "" : "none")">
+                            <!-- text input -->
+                            <div class="form-group">
+                                <label>Applicable Tax </label>
+                                <div class="input-group divTaxable">
+                                    @foreach (var item in ViewBag.Taxs)
+                                    {
+                                        if (item.CanDelete == true)
+                                        {
+                                            if (ViewBag.Item.TaxId == item.TaxId)
+                                            {
+                                                <span>@item.Tax</span>
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (ViewBag.BusinessSetting.CountryId == 2)
+                    {
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divTaxable" style="display: @(ViewBag.Item.TaxPreference == "Taxable" ? "" : "none")">
+                            <!-- text input -->
+                            <div class="form-group">
+                                <label>Inter State Tax </label>
+                                <div class="input-group divInterStateTax_ctrl">
+                                    @foreach (var item in ViewBag.Taxs)
+                                    {
+                                        if (item.CanDelete == true)
+                                        {
+                                            if (item.TaxTypeId == 3 || item.TaxTypeId == 5)
+                                            {
+                                                if (ViewBag.Item.InterStateTaxId == item.TaxId)
+                                                {
+                                                    <span>@item.Tax</span>
+                                                }
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divNonTaxable" style="display: @(ViewBag.Item.TaxPreference == "Non-Taxable" ? "" : "none")">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Tax Exemption </label>
+                            <div class="input-group divTaxExemption_ctrl">
+                                @foreach (var item in ViewBag.TaxExemptions)
+                                {
+                                    if (ViewBag.Item.TaxExemptionId == item.TaxExemptionId)
+                                    {
+                                        <span>@item.Reason</span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divTaxType" style="display:@((ViewBag.ItemSetting.TaxType == "Let me choose" && ViewBag.Item.TaxPreference == "Taxable") ? "":"none")">
+                        <div class="form-group">
+                            <label>Selling Price Tax Type </label>
+                            <div class="input-group">
+                                @{
+                                    if (ViewBag.Item.TaxType == "Inclusive")
+                                    {
+                                        <span>Inclusive</span>
+                                    }
+                                    if (ViewBag.Item.TaxType == "Exclusive")
+                                    {
+                                        <span>Exclusive</span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 hidden">
+                        <!-- text input -->
+                        <div class="form-group" style="display:@((ViewBag.ItemSetting.EnableSecondaryUnit == false &&
+                        ViewBag.ItemSetting.EnableTertiaryUnit == false && ViewBag.ItemSetting.EnableQuaternaryUnit == false) ? "none" : "")">
+                            <label>Price Added For</label>
+                            @{
+                                if (ViewBag.Item.QuaternaryUnitId != 0)
+                                {
+                                    if (ViewBag.Item.PriceAddedFor == 1)
+                                    {
+                                        <span>Unit</span>
+                                    }
+                                    if (ViewBag.Item.PriceAddedFor == 2)
+                                    {
+                                        <span>Secondary Unit</span>
+                                    }
+                                    if (ViewBag.Item.PriceAddedFor == 3)
+                                    {
+                                        <span>Tertiary Unit</span>
+                                    }
+                                    if (ViewBag.Item.PriceAddedFor == 4)
+                                    {
+                                        <span>Quaternary Unit</span>
+                                    }
+                                }
+                                else if (ViewBag.Item.TertiaryUnitId != 0)
+                                {
+                                    if (ViewBag.Item.PriceAddedFor == 2)
+                                    {
+                                        <span>Unit</span>
+                                    }
+                                    if (ViewBag.Item.PriceAddedFor == 3)
+                                    {
+                                        <span>Secondary Unit</span>
+                                    }
+                                    if (ViewBag.Item.PriceAddedFor == 4)
+                                    {
+                                        <span>Tertiary Unit</span>
+                                    }
+                                }
+                                else if (ViewBag.Item.SecondaryUnitId != 0)
+                                {
+                                    if (ViewBag.Item.PriceAddedFor == 3)
+                                    {
+                                        <span>Unit</span>
+                                    }
+                                    if (ViewBag.Item.PriceAddedFor == 4)
+                                    {
+                                        <span>Secondary Unit</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span>Unit</span>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- tax info -->
+            <hr />
+            @*<div class="card-header">
+                    <h3 class="card-title">
+                        Search Items
+                    </h3>
+
+                </div>*@
+            <!-- form start -->
+            <div class="card-body">
+
+                <div class="row">
+                    <div class="col-12">
+                        <!--Single Product--->
+                        @{
+                            if (ViewBag.Item.ProductType == "Single")
+                            {
+                                <input type="hidden" id="hdnItemDetailsId" value="@ViewBag.Item.ItemDetails[0].VariationDetails[0].ItemDetailsId" />
+                                <div id="singleproduct">
+                                    @*<div class="callout callout-info divSecondaryUnit @(ViewBag.Item.SecondaryUnitId == 0 ? "hidden" : "") service">
+                                            <h5><i class="fas fa-info"></i> Note:</h5>
+                                            Set price for primary unit. Rest unit prices will be calculated automatically
+                                        </div>*@
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered add-product-price-table table-condensed ">
+                                            <tbody>
+                                                <tr>
+                                                    <th class="divInventoryAccount service" @((ViewBag.IsPurchaseAddon == true && ViewBag.IsAccountsAddon == true && ViewBag.Item.IsManageStock == true) ? "" : "hidden")>Inventory Account</th>
+                                                    <th @(ViewBag.IsPurchaseAddon == true ? "" : "hidden")>
+                                                        Purchase Price <br />
+                                                        @if (ViewBag.Item.TaxType == "Inclusive")
+                                                        {
+                                                            <small class="lblTaxName">
+                                                                (Inc.Tax)
+                                                            </small>
+                                                        }
+                                                        else
+                                                        {
+                                                            <small class="lblTaxName">
+                                                                (Exc.Tax)
+                                                            </small>
+                                                        }
+                                                    </th>
+                                                    <th @(ViewBag.IsAccountsAddon == true ? "" : "hidden")>Purchase Account</th>
+                                                    <th @(ViewBag.IsPurchaseAddon == true ? "" : "hidden")>Profit Margin(%) </th>
+                                                    <th>
+                                                        Selling Price <br />
+                                                        @if (ViewBag.Item.TaxType == "Inclusive")
+                                                        {
+                                                            <small class="lblTaxName">
+                                                                (Inc.Tax)
+                                                            </small>
+                                                        }
+                                                        else
+                                                        {
+                                                            <small class="lblTaxName">
+                                                                (Exc.Tax)
+                                                            </small>
+                                                        }
+                                                    </th>
+                                                    <th @(ViewBag.IsAccountsAddon == true ? "" : "hidden")>Sales Account</th>
+                                                    <th style="display:@(ViewBag.ItemSetting.EnableMrp == false ? "none" : "")" class="service">MRP</th>
+                                                    @*<th>Product image</th>*@
+                                                </tr>
+                                                <tr>
+                                                    <td class="divInventoryAccount service" @((ViewBag.IsPurchaseAddon == true && ViewBag.IsAccountsAddon == true && ViewBag.Item.IsManageStock == true) ? "" : "hidden")>
+                                                        <div class="row">
+                                                            <div class="col-sm-12">
+                                                                <div class="form-group">
+                                                                    @*<label> Purchase Account</label>*@
+                                                                    <div class="input-group">
+                                                                        @{
+                                                                            if (ViewBag.AccountSubTypes != null)
+                                                                            {
+                                                                                foreach (var item in ViewBag.AccountSubTypes)
+                                                                                {
+                                                                                    if (item.Accounts.Count > 0)
+                                                                                    {
+                                                                                        if (item.Type == "Stock")
+                                                                                        {
+                                                                                            foreach (var inner in item.Accounts)
+                                                                                            {
+                                                                                                if (ViewBag.Item.ItemDetails[0].VariationDetails[0].InventoryAccountId == inner.AccountId)
+                                                                                                {
+                                                                                                    <span>@inner.DisplayAs</span>
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td @(ViewBag.IsPurchaseAddon == true ? "" : "hidden")>
+                                                        <div class="row">
+                                                            <div class="col-sm-12">
+                                                                @*<label for="single_dpp">Exc. tax:</label>*@
+                                                                <span>@ViewBag.Item.ItemDetails[0].VariationDetails[0].PurchaseExcTax</span>
+                                                            </div>
+
+                                                            @*<div class="col-sm-6">
+                                                                    <label for="single_dpp_inc_tax">Inc. tax:</label>
+                                                                    <input class="form-control input-sm dpp_inc_tax input_number" placeholder="" required="" name="single_dpp_inc_tax"
+                                                                           type="number" id="txtPurchaseIncTax" onchange="UpdateSingleAmount('PInc')" onkeypress="return onlyDecimalKey(event)"
+                                                                           value="@ViewBag.Item.ItemDetails[0].VariationDetails[0].PurchaseIncTax">
+                                                                    <small class="text-red font-weight-bold errorText" id="divPurchaseIncTax"></small>
+                                                                </div>*@
+                                                        </div>
+                                                    </td>
+                                                    <td @(ViewBag.IsAccountsAddon == true ? "" : "hidden")>
+                                                        <div class="row">
+                                                            <div class="col-sm-12">
+                                                                <div class="form-group">
+                                                                    @*<label> Purchase Account</label>*@
+                                                                    <div class="input-group divFromAccount_ctrl">
+                                                                        @{
+                                                                            if (ViewBag.AccountSubTypes != null)
+                                                                            {
+                                                                                foreach (var item in ViewBag.AccountSubTypes)
+                                                                                {
+                                                                                    if (item.Accounts.Count > 0)
+                                                                                    {
+                                                                                        if (item.AccountType == "Expense")
+                                                                                        {
+                                                                                            foreach (var inner in item.Accounts)
+                                                                                            {
+                                                                                                if (ViewBag.Item.ItemDetails[0].VariationDetails[0].PurchaseAccountId == inner.AccountId)
+                                                                                                {
+                                                                                                    <span>@inner.DisplayAs</span>
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td @(ViewBag.IsPurchaseAddon == true ? "" : "hidden")>
+                                                        @*<label>Default Profit Margin </label>*@
+                                                        <span>@ViewBag.Item.ItemDetails[0].VariationDetails[0].DefaultProfitMargin</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="row">
+                                                            <div class="col-sm-12" id="">
+                                                                @*<label for="single_dpp">Exc. Tax:</label>*@
+
+                                                                <span>@ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesExcTax</span>
+                                                            </div>
+
+                                                            @*<div class="col-sm-12 divSellingPriceIncTax @(ViewBag.Item.TaxType == "Inclusive" ? "" : "hidden")" id="">
+                                                                    <label for="single_dpp_inc_tax">Inc. Tax:</label>
+
+                                                                    <input class="form-control input-sm dpp_inc_tax input_number" placeholder="" required="" name="single_dpp_inc_tax"
+                                                                           type="number" id="txtSalesIncTax" onchange="UpdateSingleAmount('SInc')" onkeypress="return onlyDecimalKey(event)"
+                                                                           value="@ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesIncTax">
+                                                                    <small class="text-red font-weight-bold errorText" id="divSalesIncTax"></small>
+                                                                </div>*@
+
+                                                        </div>
+                                                    </td>
+                                                    <td @(ViewBag.IsAccountsAddon == true ? "" : "hidden")>
+                                                        <div class="row">
+                                                            <div class="col-sm-12">
+                                                                <div class="form-group" id="divFTAccount">
+                                                                    @*<label> Sales Account</label>*@
+                                                                    <div class="input-group">
+                                                                        @{
+                                                                            if (ViewBag.AccountSubTypes != null)
+                                                                            {
+                                                                                foreach (var item in ViewBag.AccountSubTypes)
+                                                                                {
+                                                                                    if (item.Accounts.Count > 0)
+                                                                                    {
+                                                                                        if (item.AccountType == "Income")
+                                                                                        {
+                                                                                            foreach (var inner in item.Accounts)
+                                                                                            {
+                                                                                                if (ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesAccountId == inner.AccountId)
+                                                                                                {
+                                                                                                    <span>@inner.DisplayAs</span>
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td style="display: @(ViewBag.ItemSetting.EnableMrp == false ? "none" : "")" class="service">
+                                                        <div>
+                                                            @*<label>Default MRP </label>*@
+                                                            <span>@ViewBag.Item.ItemDetails[0].VariationDetails[0].DefaultMrp</span>
+                                                        </div>
+                                                    </td>
+                                                    @*<td>
+                                                            <div>
+                                                                <div class="custom-file">
+                                                                    <input type="file" class="custom-file-input" id="ProductImage0" accept='.png,.jpg,.jpeg' onchange="getImageBase64(0)">
+                                                                    <input type="hidden" id="txtHiddenFile0" />
+                                                                    <input type="hidden" id="txtHiddenFileExtension0" />
+                                                                    <label class="custom-file-label" for="ProductImage0">Choose file</label>
+                                                                </div>
+
+                                                            </div>
+                                                            <img id="blahProductImage0" src="@ViewBag.Item.ItemDetails[0].VariationDetails[0].ProductImage" alt="" height="60" style="padding-top:10px;">
+                                                        </td>*@
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <hr />
+                                </div>
+                            }
+
+                            if (ViewBag.Item.ProductType == "Variable")
+                            {
+                                <div id="variableproduct" class="@(ViewBag.Item.ProductType == "Variable" ?"":"hidden")">
+                                    @*<div class="row">
+                                            <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                                <div class="form-group">
+                                                    <div class="input-group">
+                                                        <label class="w-50">Variation Values</label>
+                                                        <span class="input-group-append">
+                                                            <a href="javascriptt:void(0)" class="btn btn-success btn-sm add-row divVariationValues_ctrl" onclick="AddNewVariation()"><i class="fas fa-plus"></i></a>
+                                                        </span>
+                                                        <input type="hidden" id="hdnVariationPermissionIsAdd" value="@(ViewBag.VariationPermission.IsAdd.ToString())" />
+                                                    </div>
+                                                    <small class="text-red font-weight-bold errorText" id="divVariationValues"></small>
+                                                    <br />
+                                                    <div id="addrow">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>*@
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="table-responsive" id="divVariation">
+                                                @{
+                                                    var count = 100000000; var innerCount = 100000000;
+                                                    foreach (var item in ViewBag.Item.ItemDetails)
+                                                    {
+                                                        <table class="table table-bordered add-product-price-table table-condensed" id="product_variation_form_part@(count)">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">Variation</th>
+                                                                    <th class="col-sm-10">
+                                                                        Variation Values
+                                                                        @*<button type="button" class="btn btn-danger btn-sm float-right" onclick="deleteVariable(@count,@item.VariationDetails[0].ItemId,@item.VariationId)">
+                                                                                <i class="fas fa-times"></i>
+                                                                            </button>*@
+                                                                    </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="variation_row">
+                                                                    <td style="min-width:150px" class="divVariation@(count)_ctrl">
+                                                                        @foreach (var ddl in ViewBag.Variations)
+                                                                        {
+                                                                            if (item.VariationId == ddl.VariationId)
+                                                                            {
+                                                                                <span>@ddl.Variation</span>
+                                                                            }
+                                                                        }
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <table class="table table-bordered table-striped blue-header variation_value_table">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th class="divInventoryAccount service" @((ViewBag.IsPurchaseAddon == true && ViewBag.IsAccountsAddon == true && ViewBag.Item.IsManageStock == true) ? "" : "hidden")>Inventory Account</th>
+                                                                                    <th>SKU </th>
+                                                                                    <th>Value </th>
+                                                                                    <th @(ViewBag.IsPurchaseAddon == true ? "" : "hidden")>
+                                                                                        Purchase Price <br>
+                                                                                        @if (ViewBag.ItemSetting.TaxType == "Inclusive")
+                                                                                        {
+                                                                                            <small class="lblTaxName">
+                                                                                                (Inc.Tax)
+                                                                                            </small>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <small class="lblTaxName">
+                                                                                                (Exc.Tax)
+                                                                                            </small>
+                                                                                        }
+                                                                                    </th>
+                                                                                    <th @(ViewBag.IsAccountsAddon == true ? "" : "hidden")>
+                                                                                        Purchase Account
+                                                                                    </th>
+                                                                                    <th @(ViewBag.IsPurchaseAddon == true ? "" : "hidden")>x Margin(%) </th>
+                                                                                    <th class="">
+                                                                                        Selling Price <br>
+                                                                                        @if (ViewBag.ItemSetting.TaxType == "Inclusive")
+                                                                                        {
+                                                                                            <small class="lblTaxName">
+                                                                                                (Inc.Tax)
+                                                                                            </small>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <small class="lblTaxName">
+                                                                                                (Exc.Tax)
+                                                                                            </small>
+                                                                                        }
+                                                                                    </th>
+                                                                                    <th @(ViewBag.IsAccountsAddon == true ? "" : "hidden")>
+                                                                                        Sales Account
+                                                                                    </th>
+                                                                                    <th style="display:@(ViewBag.ItemSetting.EnableMrp == false ? "none" : "")" class="service">
+                                                                                        MRP <br>
+                                                                                    </th>
+                                                                                    <th>Variation Images </th>
+                                                                                    @*<th><button type="button" class="btn btn-success btn-sm" onclick="AddNewInnerVariation(@count)"><i class="fas fa-plus"></i></button></th>*@
+                                                                                </tr>
+                                                                            </thead>
+
+                                                                            <tbody id="divInnerVariation@(count)">
+                                                                                @foreach (var inner in item.VariationDetails)
+                                                                                {
+                                                                                    <tr id="product_variation_form_part_inner@(innerCount)">
+                                                                                        <td class="divInventoryAccount service" style="min-width:150px" @((ViewBag.IsPurchaseAddon == true && ViewBag.IsAccountsAddon == true && ViewBag.Item.IsManageStock == true) ? "" : "hidden")>
+                                                                                            <div class="row">
+                                                                                                <div class="col-sm-12">
+                                                                                                    <div class="form-group">
+                                                                                                        <div class="input-group">
+                                                                                                            @{
+                                                                                                                if (ViewBag.AccountSubTypes != null)
+                                                                                                                {
+                                                                                                                    foreach (var _item in ViewBag.AccountSubTypes)
+                                                                                                                    {
+                                                                                                                        if (_item.Accounts.Count > 0)
+                                                                                                                        {
+                                                                                                                            if (_item.Type == "Stock")
+                                                                                                                            {
+                                                                                                                                foreach (var _inner in _item.Accounts)
+                                                                                                                                {
+                                                                                                                                    if (inner.InventoryAccountId == _inner.AccountId)
+                                                                                                                                    {
+                                                                                                                                        <span>@_inner.AccountName</span>
+                                                                                                                                    }
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <td style="min-width:150px">
+                                                                                            <span>@inner.SKU</span>
+                                                                                        </td>
+                                                                                        <td style="min-width: 150px">
+                                                                                            <span>@inner.VariationDetails</span>
+                                                                                        </td>
+                                                                                        <td style="min-width: 150px" @(ViewBag.IsPurchaseAddon == true ? "" : "hidden")>
+                                                                                            <div class="row">
+                                                                                                <div class="col-12">
+                                                                                                    <span>@inner.PurchaseExcTax</span>
+                                                                                                </div>
+
+                                                                                                @*<div class="col-3">
+                                                                                                        <input class="form-control input-sm variable_dpp_inc_tax input_number" placeholder="Inc. tax" required="" name="product_variation" type="number" id="txtPurchaseIncTax@(innerCount)" value="@inner.PurchaseIncTax" onchange="UpdateVariationAmount(2,@innerCount)">
+                                                                                                        <small class="text-red font-weight-bold errorText" id="divPurchaseIncTax@(innerCount)"></small>
+                                                                                                    </div>*@
+
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <td style="min-width: 150px" @(ViewBag.IsAccountsAddon == true ? "" : "hidden")>
+                                                                                            <div class="row">
+                                                                                                <div class="col-sm-12">
+                                                                                                    <div class="form-group">
+                                                                                                        <div class="input-group">
+                                                                                                            @{
+                                                                                                                if (ViewBag.AccountSubTypes != null)
+                                                                                                                {
+                                                                                                                    foreach (var _item in ViewBag.AccountSubTypes)
+                                                                                                                    {
+                                                                                                                        if (_item.Accounts.Count > 0)
+                                                                                                                        {
+                                                                                                                            if (_item.AccountType == "Expense")
+                                                                                                                            {
+                                                                                                                                foreach (var _inner in _item.Accounts)
+                                                                                                                                {
+                                                                                                                                    if (inner.PurchaseAccountId == _inner.AccountId)
+                                                                                                                                    {
+                                                                                                                                        <span>@_inner.AccountName</span>
+                                                                                                                                    }
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <td style="min-width: 150px" @(ViewBag.IsPurchaseAddon == true ? "" : "hidden")>
+                                                                                            <div class="input-group">
+                                                                                                <span>@inner.DefaultProfitMargin</span>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <td class="" style="min-width: 150px">
+                                                                                            <div class="row">
+                                                                                                <div class="col-12">
+                                                                                                    <span>@inner.SalesExcTax</span>
+                                                                                                </div>
+                                                                                                @*<div class="col-4 divSellingPriceIncTax @(ViewBag.Item.TaxType == "Inclusive"?"" :"hidden" )">
+                                                                                                        <input class="form-control input-sm variable_dsp input_number divSellingPriceIncTax @(ViewBag.Item.TaxType == "Inclusive"?"" :"hidden" )" placeholder="Inc. tax" required="" name="product_variation" type="number" id="txtSalesIncTax@(innerCount)" value="@inner.SalesIncTax" onchange="UpdateVariationAmount(5,@innerCount)">
+                                                                                                        <small class="text-red font-weight-bold errorText" id="divSalesTax@(innerCount)"></small>
+                                                                                                    </div>*@
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <td class="" style="min-width: 150px" @(ViewBag.IsAccountsAddon == true ? "" : "hidden")>
+                                                                                            <div class="row">
+                                                                                                <div class="col-sm-12">
+                                                                                                    <div class="form-group" id="divFTAccount">
+                                                                                                        <div class="input-group">
+                                                                                                            @{
+                                                                                                                if (ViewBag.AccountSubTypes != null)
+                                                                                                                {
+                                                                                                                    foreach (var _item in ViewBag.AccountSubTypes)
+                                                                                                                    {
+                                                                                                                        if (_item.Accounts.Count > 0)
+                                                                                                                        {
+                                                                                                                            if (_item.AccountType == "Income")
+                                                                                                                            {
+                                                                                                                                foreach (var _inner in _item.Accounts)
+                                                                                                                                {
+                                                                                                                                    if (inner.SalesAccountId == _inner.AccountId)
+                                                                                                                                    {
+                                                                                                                                        <span>@_inner.AccountName</span>
+                                                                                                                                    }
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <td class="service" style="min-width: 150px; display: @(ViewBag.ItemSetting.EnableMrp == false ? "none" : "")">
+                                                                                            <div class="input-group">
+                                                                                                <span>@inner.DefaultMrp</span>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <td style="min-width:200px">
+                                                                                            <img id="blahProductImage@(innerCount)" src="@inner.ProductImage" alt="" height="60" style="padding-top:10px;">
+                                                                                        </td>
+                                                                                        @*<td>
+                                                                                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteInnerVariable(@(innerCount),@inner.ItemDetailsId)">
+                                                                                                    <i class="fas fa-times">
+                                                                                                    </i>
+                                                                                                </button>
+
+                                                                                            </td>*@
+                                                                                    </tr>
+                                                                                    innerCount++;
+                                                                                }
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        count++;
+                                                    }
+                                                }
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr />
+                                </div>
+                            }
+                        }
+
+                        <!--Single Product--->
+                        <!--Combo Product--->
+                        <div id="comboproduct" class="@(ViewBag.Item.ProductType == "Combo"?"":"hidden")">
+                            <div class="row">
+                                <div class="col-12 col-sm-12 col-md-12 col-lg-9 col-xl-9">
+                                    <div class="table-responsive">
+                                        <br><table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center">
+                                                        Product Name
+                                                    </th>
+                                                    <th class="text-center">
+                                                        Quantity
+                                                    </th>
+                                                    @*<th class="text-center" @(ViewBag.IsPurchaseAddon == true ? "" : "hidden")>
+                                                            Purchase Price (Excluding Tax) *
+                                                        </th>
+                                                        <th class="text-center" @(ViewBag.IsPurchaseAddon == true ? "" : "hidden")>
+                                                            Total Amount (Exc. Tax) *
+                                                        </th>*@
+                                                    @*<th class="text-center">
+                                                            <button type="button" class="btn btn-success btn-sm" onclick="deleteFullCombo(@ViewBag.Item.ItemId)">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </th>*@
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+                                                    var a = 100000000;
+                                                    if (ViewBag.Item.ItemDetails.Count != 0)
+                                                    {
+                                                        foreach (var item in ViewBag.Item.ItemDetails[0].VariationDetails)
+                                                        {
+                                                            <tr id="divCombo@(a)">
+                                                                <td class="text-center">
+                                                                    <span>
+                                                                        @(item.ComboProductName)
+                                                                        @if (item.ComboVariationName != null && item.ComboVariationName != "")
+                                                                        {
+                                                                            <span>(@(item.ComboVariationName))</span>
+                                                                        } - @item.ComboSku
+                                                                    </span>
+                                                                    <input type="hidden" id="hdnComboItemDetailsId@(a)" value="@item.ComboItemDetailsId" />
+                                                                    <input type="hidden" id="hdnItemDetailsId@(a)" value="@item.ItemDetailsId" />
+                                                                    <input type="hidden" value="@item.TotalCost" id="hdnComboTotalAmount@(a)" />
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <div class="input-group divComboQuantity@(a)_ctrl">
+                                                                        <span>@item.Quantity </span>
+                                                                        <span class="input-group-append">
+                                                                            @*<select class="form-control" disabled>
+                                                                                    <option selected="selected">@item.ComboUnitName</option>
+                                                                                </select>*@
+                                                                            @{
+                                                                                if (item.QuaternaryUnitId != 0)
+                                                                                {
+                                                                                    if (item.PriceAddedFor == 1)
+                                                                                    {
+                                                                                        <span>@item.UnitShortName </span>
+                                                                                        item.ComboPurchaseExcTax = item.ComboPurchaseExcTax;
+                                                                                    }
+                                                                                    if (item.PriceAddedFor == 2)
+                                                                                    {
+                                                                                        <span>@item.SecondaryUnitShortName</span>
+                                                                                        item.ComboPurchaseExcTax = item.ComboPurchaseExcTax / item.UToSValue;
+                                                                                    }
+                                                                                    if (item.PriceAddedFor == 3)
+                                                                                    {
+                                                                                        <span>@item.TertiaryUnitShortName</span>
+                                                                                        item.ComboPurchaseExcTax = item.ComboPurchaseExcTax / item.UToSValue / item.SToTValue;
+                                                                                    }
+                                                                                    if (item.PriceAddedFor == 4)
+                                                                                    {
+                                                                                        <span>@item.QuaternaryUnitShortName</span>
+                                                                                        item.ComboPurchaseExcTax = item.ComboPurchaseExcTax / item.UToSValue / item.SToTValue / item.TToQValue;
+                                                                                    }
+                                                                                }
+                                                                                else if (item.TertiaryUnitId != 0)
+                                                                                {
+                                                                                    @*<option value="0" hidden>@item.UnitShortName</option>*@
+                                                                                    if (item.PriceAddedFor == 2)
+                                                                                    {
+                                                                                        <span>@item.UnitShortName </span>
+                                                                                        item.ComboPurchaseExcTax = item.ComboPurchaseExcTax;
+                                                                                    }
+                                                                                    if (item.PriceAddedFor == 3)
+                                                                                    {
+                                                                                        <span>@item.SecondaryUnitShortName</span>
+                                                                                        item.ComboPurchaseExcTax = item.ComboPurchaseExcTax / item.UToSValue;
+                                                                                    }
+                                                                                    if (item.PriceAddedFor == 4)
+                                                                                    {
+                                                                                        <span>@item.TertiaryUnitShortName</span>
+                                                                                        item.ComboPurchaseExcTax = item.ComboPurchaseExcTax / item.UToSValue / item.SToTValue;
+                                                                                    }
+                                                                                }
+                                                                                else if (item.SecondaryUnitId != 0)
+                                                                                {
+                                                                                    @*<option value="0" hidden>@item.UnitShortName</option>
+                                                                                        <option value="0" hidden>@item.UnitShortName</option>*@
+                                                                                    if (item.PriceAddedFor == 3)
+                                                                                    {
+                                                                                        <span>@item.UnitShortName </span>
+                                                                                        item.ComboPurchaseExcTax = item.ComboPurchaseExcTax;
+                                                                                    }
+                                                                                    if (item.PriceAddedFor == 4)
+                                                                                    {
+                                                                                        <span>@item.SecondaryUnitShortName</span>
+                                                                                        item.ComboPurchaseExcTax = item.ComboPurchaseExcTax / item.UToSValue;
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    @*<option value="0" hidden>@item.UnitShortName</option>
+                                                                                        <option value="0" hidden>@item.UnitShortName</option>
+                                                                                        <option value="0" hidden>@item.UnitShortName</option>*@
+                                                                                    <span>@item.UnitShortName </span>
+                                                                                    item.ComboPurchaseExcTax = item.ComboPurchaseExcTax;
+                                                                                }
+                                                                            }
+                                                                            <input type="text" hidden class="form-control" id="hdnPriceAddedFor@(a)" value="@item.PriceAddedFor">
+                                                                            <input type="text" hidden class="form-control" id="hdnUToSValue@(a)" value="@item.UToSValue">
+                                                                            <input type="text" hidden class="form-control" id="hdnSToTValue@(a)" value="@item.SToTValue">
+                                                                            <input type="text" hidden class="form-control" id="hdnTToQValue@(a)" value="@item.TToQValue">
+                                                                            <input type="text" hidden class="form-control" id="hdnUnitCost@(a)" value="@(item.ComboPurchaseExcTax)">
+                                                                            <input type="text" hidden class="form-control" id="hdnSalesIncTax@(a)" value="@item.SalesIncTax">
+                                                                            <input type="text" hidden class="form-control" id="hdnMrp@(a)" value="@item.Mrp">
+                                                                            <input type="hidden" class="form-control" id="hdnAllowDecimal@(a)" value="@(item.AllowDecimal.ToString())" />
+                                                                            <input type="hidden" class="form-control" id="hdnSecondaryUnitAllowDecimal@(a)" value="@item.SecondaryUnitAllowDecimal.ToString()" />
+                                                                            <input type="hidden" class="form-control" id="hdnTertiaryUnitAllowDecimal@(a)" value="@item.TertiaryUnitAllowDecimal.ToString()">
+                                                                            <input type="hidden" class="form-control" id="hdnQuaternaryUnitAllowDecimal@(a)" value="@item.QuaternaryUnitAllowDecimal.ToString()">
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                @*<td class="text-center" @(ViewBag.IsPurchaseAddon == true ? "" : "hidden") id="divComboPurchaseExcTax@(a)">
+                                                                        @item.ComboPurchaseExcTax
+                                                                        <input type="hidden" value="@item.ComboPurchaseExcTax" id="hdnComboPurchaseExcTax@(a)" />
+                                                                    </td>
+                                                                    <td class="text-center" id="divComboTotalAmount@(a)" @(ViewBag.IsPurchaseAddon == true ? "" : "hidden")>
+                                                                        @(item.Quantity * item.ComboPurchaseExcTax)
+                                                                    </td>*@
+                                                                @*<td class="text-center">
+                                                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteCombo(@a,@item.ItemDetailsId)">
+                                                                            <i class="fas fa-times">
+                                                                            </i>
+                                                                        </button>
+                                                                    </td>*@
+                                                            </tr>
+                                                            a++;
+                                                        }
+                                                    }
+
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+
+
+
+                                @*<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+
+                                    </div>*@
+
+                                <!--<div class="col-sm-4" @(ViewBag.IsPurchaseAddon == true ? "" : "hidden")>-->
+                                <!-- text input -->
+                                <!--<div class="form-group">
+                                        <label>x Margin(%): </label>
+                                        <input type="number" class="form-control" id="txtComboDefaultMargin" placeholder="Enter Profit Margin" value="@ViewBag.Item.ItemDetails[0].VariationDetails[0].DefaultProfitMargin" onchange="UpdateComboAmount('2')">
+                                    </div>
+                                </div>-->
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                    <div class="form-group" id="divFTAccount">
+                                        <label> Sales Account</label>
+                                        <div class="input-group">
+                                            @{
+                                                if (ViewBag.AccountSubTypes != null)
+                                                {
+                                                    foreach (var item in ViewBag.AccountSubTypes)
+                                                    {
+                                                        if (item.Accounts.Count > 0)
+                                                        {
+                                                            if (item.AccountType == "Income")
+                                                            {
+                                                                foreach (var inner in item.Accounts)
+                                                                {
+                                                                    if (ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesAccountId == inner.AccountId)
+                                                                    {
+                                                                        <span>@inner.DisplayAs</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Selling Price </label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.Item.ItemDetails[0].VariationDetails[0].SalesExcTax</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-3 col-xl-3" style="display: @(ViewBag.ItemSetting.EnableMrp == false ? "none" : "")">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Mrp </label>
+                                        <div class="input-group">
+                                            <span>@ViewBag.Item.ItemDetails[0].VariationDetails[0].DefaultMrp</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--Combo Product--->
+                    </div>
+                </div>
+            </div>
+            <!-- /.card-body -->
+        </div>
+    </div>
+</div>
+
+<script>
+    setTimeout(function () {
+        var Item = @Html.Raw(Json.Encode(ViewBag.Item));
+
+        if (Item.ItemType == 'Product') {
+            $('#lblSkuCode').html('Sku Code / Product Code <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print ' + (ShowHelpText == "True" ? "" : "hidden") + '" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i>');
+            $('#lblHsnCode').text('HSN Code');
+            $('#lblProductName').html('Product Name');
+            $('#lblProductImage').text('Product Image');
+            $('#lblProductBrochure').text('Product Brochure');
+            $('#lblProductDescription').text('Product Description');
+            $('.service').show();
+            $('#divAlertQuantity').show();
+        }
+        else {
+            $('#lblSkuCode').html('Sku Code / Service Code <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print ' + (ShowHelpText == "True" ? "" : "hidden") + '" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Leave blank to auto generate"></i>');
+            $('#lblHsnCode').text('SAC Code');
+            $('#lblProductName').html('Service Name');
+            $('#lblProductImage').text('Service Image');
+            $('#lblProductBrochure').text('Service Brochure');
+            $('#lblProductDescription').text('Service Description');
+            $('.service').hide();
+            $('#divExpiresIn').hide();
+            $('#chkIsManageStock').prop('checked', false);
+            $('#divAlertQuantity').hide();
+        }
+    }, 100);
+</script>

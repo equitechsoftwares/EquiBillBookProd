@@ -1,0 +1,1050 @@
+﻿<div class="container-fluid">
+    <div class="row ">
+        @if (ViewBag.Transaction.DaysLeft <= 90)
+        {
+            <div class="col-12">
+                <div class="callout callout-danger">
+                    <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Alert:</h5>
+                    @if (ViewBag.Transaction.IsTrial == true)
+                    {
+                        <div>
+                            @if (ViewBag.Transaction.DaysLeft < 0)
+                            {
+                                <span>Your free trial has expired!!</span>
+                            }
+                            else
+                            {
+                                if (ViewBag.Transaction.DaysLeft == 0)
+                                {
+                                    <span> You free trial ends <b> Today </b></span>
+                                }
+                                else
+                                {
+                                    <span> You free trial ends in <b> @ViewBag.Transaction.DaysLeft days </b></span>
+                                }
+                            }
+
+                            @if (ViewBag.UpgradePlanPermission.IsAdd)
+                            {
+                                <a class="font-weight-bold" href="/subscription/upgradeplan"> Upgrade Now</a>
+                            }
+                            else
+                            {
+                                <a class="font-weight-bold" href="javascript:void(0)"> Please ask your administrator to upgrade</a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            @if (ViewBag.Transaction.DaysLeft < 0)
+                            {
+                                <span>Your subscription plan has expired!!</span>
+                            }
+                            else
+                            {
+                                if (ViewBag.Transaction.DaysLeft == 0)
+                                {
+                                    <span> Your subscription plan ends <b> Today </b></span>
+                                }
+                                else
+                                {
+                                    <span>Your subscription plan ends in <b> @ViewBag.Transaction.DaysLeft days </b></span>
+                                }
+                            }
+
+                            @if (ViewBag.UpgradePlanPermission.IsAdd)
+                            {
+                                <a class="text-info" href="/subscription/upgradeplan"> Renew Now</a>
+                            }
+                            else
+                            {
+                                <a class="text-info" href="javascript:void(0)"> Please ask your administrator to renew</a>
+                            }
+                        </div>
+                    }
+                </div>
+                @*@if (ViewBag.ShowDemoAccount == true)
+                    {
+                        if (ViewBag.Transaction.IsTrial == true)
+                        {
+                            <div class="callout callout-warning">
+                                <h5 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Alert:</h5>
+                                <div>
+                                    <span>Want to see our all features? <a href="javascript:void(0)" onclick="openDemoAccount()">Check our demo account now</a></span>
+                                </div>
+                            </div>
+                        }
+                    }*@
+            </div>
+        }
+        @if (Request.Cookies["data"].Value.Split('&')[1].Split('=')[1] == @Request.Cookies["data"].Value.Split('&')[2].Split('=')[1])
+        {
+            if (ViewBag.BusinessSetting.IsMainBranchUpdated == false || ViewBag.BusinessSetting.IsBusinessNameUpdated == false
+                || ViewBag.BusinessSetting.IsFirstItemCreated == false
+           || ViewBag.BusinessSetting.IsFirstSaleCreated == false)
+            {
+                <div class="col-12">
+                    <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                        <h5 class="text-info"><i class="fas fa-info-circle"></i> Steps to create your first invoice</h5>
+
+                        @if (ViewBag.BusinessSetting.IsBusinessNameUpdated == false)
+                        {
+                            <span>1. Update Your Business Name & Logo  <a class="text-info" href="/organizationsettings/businesssettings">Navigate</a></span><br />
+                        }
+                        else
+                        {
+                            <span style="text-decoration:line-through">1. Update Your Business Name & Logo </span><br />
+                        }
+
+                        @if (ViewBag.BusinessSetting.IsMainBranchUpdated == false)
+                        {
+                            <span>2. Update Your Business Location <a class="text-info" href="/locationsettings/branchedit?BranchId=@ViewBag.BusinessSetting.BranchId">Navigate</a></span><br />
+                        }
+                        else
+                        {
+                            <span style="text-decoration:line-through">2. Update Your Business Location </span><br />
+                        }
+                        @if (ViewBag.BusinessSetting.IsFirstItemCreated == false)
+                        {
+                            <span>3. Create Your First Item <a class="text-info" href="/items/itemsadd">Navigate</a></span><br />
+                        }
+                        else
+                        {
+                            <span style="text-decoration:line-through">3. Create Your First Item </span><br />
+                        }
+
+                        @if (ViewBag.BusinessSetting.IsFirstSaleCreated == false)
+                        {
+                            <span>4. Create Your First Sale <a class="text-info" href="/sales/add">Navigate</a></span><br />
+                        }
+                        else
+                        {
+                            <span style="text-decoration:line-through">4. Create Your First Sale </span><br />
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+    <div class="row">
+        <div class="col-md-9">
+            <div class="row">
+                @if (ViewBag.CustomersPermission.IsView)
+                {
+                    <div class="col-lg-4 col-sm-6">
+                        <!-- small box -->
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>@ViewBag.Dashboard.TotalCustomers</h3>
+                                <p>Customers</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <a href="/customers?BranchId=@ViewBag.BranchId" class="small-box-footer">More Info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                }
+                
+                @if (ViewBag.SalesPermission.IsView)
+                {
+                    <!-- ./col -->
+                    <div class="col-lg-4 col-6">
+                        <!-- small box -->
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>
+                                    @{
+                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                        {
+                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", (ViewBag.Dashboard.TotalSales)))
+                                        }
+                                        else
+                                        {
+                                            @(String.Format("{0:0.##}", (ViewBag.Dashboard.TotalSales)))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                        }
+                                    }
+                                </h3>
+                                <p>Sales</p>
+                            </div>
+                            <div class="icon">
+                                <i class="ion ion-person-stalker"></i>
+                            </div>
+                            <a href="/sales/index?BranchId=@ViewBag.BranchId&From=dashboard" class="small-box-footer">More Info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                }
+
+                @if (ViewBag.ItemsPermission.IsView)
+                {
+                    <!-- ./col -->
+                    <div class="col-lg-4 col-6">
+                        <!-- small box -->
+                        <div class="small-box bg-gradient-indigo">
+                            <div class="inner">
+                                <h3>@ViewBag.Dashboard.TotalItems</h3>
+                                <p>Items</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                            <a href="/items/items?BranchId=@ViewBag.BranchId" class="small-box-footer">More Info <i class="fas fa-arrow-circle-right"></i></a>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="row">
+
+                @if (ViewBag.UsersPermission.IsView)
+                {
+                    <div class="col-md-4 col-sm-6 col-12">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-info"><i class="fas fa-shopping-cart"></i></span>
+
+                            <div class="info-box-content">
+                                <span class="info-box-text"> Users</span>
+                                <span class="info-box-number">
+                                    @ViewBag.Dashboard.TotalUsers
+                                </span>
+                            </div>
+                            <!-- /.info-box-content -->
+                            <a href="/usersettings/users?BranchId=@ViewBag.BranchId" class="small-box-footer info"> <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                        <!-- /.info-box -->
+                    </div>
+                }
+
+
+                @if (ViewBag.CustomerPaymentReportPermission.IsView)
+                {
+                    <div class="col-md-4 col-sm-6 col-12">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-success"><i class="fa fa-exclamation"></i></span>
+
+                            <div class="info-box-content">
+                                <span class="info-box-text"> Sales Due</span>
+                                <span class="info-box-number">
+                                    @{
+                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                        {
+                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalSalesDue))
+                                        }
+                                        else
+                                        {
+                                            @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalSalesDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                        }
+                                    }
+                                </span>
+                            </div>
+                            <!-- /.info-box-content -->
+                            <a href="/sales/index?BranchId=@ViewBag.BranchId&From=dashboard" class="small-box-footer success"> <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                        <!-- /.info-box -->
+                    </div>
+                }
+
+                @if (ViewBag.CustomerRefundPermission.IsView)
+                {
+                    <div class="col-md-4 col-sm-6 col-12">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-gradient-indigo"><i class="fas fa-undo"></i></span>
+
+                            <div class="info-box-content">
+                                <span class="info-box-text"> Sales Return</span>
+                                <span class="info-box-number">
+                                    @{
+                                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                        {
+                                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalSalesReturn))
+                                        }
+                                        else
+                                        {
+                                            @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalSalesReturn))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                        }
+                                    }
+                                </span>
+                            </div>
+                            <a href="/sales/salesreturn?BranchId=@ViewBag.BranchId" class="small-box-footer gradient-indigo"> <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="row">
+                @if (ViewBag.StockAlertReportPermission.IsView)
+                {
+                    <div class="col-lg-6 connectedSortable">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <h5>
+                                            <span>Top 10 Customers</span>
+                                        </h5>
+                                    </div>
+                                    <div class="col-sm-6 text-right">
+                                        @*<label>Business Location :</label>*@
+                                        <label class="mb-0 font-weight-normal">
+                                            <select class="form-control" id="ddlCustomerGraph" onchange="fetchTopCustomersGraph()">
+                                                <option value="amount">By total amount of orders</option>
+                                                <option value="number" data-select2-id="2">By total number of orders</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="card-body p-0 table-responsive" style="height: 377px">
+                                <canvas id="myChartCustomers"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (ViewBag.ItemsPermission.IsView)
+                {
+                    <div class="col-lg-6">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <h5>
+                                            <span>Top 10 Items</span>
+                                        </h5>
+                                    </div>
+                                    <div class="col-sm-8 text-right">
+                                        @*<label>Business Location :</label>*@
+                                        <label class="mb-0 font-weight-normal">
+                                            <select class="form-control" id="ddlItemGraph" onchange="fetchTopItemsGraph()">
+                                                <option value="amount">By total amount of orders</option>
+                                                <option value="number" data-select2-id="2">By total number of orders</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="card-body p-0 table-responsive" style="height: 377px">
+                                <canvas id="myChartItems"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (ViewBag.SalesPermission.IsView)
+            {
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <h5>
+                                            <span>Sales </span>
+                                        </h5>
+                                    </div>
+                                    <div class="col-sm-6 float-right">
+                                        <div class="row ">
+                                            @*<div class="col-sm-6">
+
+                                                </div>*@
+                                            <div class="col-sm-12 text-right">
+                                                @*<label>Month :</label>*@
+                                                <label class="mb-0 font-weight-normal">
+                                                    <select class="form-control" id="ddlSalesMonth" onchange="SalesMonthWiseGraph()">
+                                                        <option value="1">January</option>
+                                                        <option value="2">February</option>
+                                                        <option value="3">March</option>
+                                                        <option value="4">April</option>
+                                                        <option value="5">May</option>
+                                                        <option value="6">June</option>
+                                                        <option value="7">July</option>
+                                                        <option value="8">August</option>
+                                                        <option value="9">September</option>
+                                                        <option value="10">October</option>
+                                                        <option value="11">November</option>
+                                                        <option value="12">December</option>
+                                                    </select>
+                                                </label>
+                                                <label class="mb-0 font-weight-normal">
+                                                    <select class="form-control" id="ddlSalesYear" onchange="SalesMonthWiseGraph()">
+                                                        <option value="2021">2021</option>
+                                                        <option value="2022">2022</option>
+                                                        <option value="2023">2023</option>
+                                                        <option value="2024">2024</option>
+                                                        <option value="2025">2025</option>
+                                                    </select>
+                                                </label>
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            <div class="card-body p-0 table-responsive" style="height: 377px">
+                                <canvas id="myChartSales"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (ViewBag.PurchasePermission.IsView)
+            {
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <h5>
+                                            <span>Purchase </span>
+                                        </h5>
+                                    </div>
+                                    <div class="col-sm-6 float-right">
+                                        <div class="row ">
+                                            @*<div class="col-sm-6">
+
+                                                </div>*@
+                                            <div class="col-sm-12 text-right">
+                                                @*<label>Month :</label>*@
+                                                <label class="mb-0 font-weight-normal">
+                                                    <select class="form-control" id="ddlPurchaseMonth" onchange="PurchaseMonthWiseGraph()">
+                                                        <option value="1">January</option>
+                                                        <option value="2">February</option>
+                                                        <option value="3">March</option>
+                                                        <option value="4">April</option>
+                                                        <option value="5">May</option>
+                                                        <option value="6">June</option>
+                                                        <option value="7">July</option>
+                                                        <option value="8">August</option>
+                                                        <option value="9">September</option>
+                                                        <option value="10">October</option>
+                                                        <option value="11">November</option>
+                                                        <option value="12">December</option>
+                                                    </select>
+                                                </label>
+                                                <label class="mb-0 font-weight-normal">
+                                                    <select class="form-control" id="ddlPurchaseYear" onchange="PurchaseMonthWiseGraph()">
+                                                        <option value="2021">2021</option>
+                                                        <option value="2022">2022</option>
+                                                        <option value="2023">2023</option>
+                                                        <option value="2024">2024</option>
+                                                        <option value="2025">2025</option>
+                                                    </select>
+                                                </label>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            <div class="card-body p-0 table-responsive" style="height: 377px">
+                                <canvas id="myChartPurchase"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="col-md-3">
+            <div class="card card-widget widget-user-2 card-primary card-outline">
+                <div class="card-header">
+                    <h5 class="">Summary</h5>
+                    @*<h6 class="">Lead Developer</h6>*@
+
+                </div>
+                <div class="p-0 pl-2 pr-2">
+                    <ul class="nav flex-column">
+                        @*@if (ViewBag.CustomerRefundPermission.IsView)
+                            {
+                                <li class="nav-item">
+                                    <a href="/sales/salesreturn?BranchId=@ViewBag.BranchId" class="nav-link">
+                                        Sales Return Due <span class="float-right text-info font-weight-bold">
+                                            @{
+                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                {
+                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalSalesReturnDue))
+                                                }
+                                                else
+                                                {
+                                                    @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalSalesReturnDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                }
+                                            }
+                                        </span>
+                                    </a>
+                                </li>
+                            }*@
+                        @*@if (ViewBag.PosPermission.IsView)
+                            {
+                                <li class="nav-item">
+                                    <a href="/sales/pos?BranchId=@ViewBag.BranchId&From=dashboard" class="nav-link">
+                                        POS <span class="float-right text-info font-weight-bold">
+                                            @{
+                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                {
+                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalPos))
+                                                }
+                                                else
+                                                {
+                                                    @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalPos))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                }
+                                            }
+                                        </span>
+                                    </a>
+                                </li>
+                            }
+                            @if (ViewBag.PosPermission.IsView)
+                            {
+                                <li class="nav-item">
+                                    <a href="/sales/pos?BranchId=@ViewBag.BranchId&From=dashboard" class="nav-link">
+                                        POS Due <span class="float-right text-info font-weight-bold">
+                                            @{
+                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                {
+                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalPosDue))
+                                                }
+                                                else
+                                                {
+                                                    @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalPosDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                }
+                                            }
+                                        </span>
+                                    </a>
+                                </li>
+                            }*@
+                        @if (ViewBag.StockAdjustPermission.IsView)
+                        {
+                            <li class="nav-item">
+                                <a href="/stockadjust?BranchId=@ViewBag.BranchId" class="nav-link">
+                                    Stock Adjusted <span class="float-right text-info font-weight-bold">
+                                        @{
+                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                            {
+                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalStockAdjusted))
+                                            }
+                                            else
+                                            {
+                                                @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalStockAdjusted))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                            }
+                                        }
+                                    </span>
+                                </a>
+                            </li>
+                        }
+                        @if (ViewBag.StockExpiryReportPermission.IsView)
+                        {
+                            <li class="nav-item">
+                                <a href="/inventoryreports/stockexpiry?BranchId=@ViewBag.BranchId&Type=expired" class="nav-link">
+                                    Stocks Expired <span class="float-right text-info font-weight-bold">
+                                        @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalExpiredItems))
+                                    </span>
+                                </a>
+                            </li>
+                        }
+                        @if (ViewBag.StockAlertReportPermission.IsView)
+                        {
+                            <li class="nav-item">
+                                <a href="/inventoryreports/stockalert?BranchId=@ViewBag.BranchId" class="nav-link">
+                                    Low Stock Items <span class="float-right text-info font-weight-bold">
+                                        @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalStockAlertItems))
+                                    </span>
+                                </a>
+                            </li>
+                        }
+                        @if (ViewBag.PurchasePermission.IsView)
+                        {
+                            <li class="nav-item">
+                                <a href="/purchase/index?BranchId=@ViewBag.BranchId&From=dashboard" class="nav-link">
+                                    Purchase <span class="float-right text-info font-weight-bold">
+                                        @{
+                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                            {
+                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", (ViewBag.Dashboard.TotalPurchase)))
+                                            }
+                                            else
+                                            {
+                                                @(String.Format("{0:0.##}", (ViewBag.Dashboard.TotalPurchase)))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                            }
+                                        }
+                                    </span>
+                                </a>
+                            </li>
+                        }
+                        @if (ViewBag.SupplierPaymentReportPermission.IsView)
+                        {
+                            <li class="nav-item">
+                                <a href="/purchase/index?BranchId=@ViewBag.BranchId&From=dashboard" class="nav-link">
+                                    Purchase Due <span class="float-right text-info font-weight-bold">
+                                        @{
+                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                            {
+                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalPurchaseDue))
+                                            }
+                                            else
+                                            {
+                                                @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalPurchaseDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                            }
+                                        }
+                                    </span>
+                                </a>
+                            </li>
+                        }
+                        @if (ViewBag.SupplierRefundPermission.IsView)
+                        {
+                            <li class="nav-item">
+                                <a href="/purchase/purchasereturn?BranchId=@ViewBag.BranchId" class="nav-link">
+                                    Purchase Return <span class="float-right text-info font-weight-bold">
+                                        @{
+                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                            {
+                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalPurchaseReturn))
+                                            }
+                                            else
+                                            {
+                                                @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalPurchaseReturn))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                            }
+                                        }
+                                    </span>
+                                </a>
+                            </li>
+                        }
+                        @*@if (ViewBag.SupplierRefundPermission.IsView)
+                            {
+                                <li class="nav-item">
+                                    <a href="/purchase/purchasereturn?BranchId=@ViewBag.BranchId" class="nav-link">
+                                        Purchase Return Due <span class="float-right text-info font-weight-bold">
+                                            @{
+                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                {
+                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalPurchaseReturnDue))
+                                                }
+                                                else
+                                                {
+                                                    @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalPurchaseReturnDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                }
+                                            }
+                                        </span>
+                                    </a>
+                                </li>
+                            }*@
+                        @if (ViewBag.ExpensePermission.IsView)
+                        {
+                            <li class="nav-item">
+                                <a href="/expense/index?BranchId=@ViewBag.BranchId" class="nav-link">
+                                    Expense <span class="float-right text-info font-weight-bold">
+                                        @{
+                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                            {
+                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalExpense))
+                                            }
+                                            else
+                                            {
+                                                @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalExpense))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                            }
+                                        }
+                                    </span>
+                                </a>
+                            </li>
+                        }
+                        @*@if (ViewBag.ExpensePermission.IsView)
+                            {
+                                <li class="nav-item">
+                                    <a href="/expense?BranchId=@ViewBag.BranchId" class="nav-link">
+                                        Expense Due <span class="float-right text-info font-weight-bold">
+                                            @{
+                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                {
+                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalExpenseDue))
+                                                }
+                                                else
+                                                {
+                                                    @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalExpenseDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                }
+                                            }
+                                        </span>
+                                    </a>
+                                </li>
+                            }*@
+                        @*@if (ViewBag.IncomePermission.IsView)
+                            {
+                                <li class="nav-item">
+                                    <a href="/income?BranchId=@ViewBag.BranchId" class="nav-link">
+                                        Income <span class="float-right text-info font-weight-bold">
+                                            @{
+                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                {
+                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalIncome))
+                                                }
+                                                else
+                                                {
+                                                    @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalIncome))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                }
+                                            }
+                                        </span>
+                                    </a>
+                                </li>
+                            }
+                            @if (ViewBag.IncomePermission.IsView)
+                            {
+                                <li class="nav-item">
+                                    <a href="/income?BranchId=@ViewBag.BranchId" class="nav-link">
+                                        Income Due <span class="float-right text-info font-weight-bold">
+                                            @{
+                                                if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                                {
+                                                    @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.Dashboard.TotalIncomeDue))
+                                                }
+                                                else
+                                                {
+                                                    @(String.Format("{0:0.##}", ViewBag.Dashboard.TotalIncomeDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                                }
+                                            }
+                                        </span>
+                                    </a>
+                                </li>
+                            }*@
+                        @if (ViewBag.StockTransferPermission.IsView)
+                        {
+                            <li class="nav-item">
+                                <a href="/stocktransfer?BranchId=@ViewBag.BranchId&Status=3" class="nav-link">
+                                    Stock Transferred <span class="float-right text-info font-weight-bold">
+                                        @{
+                                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                                            {
+                                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", (ViewBag.Dashboard.TotalStockTransferred)))
+                                            }
+                                            else
+                                            {
+                                                @(String.Format("{0:0.##}", (ViewBag.Dashboard.TotalStockTransferred)))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                                            }
+                                        }
+                                    </span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card card-primary card-outline">
+                @*<div class="card-header border-bottom-0">
+                        <h4 class="card-title ">Stock Alert</h4>
+                    </div>*@
+                <div class="card-header border-bottom-0">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <h5>
+                                <span>Stock Alert </span>
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body p-0 table-responsive" style="height:670px">
+                    <table class="table table-bordered table-striped tblData">
+                        <thead>
+                            <tr>
+                                @*<th>Sln</th>*@
+                                <th>SKU</th>
+                                <th>Item</th>
+                                <th>Current Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var alertCount = 1;
+                                foreach (var item in ViewBag.Dashboard.StockAlertItems)
+                                {
+                                    <tr>
+                                        @*<td>@(alertCount)</td>*@
+                                        <td style="width:20%">@item.SKU</td>
+                                        <td style="width: 40%">
+                                            @if (item.ItemName.Length > 15)
+                                            {
+                                                <span> @item.ItemName.Substring(0, 15)...</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@item.ItemName</span>
+                                            }
+
+                                            @if (item.VariationName != null)
+                                            {
+                                                <br /><span> <b>Variation:</b> @item.VariationName</span>
+                                            }
+                                            @*<br /><span><b>SKU:</b> @item.SKU</span>*@
+                                        </td>
+                                        <td style="width:20%;">
+                                            @(String.Format("{0:0.##}", item.Quantity))
+                                        </td>
+                                    </tr>
+                                    alertCount++;
+                                }
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+                <!-- /.card-body -->
+                <!--/. card-footer-->
+                <div class="card-footer text-right">
+                    <a href="/reports/stockalert?BranchId=@ViewBag.BranchId" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+</div>
+@*<div class="container-fluid">
+    </div>*@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var Timeout = @Html.Raw(ViewBag.Timeout);
+    setTimeout(function () {
+    var model = @Html.Raw(Json.Encode(ViewBag.Dashboard.TopCustomers));
+    var label = [];
+    var data = [];
+    $.each(model, function (key, value) {
+        label.push(value.Name + '-' + value.MobileNo);
+        data.push(value.TotalSales);
+    });
+    const ctx = document.getElementById('myChartCustomers');
+    const myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: label,//['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange', 'dd', 'dds', 'eee', 'ere'],
+            datasets: [{
+                label: 'Top 10 Customers',
+                data: data,//[12, 19, 3, 5, 2, 3, 4, 5, 6, 7],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    grid: {
+                        display: false,
+                    },
+                    beginAtZero: true
+                },
+                y: {
+                    //grid: {
+                    //    display: false,
+                    //},
+                    beginAtZero: true
+                }
+            },
+            onClick: chartCustomersClickEvent
+        }
+    });
+
+    function chartCustomersClickEvent(evt) {
+        var activePoints = myChart.getElementsAtEventForMode(evt, 'point', myChart.options);
+        var firstPoint = activePoints[0];
+        var label = myChart.data.labels[firstPoint.index];
+        var value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];
+        //alert(label + ": " + value);
+        location.href = "/customers?BranchId=" + $('#ddlBranch').val() + "&MobileNo=" + label.split('-')[1];
+    }
+
+    var model1 = @Html.Raw(Json.Encode(ViewBag.Dashboard.TopItems));
+    var label1 = [];
+    var data1 = [];
+    $.each(model1, function (key, value) {
+        if (value.VariationName) {
+            label1.push(value.ItemName + '-' + value.VariationName + '-' + value.SKU);
+        }
+        else {
+            label1.push(value.ItemName + '-' + value.SKU);
+        }
+        data1.push(value.TotalSales);
+    });
+    const ctx1 = document.getElementById('myChartItems');
+    const myChart1 = new Chart(ctx1, {
+        type: 'pie',
+        data: {
+            labels: label1,
+            datasets: [{
+                label: 'Top 10 Items',
+                data: data1,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    grid: {
+                        display: false,
+                    },
+                    beginAtZero: true
+                },
+                y: {
+                    grid: {
+                        display: false,
+                    },
+                    beginAtZero: true
+                }
+            },
+            onClick: chartItemsClickEvent
+        }
+    });
+
+    function chartItemsClickEvent(evt) {
+        var activePoints = myChart1.getElementsAtEventForMode(evt, 'point', myChart1.options);
+        var firstPoint = activePoints[0];
+        var label = myChart1.data.labels[firstPoint.index];
+        var value = myChart1.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];
+        //alert(label + ": " + value);
+        var _sku = label.split('-').length == 3 ? label.split('-')[2] : label.split('-')[1];
+        location.href = "/salesreports/salesbyitem?BranchId=" + $('#ddlBranch').val() + "&SkuCode=" + _sku;
+    }
+
+    var model2 = @Html.Raw(Json.Encode(ViewBag.Dashboard.SalesMonthWise));
+    var label2 = [];
+    var data2 = [];
+    $.each(model2, function (key, value) {
+        label2.push(value.DayNo);
+        data2.push(value.TotalSales);
+    });
+    const ctx2 = document.getElementById('myChartSales');
+    const myChart2 = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: label2,
+            datasets: [{
+                label: 'Sales Month Wise',
+                data: data2,
+                fill: false,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                tension: 0.1,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    //grid: {
+                    //    display: false,
+                    //},
+                    beginAtZero: true
+                },
+                y: {
+                    //grid: {
+                    //    display: false,
+                    //},
+                    beginAtZero: true
+                }
+            },
+            onClick: chartSalesClickEvent
+        }
+    });
+
+    function chartSalesClickEvent(evt) {
+        var activePoints = myChart2.getElementsAtEventForMode(evt, 'point', myChart2.options);
+        var firstPoint = activePoints[0];
+        var label = myChart2.data.labels[firstPoint.index];
+        var value = myChart2.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];
+        //alert(label + ": " + value);
+        location.href = "/sales/index?BranchId=" + $('#ddlBranch').val() + "&From=dashboard&Day=" + label + "&Month=" + $('#ddlSalesMonth').val() + "&Year=" + $('#ddlSalesYear').val();
+    }
+
+    var model3 = @Html.Raw(Json.Encode(ViewBag.Dashboard.PurchaseMonthWise));
+    var label3 = [];
+    var data3 = [];
+    $.each(model3, function (key, value) {
+        label3.push(value.DayNo);
+        data3.push(value.TotalPurchase);
+    });
+    const ctx3 = document.getElementById('myChartPurchase');
+    const myChart3 = new Chart(ctx3, {
+        type: 'line',
+        data: {
+            labels: label3,
+            datasets: [{
+                label: 'Purchase Month Wise',
+                data: data3,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    //grid: {
+                    //    display: false,
+                    //},
+                    beginAtZero: true
+                },
+                y: {
+                    //grid: {
+                    //    display: false,
+                    //},
+                    beginAtZero: true
+                }
+            },
+            onClick: chartPurchaseClickEvent
+        }
+    });
+
+    function chartPurchaseClickEvent(evt) {
+        var activePoints = myChart3.getElementsAtEventForMode(evt, 'point', myChart3.options);
+        var firstPoint = activePoints[0];
+        var label = myChart3.data.labels[firstPoint.index];
+        var value = myChart3.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];
+        //alert(label + ": " + value);
+        location.href = "/purchase/index?BranchId=" + $('#ddlBranch').val() + "&From=dashboard&Day=" + label + "&Month=" + $('#ddlPurchaseMonth').val() + "&Year=" + $('#ddlPurchaseYear').val();
+        }
+    }, Timeout);
+</script>

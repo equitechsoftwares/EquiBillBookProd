@@ -1,0 +1,149 @@
+
+<div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="">
+                <label>Booking No</label>
+                <span id="txtAdvBalance">
+                    @ViewBag.BookingNo
+                </span>
+                <input type="hidden" id="hdnCustomerId" value="@ViewBag.Booking.CustomerId" />
+                <input type="hidden" id="hdnBranchId" value="@ViewBag.Booking.BranchId" />
+                <input type="hidden" id="hdnAmountRemaining" value="@ViewBag.Due" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="">
+                <label>Deposit Amount</label>
+                <span id="txtAdvBalance">
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@ViewBag.DepositAmount
+                        }
+                        else
+                        {
+                            @ViewBag.DepositAmount@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="text-danger">
+                <label>Due</label>
+                <span id="txtAdvBalance">
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@ViewBag.Due
+                        }
+                        else
+                        {
+                            @ViewBag.Due@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-group">
+            <label>Paid On <span class="danger">*</span></label>
+            <div class="input-group date" id="_CreditsAppliedDate" data-target-input="nearest">
+                <input id="txtCreditsAppliedDate" type="text" class="form-control datetimepicker-input" data-target="#_CreditsAppliedDate" />
+                <div class="input-group-append" data-target="#_CreditsAppliedDate" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            </div>
+            <small class="text-red font-weight-bold errorText" id="divCreditsAppliedDate_M"></small>
+        </div>
+    </div>
+    <br />
+    <div class="table-responsive">
+        <table id="tblPayments" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Credited Date</th>
+                    <th>Credit Info</th>
+                    <th>Credit Amount</th>
+                    <th>Credit Available</th>
+                    <th>Credits To Apply</th>
+                </tr>
+            </thead>
+            <tbody id="divCombo" class="rows">
+                @{
+                    if (ViewBag.CustomerPayments != null)
+                    {
+                        var index = 1;
+                        foreach (var item in ViewBag.CustomerPayments)
+                        {
+                            <tr id="divCombo@(item.CustomerPaymentId)">
+                                <td>@index</td>
+                                <td>
+                                    @item.PaymentDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                                </td>
+                                <td>
+                                    @if (item.ParentId == 0)
+                                    {
+                                        @item.ReferenceNo
+                                    }
+                                    else
+                                    {
+                                        @item.ParentReferenceNo
+                                    }
+
+                                </td>
+                                <td>
+                                    @item.Amount
+                                </td>
+                                <td>
+                                    @item.AmountRemaining
+                                </td>
+                                <td>
+                                    <div class="input-group" style="min-width:180px">
+                                        <input type="number" class="form-control" id="txtAmount@(item.CustomerPaymentId)" onkeypress="return onlyDecimalKey(event)" onchange="updateBookingCreditsTotal()">
+                                        <input type="hidden" id="hdnCustomerPaymentId@(item.CustomerPaymentId)" value="@item.CustomerPaymentId" />
+                                        <input type="hidden" id="hdnAmountRemaining@(item.CustomerPaymentId)" value="@item.AmountRemaining" />
+                                        <input type="hidden" id="hdnAccountId@(item.CustomerPaymentId)" value="@item.AccountId" />
+                                    </div>
+                                </td>
+                            </tr>
+                            index++;
+                        }
+                    }
+                }
+
+            </tbody>
+
+        </table>
+        <div class="col-sm-12">
+
+            <div class="col-md-4 float-right">
+                <div class="row" id="divCalculationSummary">
+                    <div class="col-12">
+                        <div class="row">
+                            <label for="inputEmail3" class="col-8 col-form-label text-right">Amount To Credit :</label>
+                            <label for="inputEmail3" class="col-4 col-form-label text-left" id="divAmountToCredit">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="row">
+                            <label for="inputEmail3" class="col-8 col-form-label text-right text-danger">Booking Balance Due :</label>
+                            <label for="inputEmail3" class="col-4 col-form-label text-left text-danger" id="divRemainingCredits"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+

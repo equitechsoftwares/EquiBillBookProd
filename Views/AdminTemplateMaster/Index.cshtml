@@ -1,0 +1,200 @@
+@model IEnumerable<EquiBillBook.Models.ClsInvoiceTemplatesMaster>
+@using System.Web
+
+@{
+    ViewBag.Title = "Template Masters";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Template Masters</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/admindashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Template Masters</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <a href="@Url.Action("CreatePreDefinedTemplate", "AdminTemplateMaster")" class="btn btn-primary float-sm-right">
+                    <i class="fas fa-plus"></i> New Template
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        @Html.AntiForgeryToken()
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline collapsed-card">
+                    <div class="card-header" data-card-widget="collapse" title="Collapse">
+                        <h3 class="card-title">Filter</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                <div class="form-group">
+                                    <label>Filter by Invoice Type</label>
+                                    <select class="form-control select2" style="width: 100%;" id="invoiceTypeFilter">
+                                        <option value="">All Types</option>
+                                        @{
+                                            var allInvoiceTypes = ViewBag.AllInvoiceTypes as List<EquiBillBook.Models.InvoiceTypeConfig> ?? new List<EquiBillBook.Models.InvoiceTypeConfig>();
+                                            var groupedTypes = allInvoiceTypes.GroupBy(t => t.Category).OrderBy(g => g.Key);
+                                        }
+                                        @foreach (var group in groupedTypes)
+                                        {
+                                            <optgroup label="@group.Key">
+                                                @foreach (var invoiceType in group.OrderBy(t => t.SortOrder))
+                                                {
+                                                    <option value="@invoiceType.InvoiceTypeKey">@invoiceType.DisplayName</option>
+                                                }
+                                            </optgroup>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary float-right mt-2" onclick="applyFilter()">Search</button>
+                        <button type="submit" class="btn btn-warning float-right mt-2 mr-2" onclick="window.location.reload()">Refresh</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Invoice Templates</h3>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th class="hide noPrint" style="width:120px;">Actions</th>
+                                    <th>Invoice Type</th>
+                                    <th>Name</th>
+                                    <th>Key</th>
+                                    <th>Default</th>
+                                    <th class="hidden">Status</th>
+                                    <th class="hide">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var t in Model)
+                                    {
+                                        <tr data-invoice-type="@t.InvoiceType">
+                                            <td>@t.InvoiceTemplateMasterId</td>
+                                            <td class="hide noPrint">
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-info">Action</button>
+                                                    <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <div class="dropdown-menu" role="menu">
+                                                        <a class="dropdown-item" href="@Url.Action("EditPreDefinedTemplate", "AdminTemplateMaster", new { id = t.InvoiceTemplateMasterId })"><i class="fas fa-edit"></i> Edit</a>
+                                                        <a class="dropdown-item" href="javascript:void(0)" onclick="Delete(@t.InvoiceTemplateMasterId,'@Html.Raw(HttpUtility.JavaScriptStringEncode(t.TemplateName))')"><i class="far fa-trash-alt"></i> Delete</a>
+                                                        <div class="dropdown-divider"></div>
+                                                        <a class="dropdown-item" href="@Url.Action("Categories", "AdminTemplateMaster", new { invoiceTemplateMasterId = t.InvoiceTemplateMasterId })"><i class="fas fa-folder"></i> Color Categories</a>
+                                                        <a class="dropdown-item" href="@Url.Action("Colors", "AdminTemplateMaster", new { invoiceTemplateMasterId = t.InvoiceTemplateMasterId })"><i class="fas fa-palette"></i> Colors</a>
+                                                        <a class="dropdown-item" href="@Url.Action("LabelCategories", "AdminTemplateMaster", new { invoiceTemplateMasterId = t.InvoiceTemplateMasterId })"><i class="fas fa-folder"></i> Label Categories</a>
+                                                        <a class="dropdown-item" href="@Url.Action("Labels", "AdminTemplateMaster", new { invoiceTemplateMasterId = t.InvoiceTemplateMasterId })"><i class="fas fa-tags"></i> Labels</a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>@t.InvoiceType</td>
+                                            <td>@t.TemplateName</td>
+                                            <td>@t.TemplateKey</td>
+                                            <td>N/A</td>
+                                    <td class="hidden">@(t.IsActive == true ? "Active" : "Inactive")</td>
+                                    <td class="hide">
+                                        @if (t.IsActive)
+                                        {
+                                            <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@t.InvoiceTemplateMasterId,false)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                                        }
+                                        else
+                                        {
+                                            <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@t.InvoiceTemplateMasterId,true)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                                        }
+                                    </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7">No templates found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(document).ready(function () {
+        // Initialize select2 for the filter dropdown
+        $('#invoiceTypeFilter').select2({
+            theme: 'bootstrap4',
+            width: '100%'
+        });
+
+        // Apply filter on change
+        $('#invoiceTypeFilter').on('change', function () {
+            applyFilter();
+        });
+
+        // Apply filter function
+        function applyFilter() {
+            var selectedType = $('#invoiceTypeFilter').val().toLowerCase();
+            var tableRows = $('table tbody tr');
+
+            if (selectedType === '') {
+                // Show all rows
+                tableRows.show();
+            } else {
+                // Filter rows by invoice type using data attribute
+                tableRows.each(function () {
+                    var row = $(this);
+                    var rowInvoiceType = row.data('invoice-type');
+                    
+                    if (rowInvoiceType && rowInvoiceType.toLowerCase() === selectedType) {
+                        row.show();
+                    } else {
+                        row.hide();
+                    }
+                });
+            }
+        }
+
+        // Make applyFilter available globally
+        window.applyFilter = applyFilter;
+    });
+</script>
+<script src="~/Content/JQuery/Admin/AdminTemplateMaster.js"></script>
+

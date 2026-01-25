@@ -1,0 +1,93 @@
+@{
+    var kots = ViewBag.Kots as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var currentPageIndex = ViewBag.CurrentPageIndex ?? 1;
+    var pageCount = ViewBag.PageCount ?? 0;
+}
+<thead id="thead">
+    <tr>
+        <th>KOT No</th>
+        <th>Order Time</th>
+        <th>Table</th>
+        <th>Order Status</th>
+        <th>Expected Time</th>
+        <th>Ready Time</th>
+        <th>Served Time</th>
+        <th>Preparation Time (min)</th>
+        <th>Service Time (min)</th>
+        <th>Total Time (min)</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (kots != null && kots.Count > 0)
+    {
+        foreach (var kot in kots)
+        {
+            var orderTime = kot.OrderTime != null ? (DateTime)kot.OrderTime : DateTime.MinValue;
+            var expectedTime = kot.ExpectedTime != null ? (DateTime?)kot.ExpectedTime : null;
+            var readyTime = kot.ReadyTime != null ? (DateTime?)kot.ReadyTime : null;
+            var servedTime = kot.ServedTime != null ? (DateTime?)kot.ServedTime : null;
+            
+            var prepTime = readyTime.HasValue ? (readyTime.Value - orderTime).TotalMinutes : (double?)null;
+            var serviceTime = servedTime.HasValue && readyTime.HasValue ? (servedTime.Value - readyTime.Value).TotalMinutes : (double?)null;
+            var totalTime = servedTime.HasValue ? (servedTime.Value - orderTime).TotalMinutes : (double?)null;
+            
+            <tr>
+                <td><a href="/kot/details/@kot.KotId">@kot.KotNo</a></td>
+                <td>@(orderTime != DateTime.MinValue ? orderTime.ToString("dd/MM/yyyy HH:mm") : "")</td>
+                <td>@(kot.TableNo ?? "-")</td>
+                <td><span class="badge badge-@(kot.OrderStatus == "Served" ? "success" : kot.OrderStatus == "Ready" ? "info" : kot.OrderStatus == "Preparing" ? "warning" : "secondary")">@kot.OrderStatus</span></td>
+                <td>@(expectedTime.HasValue ? expectedTime.Value.ToString("HH:mm") : "-")</td>
+                <td>@(readyTime.HasValue ? readyTime.Value.ToString("HH:mm") : "-")</td>
+                <td>@(servedTime.HasValue ? servedTime.Value.ToString("HH:mm") : "-")</td>
+                <td>@(prepTime.HasValue ? Math.Round(prepTime.Value, 1).ToString() : "-")</td>
+                <td>@(serviceTime.HasValue ? Math.Round(serviceTime.Value, 1).ToString() : "-")</td>
+                <td>@(totalTime.HasValue ? Math.Round(totalTime.Value, 1).ToString() : "-")</td>
+            </tr>
+        }
+    }
+</tbody>
+<tbody class="hide noPrint">
+    <tr></tr>
+    <tr>
+        <td colspan="10">
+            <div class="dataTables_info" id="tblKitchenPerformance_info_custom" role="status" aria-live="polite">Showing @((currentPageIndex - 1) * pageSize + 1) to @(Math.Min(currentPageIndex * pageSize, totalCount)) of @totalCount entries</div>
+            @if (pageCount > 1)
+            {
+                int j = 0;
+                <div class="dataTables_paginate paging_simple_numbers" id="tblKitchenPerformance_paginate_custom" style="float:right">
+                    <ul class="pagination">
+                        @if (currentPageIndex > 1)
+                        {
+                            <li class="paginate_button page-item previous" id="tblKitchenPerformance_previous">
+                                <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblKitchenPerformance" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                            </li>
+                            <li class="paginate_button page-item previous" id="tblKitchenPerformance_previous">
+                                <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblKitchenPerformance" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                            </li>
+                        }
+                        @for (int i = currentPageIndex; i <= pageCount; i++)
+                        {
+                            <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblKitchenPerformance" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                            </li>
+                            if (j == 10)
+                            {
+                                i = pageCount + 1;
+                            }
+                            j++;
+                        }
+                        @if (currentPageIndex < pageCount)
+                        {
+                            <li class="paginate_button page-item next" id="tblKitchenPerformance_next">
+                                <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblKitchenPerformance" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </td>
+    </tr>
+</tbody>
+

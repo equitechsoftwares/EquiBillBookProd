@@ -1,0 +1,150 @@
+﻿
+@if (ViewBag.ReminderModulesDetail != null)
+{
+    <div class="" role="tabpanel">
+        <div id="quickForm">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <p class="help-block">
+                            <b>Available Tags <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Click on any tag to copy it"></i></b>
+                            <br>
+                            @{
+                                string[] AvailableTags = ViewBag.ReminderModule.AvailableTags.Split(',');
+                                foreach (var tag in AvailableTags)
+                                {
+                                    <a href="javascript:void(0)" onclick="setAvailableTags('@tag')">@tag</a>
+                                }
+                            }
+                        </p>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>Email Subject <span class="danger">*</span> <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available Tags can be used to frame a subject.<br><small class='text-muted'>{Business Logo} tag will not work in subject </small>"></i></label>
+                            <input type="text" class="form-control" id="txtEmailSubject" placeholder="" value="@(ViewBag.ReminderModulesDetail.ReminderModulesSetting != null ? ViewBag.ReminderModulesDetail.ReminderModulesSetting.EmailSubject : "")">
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>CC <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Add as many CC using coma separated<br><small class='text-muted'>Eg: demo1@gmail.com,demo2@gmail.com,demo3@gmail.com </small>"></i></label>
+                            <input type="text" class="form-control" id="txtCC" placeholder="" value="@(ViewBag.ReminderModulesDetail.ReminderModulesSetting != null ? ViewBag.ReminderModulesDetail.ReminderModulesSetting.CC : "")">
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>BCC <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Add as many Bcc using coma separated<br><small class='text-muted'>Eg: demo1@gmail.com,demo2@gmail.com,demo3@gmail.com </small>"></i></label>
+                            <input type="text" class="form-control" id="txtBCC" placeholder="" value="@(ViewBag.ReminderModulesDetail.ReminderModulesSetting != null ? ViewBag.ReminderModulesDetail.ReminderModulesSetting.BCC : "")">
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12 divEmailBody">
+                        <div class="form-group">
+                            <label id="lblProductDescription">Email Body <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available Tags can be used to frame the Email Body"></i></label>
+                            <br />
+                            <textarea id="txtEmailBody" class="txtEmailBody">@(ViewBag.ReminderModulesDetail.ReminderModulesSetting != null ? ViewBag.ReminderModulesDetail.ReminderModulesSetting.EmailBody : "")</textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <div class="checkbox icheck-turquoise">
+                                @if (ViewBag.ReminderModulesDetail.ReminderModulesSetting == null)
+                                {
+                                    <input type="checkbox" id="chkAutoSendEmail">
+                                }
+                                else
+                                {
+                                    if (ViewBag.ReminderModulesDetail.ReminderModulesSetting.AutoSendEmail == true)
+                                    {
+                                        <input type="checkbox" id="chkAutoSendEmail" checked>
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" id="chkAutoSendEmail">
+                                    }
+
+                                }
+                                <label for="chkAutoSendEmail" class="mt-2">
+                                    Send Email
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+
+                    <div class="col-sm-12 ">
+                        <div class="form-group">
+                            <label id="lblProductDescription">Sms Body <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available Tags can be used to frame a subject.<br><small class='text-muted'>{Business Logo} tag will not work in subject </small>"></i></label>
+                            <br />
+                            <textarea id="txtSmsBody" class="form-control">@(ViewBag.ReminderModulesDetail.ReminderModulesSetting != null ? ViewBag.ReminderModulesDetail.ReminderModulesSetting.SmsBody : "")</textarea>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <div class="checkbox icheck-turquoise">
+                                @if (ViewBag.ReminderModulesDetail.ReminderModulesSetting == null)
+                                {
+                                    <input type="checkbox" id="chkAutoSendSms">
+                                }
+                                else
+                                {
+                                    if (ViewBag.ReminderModulesDetail.ReminderModulesSetting.AutoSendSms == true)
+                                    {
+                                        <input type="checkbox" id="chkAutoSendSms" checked>
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" id="chkAutoSendSms">
+                                    }
+                                }
+
+                                <label for="chkAutoSendSms" class="mt-2">
+                                    Send Sms
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+
+                    <div class="col-sm-12 ">
+                        <div class="form-group">
+                            <label id="lblProductDescription">Whatsapp Text <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "" : "hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Available Tags can be used to frame a subject.<br><small class='text-muted'>{Business Logo} tag will not work in subject </small>"></i></label>
+                            <br />
+                            <textarea id="txtWhatsappBody" class="form-control">@(ViewBag.ReminderModulesDetail.ReminderModulesSetting != null ? ViewBag.ReminderModulesDetail.ReminderModulesSetting.WhatsappBody : "")</textarea>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <div class="checkbox icheck-turquoise">
+                                @if (ViewBag.ReminderModulesDetail.ReminderModulesSetting == null)
+                                {
+                                    <input type="checkbox" id="chkAutoSendWhatsapp">
+                                }
+                                else
+                                {
+                                    if (ViewBag.ReminderModulesDetail.ReminderModulesSetting.AutoSendWhatsapp == true)
+                                    {
+                                        <input type="checkbox" id="chkAutoSendWhatsapp" checked>
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" id="chkAutoSendWhatsapp">
+                                    }
+                                }
+                                <label for="chkAutoSendWhatsapp" class="mt-2">
+                                    Send Whatsapp
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+

@@ -1,0 +1,341 @@
+@using EquiBillBook.Controllers.Website
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    string baseUrl = Request.Url != null ? Request.Url.Scheme + "://" + Request.Url.Host : "https://equibillbook.com";
+    string category = ViewBag.Category != null ? ViewBag.Category.ToString() : "";
+}
+
+<!-- Breadcrumb Structured Data for Category Page -->
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "@baseUrl"
+    },
+    {
+      "@@type": "ListItem",
+      "position": 2,
+      "name": "Knowledge Base",
+      "item": "@baseUrl/knowledgebase"
+    },
+    {
+      "@@type": "ListItem",
+      "position": 3,
+      "name": "@category",
+      "item": "@baseUrl/knowledgebase/category/@category.ToLower().Replace(" ", "-")"
+    }
+  ]
+}
+</script>
+
+<style>
+    .kb-search-box {
+        max-width: 700px;
+        margin: 0 auto 2rem;
+    }
+    
+    .kb-search-input {
+        border-radius: 50px;
+        padding: 1rem 1.5rem;
+        border: 1px solid #dee2e6;
+        font-size: 1.1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .kb-search-input:focus {
+        outline: none;
+        border-color: #6c3fb5;
+        box-shadow: 0 2px 12px rgba(108, 63, 181, 0.2);
+    }
+    
+    .kb-search-btn {
+        border-radius: 50px;
+        padding: 1rem 2rem;
+        background: #6c3fb5;
+        color: white;
+        border: none;
+        font-weight: 600;
+        margin-left: -50px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: background 0.3s;
+    }
+    
+    .kb-search-btn:hover {
+        background: #5a32a0;
+        color: white;
+    }
+    
+    .kb-article-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .kb-article-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .kb-article-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .kb-article-card .kb-article-title {
+        flex-shrink: 0;
+    }
+    
+    .kb-article-card .kb-article-description {
+        flex-grow: 1;
+        margin-bottom: 1rem;
+    }
+    
+    .kb-article-card .d-flex.flex-wrap {
+        flex-shrink: 0;
+    }
+    
+    .kb-article-card .mt-2 {
+        flex-shrink: 0;
+        margin-top: auto;
+    }
+    
+    .kb-article-title {
+        color: #6c3fb5;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .kb-article-title:hover {
+        text-decoration: underline;
+    }
+    
+    .kb-article-description {
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .kb-no-results {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+    }
+    
+    .kb-breadcrumb {
+        background: transparent;
+        padding: 1rem 0;
+    }
+    
+    .kb-breadcrumb-item {
+        display: inline-block;
+    }
+    
+    .kb-breadcrumb-item:not(:last-child)::after {
+        content: "/";
+        margin: 0 0.5rem;
+        color: #6c757d;
+    }
+    
+    .kb-breadcrumb-item a {
+        color: #6c757d;
+        text-decoration: none;
+    }
+    
+    .kb-breadcrumb-item a:hover {
+        color: #6c3fb5;
+        text-decoration: underline;
+    }
+    
+    .kb-breadcrumb-item.active {
+        color: #495057;
+        font-weight: 500;
+    }
+</style>
+
+<!-- Inner Banner -->
+<section class="banner pt-3 pb-0" style="background: #6c3fb5;">
+    <div class="container">
+        <div class="row justify-content-between align-items-center">
+            <div class="col-md-6 text-md-start text-center wow zoomInLeft">
+                <h1 class="mb-3 text-white">@ViewBag.Category</h1>
+                <h5 class="text-white">Articles and guides related to @ViewBag.Category</h5>
+            </div>
+            <div class="col-md-3 wow zoomInRight">
+                <img src="~/Content/web-assets/images/innerbanner.png" class="img-fluid" alt="@ViewBag.Category - EquiBillBook Knowledge Base">
+            </div>
+        </div>
+    </div>
+</section>
+<!-- // -->
+
+<!-- Breadcrumb Navigation -->
+<section class="py-2" style="background: #f8f9fa;">
+    <div class="container">
+        <nav class="kb-breadcrumb" aria-label="breadcrumb">
+            <div class="kb-breadcrumb-item">
+                <a href="/">Home</a>
+            </div>
+            <div class="kb-breadcrumb-item">
+                <a href="/knowledgebase">Knowledge Base</a>
+            </div>
+            <div class="kb-breadcrumb-item active">
+                @ViewBag.Category
+            </div>
+        </nav>
+    </div>
+</section>
+
+<!-- Articles List -->
+<section class="py-5">
+    <div class="container">
+        <!-- Search Section -->
+        <div class="kb-search-box">
+            <form id="kbSearchForm" onsubmit="return false;">
+                <div class="input-group">
+                    <input type="text" id="kbSearchInput" class="form-control kb-search-input" placeholder="Search articles in @ViewBag.Category..." autocomplete="off">
+                    <button type="submit" class="btn kb-search-btn">
+                        <i class="fas fa-search me-2"></i>Search
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-9">
+                <div id="kbArticlesContainer">
+                    @if (ViewBag.Articles != null && ((System.Collections.IEnumerable)ViewBag.Articles).Cast<object>().Any())
+                    {
+                        <div class="row">
+                            @foreach (KnowledgeBaseArticle article in (System.Collections.IEnumerable)ViewBag.Articles)
+                            {
+                                <div class="col-md-6 mb-3 kb-article-item" 
+                                     data-title="@article.Title.ToLower()" 
+                                     data-description="@article.Description.ToLower()" 
+                                     data-tags="@string.Join(" ", article.Tags).ToLower()">
+                                    <div class="kb-article-card">
+                                        <h4 class="kb-article-title">
+                                            <a href="/knowledgebase/article/@article.Slug" style="color: #6c3fb5; text-decoration: none;">@article.Title</a>
+                                        </h4>
+                                        <p class="text-muted kb-article-description">@article.Description</p>
+                                        <div class="d-flex flex-wrap mt-3">
+                                            @foreach (var tag in article.Tags)
+                                            {
+                                                <span class="badge badge-secondary mr-2 mb-2">@tag</span>
+                                            }
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-muted">
+                                                <i class="far fa-clock me-1"></i>
+                                                Updated @article.LastUpdated.ToString("MMM dd, yyyy")
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <h3 class="text-muted">No articles found in this category.</h3>
+                            <a href="/knowledgebase" class="btn btn-primary mt-3">Browse All Articles</a>
+                        </div>
+                    }
+                </div>
+
+                <!-- No Search Results -->
+                <div id="kbNoResults" class="kb-no-results" style="display: none;">
+                    <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                    <h3>No articles found</h3>
+                    <p>Try different keywords or browse other categories.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Categories</h5>
+                        @if (ViewBag.Categories != null)
+                        {
+                            foreach (string categoryItem in ViewBag.Categories)
+                            {
+                                <div class="mb-2">
+                                    <a href="/knowledgebase/category/@categoryItem.ToLower().Replace(" ", "-")" class="text-decoration-none">
+                                        @categoryItem
+                                    </a>
+                                </div>
+                            }
+                        }
+                        <hr>
+                        <a href="/knowledgebase" class="btn btn-primary btn-sm w-100">All Articles</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(document).ready(function() {
+        // Search functionality
+        $('#kbSearchForm').on('submit', function(e) {
+            e.preventDefault();
+            performSearch();
+        });
+
+        $('#kbSearchInput').on('keyup', function() {
+            var query = $(this).val().toLowerCase().trim();
+            if (query.length === 0) {
+                showAllArticles();
+            } else if (query.length >= 2) {
+                performSearch();
+            }
+        });
+
+        function performSearch() {
+            var query = $('#kbSearchInput').val().toLowerCase().trim();
+            var hasResults = false;
+
+            $('.kb-article-item').each(function() {
+                var title = $(this).data('title') || '';
+                var description = $(this).data('description') || '';
+                var tags = $(this).data('tags') || '';
+                var text = title + ' ' + description + ' ' + tags;
+
+                if (text.indexOf(query) !== -1) {
+                    $(this).show();
+                    hasResults = true;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            // Show/hide no results message
+            if (hasResults || query.length === 0) {
+                $('#kbNoResults').hide();
+                $('#kbArticlesContainer').show();
+            } else {
+                $('#kbNoResults').show();
+                $('#kbArticlesContainer').hide();
+            }
+        }
+
+        function showAllArticles() {
+            $('.kb-article-item').show();
+            $('#kbNoResults').hide();
+            $('#kbArticlesContainer').show();
+        }
+    });
+</script>

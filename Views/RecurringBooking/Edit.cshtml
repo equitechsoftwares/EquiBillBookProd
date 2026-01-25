@@ -1,0 +1,640 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Recurring Booking";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+    var recurringBooking = ViewBag.RecurringBooking;
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Recurring Booking</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/recurringbooking/index">Recurring Bookings</a></li>
+                        <li class="breadcrumb-item active">Edit Recurring Booking</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/recurringbooking/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                </div>
+                <div class="card card-primary card-outline">
+                    @if (recurringBooking != null)
+                    {
+                        <!-- form start -->
+                        <div id="quickForm">
+                            <form id="recurringBookingForm">
+                                <input type="hidden" id="RecurringBookingId" name="RecurringBookingId" value="@recurringBooking.RecurringBookingId" />
+                                <input type="hidden" id="hdnCompanyId" value="@Request.Cookies["data"]["CompanyId"]" />
+                                <input type="hidden" id="hdnAddedBy" value="@Request.Cookies["data"]["Id"]" />
+                                <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h5 class="mb-3"><i class="fas fa-calendar-alt"></i> Recurrence Settings</h5>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection" style="@(recurringBooking.BookingId > 0 ? "display: none;" : "")">
+                                        <div class="form-group">
+                                            <label>Branch <span class="text-danger">*</span></label>
+                                            <select class="form-control select2" id="ddlBranchId" name="BranchId" style="width: 100%;" onchange="loadBookingFloors()">
+                                                <option value="">Select Branch</option>
+                                                @if (ViewBag.Branchs != null)
+                                                {
+                                                    foreach (var item in ViewBag.Branchs)
+                                                    {
+                                                        <option value="@item.BranchId" @(recurringBooking.BranchId > 0 && recurringBooking.BranchId == item.BranchId ? "selected" : "")>@item.Branch</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <small class="text-red font-weight-bold errorText" id="divBranchId" style="display: none;"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label>Start Date <span class="text-danger">*</span></label>
+                                            <div class="input-group date" id="_StartDate" data-target-input="nearest">
+                                                <input id="txtStartDate" type="text" class="form-control datetimepicker-input divStartDate_ctrl" data-target="#_StartDate" value="@recurringBooking.StartDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])" />
+                                                <div class="input-group-append" data-target="#_StartDate" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                            <small class="text-muted d-block mt-1">First booking will be created on or after this date</small>
+                                            <small class="text-red font-weight-bold errorText" id="divStartDate" style="display: none;"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection" style="@(recurringBooking.BookingId > 0 ? "display: none;" : "")">
+                                        <div class="form-group">
+                                            <label>Booking Time <span class="text-danger">*</span></label>
+                                            <div id="timeSlotsContainer">
+                                                <select id="ddlBookingTimeSlots" class="form-control">
+                                                    <option value="">Select time slot</option>
+                                                </select>
+                                            </div>
+                                            @{
+                                                string bookingTimeStr = "";
+                                                try
+                                                {
+                                                    var bookingTimeObj = recurringBooking.BookingTime;
+                                                    if (bookingTimeObj != null)
+                                                    {
+                                                        if (bookingTimeObj is TimeSpan?)
+                                                        {
+                                                            TimeSpan? ts = (TimeSpan?)bookingTimeObj;
+                                                            if (ts.HasValue)
+                                                            {
+                                                                bookingTimeStr = string.Format("{0:D2}:{1:D2}", ts.Value.Hours, ts.Value.Minutes);
+                                                            }
+                                                        }
+                                                        else if (bookingTimeObj is TimeSpan)
+                                                        {
+                                                            TimeSpan ts = (TimeSpan)bookingTimeObj;
+                                                            bookingTimeStr = string.Format("{0:D2}:{1:D2}", ts.Hours, ts.Minutes);
+                                                        }
+                                                    }
+                                                }
+                                                catch { }
+                                            }
+                                            <input type="hidden" id="txtBookingTime" name="BookingTime" value="@bookingTimeStr">
+                                            <small class="text-muted d-block mt-1">Time slots based on Branch and Start Date</small>
+                                            <small class="text-red font-weight-bold errorText" id="divBookingTime" style="display: none;"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label>Repeat Every <span class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                @{
+                                                    int intervalValue = 1;
+                                                    string selectedUnit = "Week";
+                                                    
+                                                    // Try to get from new columns first
+                                                    try
+                                                    {
+                                                        dynamic recurringBookingDynamic = recurringBooking;
+                                                        if (recurringBookingDynamic.RepeatEveryNumber != null)
+                                                        {
+                                                            intervalValue = (int)recurringBookingDynamic.RepeatEveryNumber;
+                                                        }
+                                                        if (recurringBookingDynamic.RepeatEvery != null && recurringBookingDynamic.RepeatEvery.ToString() == "Year")
+                                                        {
+                                                            selectedUnit = "Year";
+                                                        }
+                                                        else if (recurringBooking.RecurrenceType == "Daily")
+                                                        {
+                                                            selectedUnit = "Day";
+                                                        }
+                                                        else if (recurringBooking.RecurrenceType == "Weekly")
+                                                        {
+                                                            selectedUnit = "Week";
+                                                        }
+                                                        else if (recurringBooking.RecurrenceType == "Monthly")
+                                                        {
+                                                            selectedUnit = "Month";
+                                                        }
+                                                    }
+                                                    catch
+                                                    {
+                                                        // Fallback to JSON pattern for backward compatibility
+                                                        try
+                                                        {
+                                                            var pattern = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(recurringBooking.RecurrencePattern ?? "{}");
+                                                            if (pattern.interval != null)
+                                                            {
+                                                                intervalValue = (int)pattern.interval;
+                                                            }
+                                                            if (pattern.intervalUnit != null)
+                                                            {
+                                                                selectedUnit = pattern.intervalUnit.ToString();
+                                                            }
+                                                            else if (recurringBooking.RecurrenceType == "Daily")
+                                                            {
+                                                                selectedUnit = "Day";
+                                                            }
+                                                            else if (recurringBooking.RecurrenceType == "Weekly")
+                                                            {
+                                                                selectedUnit = "Week";
+                                                            }
+                                                            else if (recurringBooking.RecurrenceType == "Monthly")
+                                                            {
+                                                                selectedUnit = "Month";
+                                                            }
+                                                        }
+                                                        catch { }
+                                                    }
+                                                }
+                                                <input type="number" class="form-control" id="txtInterval" name="Interval" min="1" value="@intervalValue" required />
+                                                <select class="form-control" id="ddlIntervalUnit" style="min-width:80px">
+                                                    <option value="Day" @(selectedUnit == "Day" ? "selected" : "")>Day</option>
+                                                    <option value="Week" @(selectedUnit == "Week" ? "selected" : "")>Week</option>
+                                                    <option value="Month" @(selectedUnit == "Month" ? "selected" : "")>Month</option>
+                                                    <option value="Year" @(selectedUnit == "Year" ? "selected" : "")>Year</option>
+                                                </select>
+                                            </div>
+                                            <small class="form-text text-muted">Select the frequency unit (Day/Week/Month/Year)</small>
+                                            <small class="text-red font-weight-bold errorText" id="divInterval" style="display: none;"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3" id="weeklyOptionsColumn" style="@(recurringBooking.RecurrenceType == "Weekly" ? "" : "display: none;")">
+                                        <div class="form-group" id="weeklyOptions">
+                                            <label>Days of Week <span class="text-danger">*</span></label>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    @{
+                                                        var selectedDays = new int[0];
+                                                        if (recurringBooking.RecurrenceType == "Weekly")
+                                                        {
+                                                            // First try to get from DaysOfWeek property (from new table)
+                                                            try
+                                                            {
+                                                                dynamic recurringBookingDynamic = recurringBooking;
+                                                                if (recurringBookingDynamic.DaysOfWeek != null)
+                                                                {
+                                                                    var daysList = recurringBookingDynamic.DaysOfWeek as System.Collections.Generic.List<int>;
+                                                                    if (daysList != null && daysList.Count > 0)
+                                                                    {
+                                                                        selectedDays = daysList.ToArray();
+                                                                    }
+                                                                }
+                                                            }
+                                                            catch { }
+                                                            
+                                                            // Fallback to JSON pattern for backward compatibility
+                                                            if (selectedDays.Length == 0)
+                                                            {
+                                                                try
+                                                                {
+                                                                    var pattern = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(recurringBooking.RecurrencePattern ?? "{}");
+                                                                    if (pattern.daysOfWeek != null)
+                                                                    {
+                                                                        selectedDays = Newtonsoft.Json.JsonConvert.DeserializeObject<int[]>(pattern.daysOfWeek.ToString());
+                                                                    }
+                                                                }
+                                                                catch { }
+                                                            }
+                                                        }
+                                                    }
+                                                    <label class="checkbox-inline"><input type="checkbox" value="0" class="dayOfWeek" @(selectedDays.Contains(0) ? "checked" : "")> Sunday</label>
+                                                    <label class="checkbox-inline"><input type="checkbox" value="1" class="dayOfWeek" @(selectedDays.Contains(1) ? "checked" : "")> Monday</label>
+                                                    <label class="checkbox-inline"><input type="checkbox" value="2" class="dayOfWeek" @(selectedDays.Contains(2) ? "checked" : "")> Tuesday</label>
+                                                    <label class="checkbox-inline"><input type="checkbox" value="3" class="dayOfWeek" @(selectedDays.Contains(3) ? "checked" : "")> Wednesday</label>
+                                                    <label class="checkbox-inline"><input type="checkbox" value="4" class="dayOfWeek" @(selectedDays.Contains(4) ? "checked" : "")> Thursday</label>
+                                                    <label class="checkbox-inline"><input type="checkbox" value="5" class="dayOfWeek" @(selectedDays.Contains(5) ? "checked" : "")> Friday</label>
+                                                    <label class="checkbox-inline"><input type="checkbox" value="6" class="dayOfWeek" @(selectedDays.Contains(6) ? "checked" : "")> Saturday</label>
+                                                </div>
+                                            </div>
+                                            <small class="text-muted d-block mt-1">Select which days of the week to create bookings</small>
+                                            <small class="text-red font-weight-bold errorText" id="divDaysOfWeek" style="display: none;"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 divEndDate">
+                                        <div class="form-group">
+                                            <label>End Date</label>
+                                            <div class="input-group date" id="_EndDate" data-target-input="nearest">
+                                                @{
+                                                    string endDateStr = "";
+                                                    try
+                                                    {
+                                                        if (recurringBooking.EndDate != null)
+                                                        {
+                                                            endDateStr = ((DateTime)recurringBooking.EndDate).ToString("dd-MMM-yyyy");
+                                                        }
+                                                    }
+                                                    catch { }
+                                                }
+                                                <input id="txtEndDate" type="text" class="form-control datetimepicker-input divEndDate_ctrl" data-target="#_EndDate" value="@endDateStr" />
+                                                <div class="input-group-append" data-target="#_EndDate" data-toggle="datetimepicker">
+                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                                </div>
+                                            </div>
+                                            <small class="form-text text-muted">Leave empty for no end date</small>
+                                            <small class="text-red font-weight-bold errorText" id="divEndDate" style="display: none;"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <br />
+                                            <div class="checkbox icheck-turquoise">
+                                                <input type="checkbox" id="chkIsNeverExpires" onchange="toggleNeverExpires()" @(recurringBooking.IsNeverExpires == true ? "checked" : "")>
+                                                <label for="chkIsNeverExpires" class="mt-2">
+                                                    Never Expires
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <hr class="my-3">
+                                        <h5 class="mb-3"><i class="fas fa-book"></i> Booking Details</h5>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label>Booking</label>
+                                            <select class="form-control select2" id="ddlBookingId" name="BookingId" style="width: 100%;">
+                                                <option value="">Select Booking (Optional)</option>
+                                                @if (ViewBag.Bookings != null)
+                                                {
+                                                    foreach (var item in ViewBag.Bookings)
+                                                    {
+                                                        <option value="@item.BookingId" @(recurringBooking.BookingId > 0 && recurringBooking.BookingId == item.BookingId ? "selected" : "")>@item.BookingNo - @item.CustomerName (@item.BookingDate.ToString("dd-MMM-yyyy"))</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <small class="form-text text-muted">Select an existing booking as template, or fill details below</small>
+                                            <small class="text-red font-weight-bold errorText" id="divBookingId" style="display: none;"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection" style="@(recurringBooking.BookingId > 0 ? "display: none;" : "")">
+                                        <div class="form-group">
+                                            <label>Select Floor</label>
+                                            <select class="form-control select2" id="ddlBookingFloor" style="width: 100%;" onchange="loadBookingTableLayout()">
+                                                <option value="0">All Floors</option>
+                                            </select>
+                                            <input type="hidden" id="hdnFloorId" value="@(ViewBag.RecurringBooking != null && ViewBag.RecurringBooking.FloorId > 0 ? ViewBag.RecurringBooking.FloorId : 0)" />
+                                        </div>
+                                    </div>
+                                    <div class="col-12 bookingDetailsSection" style="@(recurringBooking.BookingId > 0 ? "display: none;" : "")">
+                                        <div class="form-group">
+                                            <label>Select Table(s) from Layout <span class="text-danger">*</span></label>
+                                            <small class="text-muted d-block mb-2"><i class="fas fa-info-circle"></i> Click to select single table, <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + Click to select multiple tables</small>
+                                            @{
+                                                List<long> selectedTableIds = new List<long>();
+                                                if (recurringBooking.BookingId == 0 && ViewBag.RecurringBooking != null)
+                                                {
+                                                    if (ViewBag.RecurringBooking.TableIds != null)
+                                                    {
+                                                        selectedTableIds = ViewBag.RecurringBooking.TableIds;
+                                                    }
+                                                }
+                                            }
+                                            <input type="hidden" id="ddlTableId" name="TableId" value="@(selectedTableIds.Count > 0 ? string.Join(",", selectedTableIds) : "")">
+                                            <small class="text-red font-weight-bold errorText" id="divTableId" style="display: none;"></small>
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="d-flex align-items-center flex-wrap" style="gap: 15px;">
+                                                                <span class="font-weight-bold">Table Status:</span>
+                                                                <div class="d-flex align-items-center">
+                                                                    <div style="width: 25px; height: 18px; background-color: #28a745; border: 1px solid #1e7e34; border-radius: 3px; margin-right: 5px;"></div>
+                                                                    <small>Available</small>
+                                                                </div>
+                                                                <div class="d-flex align-items-center">
+                                                                    <div style="width: 25px; height: 18px; background-color: #dc3545; border: 1px solid #c82333; border-radius: 3px; margin-right: 5px;"></div>
+                                                                    <small>Occupied</small>
+                                                                </div>
+                                                                <div class="d-flex align-items-center">
+                                                                    <div style="width: 25px; height: 18px; background-color: #ffc107; border: 1px solid #e0a800; border-radius: 3px; margin-right: 5px;"></div>
+                                                                    <small>Reserved</small>
+                                                                </div>
+                                                                <div class="d-flex align-items-center">
+                                                                    <div style="width: 25px; height: 18px; background-color: #6f42c1; border: 1px solid #5a32a3; border-radius: 3px; margin-right: 5px;"></div>
+                                                                    <small>Booked</small>
+                                                                </div>
+                                                                <div class="d-flex align-items-center">
+                                                                    <div style="width: 25px; height: 18px; background-color: #6c757d; border: 1px solid #5a6268; border-radius: 3px; margin-right: 5px;"></div>
+                                                                    <small>Maintenance</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div id="bookingTableLayoutCanvas" style="position: relative; min-height: 400px; border: 2px dashed #ccc; background: #f9f9f9;">
+                                                        <div class="text-center p-5">
+                                                            <p class="text-muted">Please select a branch and floor to view table layout</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection" style="@(recurringBooking.BookingId > 0 ? "display: none;" : "")">
+                                        <div class="form-group">
+                                            <label>Customer Name <span class="text-danger">*</span></label>
+                                            <div class="input-group divSupplier divCustomer_ctrl">
+                                                <select class="form-control select2" id="ddlCustomer" required>
+                                                    <option value="0">Select</option>
+                                                    @if (ViewBag.Users != null)
+                                                    {
+                                                        foreach (var item in ViewBag.Users)
+                                                        {
+                                                            <option value="@item.UserId" @(recurringBooking.CustomerId > 0 && recurringBooking.CustomerId == item.UserId ? "selected" : "")>
+                                                                @item.Name
+                                                                @if (item.MobileNo != null && item.MobileNo != "")
+                                                                {
+                                                                    <span>- @item.MobileNo</span>
+                                                                }
+                                                            </option>
+                                                        }
+                                                    }
+                                                </select>
+                                                @if (ViewBag.CustomersPermission != null && ViewBag.CustomersPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" onclick="openCustomerModal()">+ </a>
+                                                    </span>
+                                                }
+                                            </div>
+                                            <input type="hidden" id="hdnCustomerId" name="CustomerId" value="@(recurringBooking.CustomerId > 0 ? recurringBooking.CustomerId : 0)">
+                                            <small class="text-red font-weight-bold errorText" id="divCustomer" style="display: none;"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection" style="@(recurringBooking.BookingId > 0 ? "display: none;" : "")">
+                                        <div class="form-group">
+                                            <label>Number of Guests <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="txtNoOfGuests" name="NoOfGuests" min="1" value="@(recurringBooking.NoOfGuests > 0 ? recurringBooking.NoOfGuests : 2)" required>
+                                            <small class="text-red font-weight-bold errorText" id="divNoOfGuests" style="display: none;"></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection" style="@(recurringBooking.BookingId > 0 ? "display: none;" : "")">
+                                        <div class="form-group">
+                                            <label>Duration (minutes) <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="txtDuration" name="Duration" value="@(recurringBooking.Duration > 0 ? recurringBooking.Duration : 120)" min="30" step="30" required readonly>
+                                            <small class="text-muted">Fixed from restaurant settings</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 bookingDetailsSection" style="@(recurringBooking.BookingId > 0 ? "display: none;" : "")">
+                                        <div class="form-group">
+                                            <label>Booking Type</label>
+                                            <select class="form-control select2" id="ddlBookingType" name="BookingType" style="width: 100%;">
+                                                <option value="WalkIn">Walk In</option>
+                                                <option value="Phone">Phone</option>
+                                                <option value="Online">Online</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 bookingDetailsSection" style="@(recurringBooking.BookingId > 0 ? "display: none;" : "")">
+                                        <div class="form-group">
+                                            <label>Special Requests (Optional)</label>
+                                            <textarea class="form-control" id="txtSpecialRequest" name="SpecialRequest" rows="3">@(recurringBooking.SpecialRequest ?? "")</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+                            <div class="card-footer">
+                                <button id="btnUpdate" type="button" class="btn btn-primary float-right" onclick="saveRecurringBookingForm(1)"><i class="fas fa-edit"></i> Update</button>
+                                <button id="btnUpdate_AddAnother" type="button" class="btn btn-success float-right mr-2" onclick="saveRecurringBookingForm(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                                @*<a id="btnBack" href="/recurringbooking/index" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                            </div>
+                        </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card-body">
+                            <div class="alert alert-danger">
+                                <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                                Recurring booking not found.
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .booking-table-item {
+        user-select: none;
+    }
+    .booking-table-item:hover {
+        transform: scale(1.05) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+        z-index: 15 !important;
+    }
+    #bookingTableLayoutCanvas {
+        overflow: auto;
+    }
+    .time-slot-btn {
+        border: 1px solid #e0e0e0;
+        background: #fff;
+        border-radius: 6px;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .time-slot-btn:hover {
+        border-color: #007bff;
+        color: #007bff;
+    }
+    .time-slot-btn.selected {
+        background: #007bff;
+        color: #fff;
+        border-color: #007bff;
+    }
+    .time-slot-btn.unavailable {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+
+<!-- Customer Modal -->
+<div class="modal fade" id="CustomerModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add New Customer</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="card-body">
+                    <div class="card card-outline">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divName_M_ctrl" id="txtName" placeholder="">
+                                        <small class="text-red font-weight-bold errorText" id="divName_M"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Mobile <span class="danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control divMobileNo_M_ctrl" id="txtMobileNo" placeholder="" onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divMobileNo_M"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <input type="text" class="form-control divEmailId_M_ctrl" id="txtEmailId" placeholder="">
+                                        <small class="text-red font-weight-bold errorText" id="divEmailId_M"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                    <div class="form-group">
+                                        <label>Alternative Mobile</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control divAltMobileNo_M_ctrl" id="txtAltMobileNo" placeholder="" onkeypress="return onlyNumberKey(event)" maxlength="10">
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divAltMobileNo_M"></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertCustomer()">Save Customer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Content/JQuery/Customer/Restaurant/TableBooking.js"></script>
+<script src="~/Content/JQuery/Customer/Restaurant/RecurringBooking.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            dropdownAutoWidth: true
+        });
+        
+        // Function to pre-select tables from existing recurring booking
+        function preSelectTables() {
+            var existingTableIds = $('#ddlTableId').val();
+            if (!existingTableIds || existingTableIds.trim() === '') return;
+            
+            var tableIdArray = existingTableIds.split(',').map(function(id) { 
+                return parseInt(id.trim()); 
+            }).filter(function(id) { 
+                return !isNaN(id) && id > 0; 
+            });
+            if (tableIdArray.length === 0) return;
+            
+            // Check if table layout is loaded
+            var tableElements = $('#bookingTableLayoutCanvas .booking-table-item');
+            if (tableElements.length === 0) {
+                // Layout not loaded yet, retry after a short delay
+                setTimeout(preSelectTables, 500);
+                return;
+            }
+            
+            // Select tables
+            var selectedCount = 0;
+            tableIdArray.forEach(function(tableId) {
+                var tableElement = $('#bookingTableLayoutCanvas .booking-table-item[data-table-id="' + tableId + '"]');
+                if (tableElement.length > 0) {
+                    tableElement.addClass('selected');
+                    selectedCount++;
+                }
+            });
+            
+            if (selectedCount > 0) {
+                updateTableLayoutSelection();
+                updateSelectedTablesDisplay();
+            }
+        }
+        
+        // Initialize table layout if branch is already selected
+        if ($('#ddlBranchId').val()) {
+            loadBookingFloors();
+            loadBookingTimeSlots();
+            // Pre-select floor if available
+            var savedFloorId = $('#hdnFloorId').val();
+            if (savedFloorId && savedFloorId !== '0') {
+                setTimeout(function() {
+                    $('#ddlBookingFloor').val(savedFloorId).trigger('change');
+                }, 500);
+            }
+            // Start trying to pre-select tables after layout loads
+            setTimeout(preSelectTables, 1000);
+        }
+        
+        // Also try to pre-select when floor changes and layout reloads
+        $(document).on('change', '#ddlBookingFloor', function() {
+            setTimeout(preSelectTables, 500);
+        });
+
+        $('#txtBookingDate, #txtNoOfGuests, #txtDuration').on('change', function () {
+            loadBookingTimeSlots();
+            // Reload table layout when date changes to show updated availability
+            if ($('#ddlBranchId').val() && $('#ddlBookingFloor').val()) {
+                loadBookingTableLayout();
+                setTimeout(preSelectTables, 500);
+            }
+        });
+        $('#ddlBranchId').on('change', function () {
+            loadBookingFloors();
+            loadBookingTimeSlots();
+        });
+        // Reload table layout when time slot changes
+        $(document).on('change', '#ddlBookingTimeSlots', function () {
+            if ($('#ddlBranchId').val() && $('#ddlBookingFloor').val()) {
+                loadBookingTableLayout();
+                setTimeout(preSelectTables, 500);
+            }
+        });
+        
+        // Update hidden customer ID when dropdown changes
+        $('#ddlCustomer').on('change', function() {
+            var customerId = $(this).val();
+            $('#hdnCustomerId').val(customerId);
+            // Clear error message when customer is selected
+            if (customerId && customerId != '0') {
+                $('#divCustomer').hide();
+            }
+        });
+
+    });
+</script>

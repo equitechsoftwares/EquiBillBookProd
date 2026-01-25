@@ -1,0 +1,306 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | KOT Details";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>KOT Details</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/kot/index">KOT List</a></li>
+                        <li class="breadcrumb-item active">KOT Details</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a href="/kot/print/@(ViewBag.Kot != null ? ViewBag.Kot.KotId : 0)" class="btn btn-primary float-sm-right mr-2" target="_blank"><i class="fas fa-print"></i> Print</a>
+                <a id="btnBack" href="@(ViewBag.ReturnUrl ?? "/kot/index")" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">KOT Information</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (ViewBag.Kot != null)
+                        {
+                            var kot = ViewBag.Kot;
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th width="40%">KOT No</th>
+                                            <td>@kot.KotNo</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Table</th>
+                                            <td>@(kot.TableNo ?? "Not Assigned")</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Order Type</th>
+                                            <td>@kot.OrderType</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Order Status</th>
+                                            <td>
+                                                <span class="badge badge-@(kot.OrderStatus == "Served" ? "success" : kot.OrderStatus == "Ready" ? "info" : kot.OrderStatus == "Preparing" ? "warning" : kot.OrderStatus == "Cancelled" ? "danger" : "secondary")">
+                                                    @kot.OrderStatus
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Order Time</th>
+                                            <td>@kot.OrderTime.ToString("dd-MMM-yyyy HH:mm")</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Expected Time</th>
+                                            <td>
+                                                @{
+                                                    var expectedTime = kot.ExpectedTime as DateTime?;
+                                                    @(expectedTime.HasValue ? expectedTime.Value.ToString("dd-MMM-yyyy HH:mm") : "-")
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th width="40%">Number of Guests</th>
+                                            <td>@(kot.GuestCount ?? 0)</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Waiter</th>
+                                            <td>@(kot.WaiterName ?? "-")</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Sales No</th>
+                                            <td>
+                                                @if (kot.SalesId != 0)
+                                                {
+                                                    <a href="/sales/details/@kot.SalesId">@(kot.SalesNo ?? "-")</a>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Booking No</th>
+                                            <td>
+                                                @if (kot.BookingId != 0)
+                                                {
+                                                    <a href="/tablebooking/details/@kot.BookingId">@(kot.BookingNo ?? "-")</a>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Special Instructions</th>
+                                            <td>@(kot.SpecialInstructions ?? "-")</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h5>Items</h5>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Item Name</th>
+                                                <th>Quantity</th>
+                                                <th>Unit</th>
+                                                <th>Status</th>
+                                                <th>Kitchen Station</th>
+                                                <th>Cooking Instructions</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (ViewBag.KotDetails != null)
+                                            {
+                                                foreach (var item in ViewBag.KotDetails)
+                                                {
+                                                    <tr id="item-row-@item.KotDetailsId">
+                                                        <td>@item.ItemName</td>
+                                                        <td>@item.Quantity</td>
+                                                        <td>@item.Unit</td>
+                                                        <td>
+                                                            <span id="item-status-@item.KotDetailsId" class="badge badge-@(item.ItemStatus == "Served" ? "success" : item.ItemStatus == "Ready" ? "info" : item.ItemStatus == "Preparing" ? "warning" : "secondary")">
+                                                                @item.ItemStatus
+                                                            </span>
+                                                        </td>
+                                                        <td>@(item.KitchenStationName ?? "-")</td>
+                                                        <td>@(item.CookingInstructions ?? "-")</td>
+                                                        <td>
+                                                            @if (kot.OrderStatus != "Served" && kot.OrderStatus != "Cancelled")
+                                                            {
+                                                                <div class="btn-group btn-group-sm" role="group" id="item-actions-@item.KotDetailsId">
+                                                                    @if (item.ItemStatus == "Pending" || item.ItemStatus == "Printed" || string.IsNullOrEmpty(item.ItemStatus))
+                                                                    {
+                                                                        <button type="button" class="btn btn-warning btn-sm" onclick="updateItemStatus(@item.KotDetailsId, 'Preparing', @kot.KotId)" title="Mark as Preparing">
+                                                                            <i class="fas fa-fire"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-success btn-sm" onclick="updateItemStatus(@item.KotDetailsId, 'Ready', @kot.KotId)" title="Mark as Ready">
+                                                                            <i class="fas fa-check"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-info btn-sm" onclick="updateItemStatus(@item.KotDetailsId, 'Served', @kot.KotId)" title="Mark as Served">
+                                                                            <i class="fas fa-check-double"></i>
+                                                                        </button>
+                                                                    }
+                                                                    else if (item.ItemStatus == "Preparing")
+                                                                    {
+                                                                        <button type="button" class="btn btn-secondary btn-sm" onclick="updateItemStatus(@item.KotDetailsId, 'Pending', @kot.KotId)" title="Back to Pending">
+                                                                            <i class="fas fa-undo"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-success btn-sm" onclick="updateItemStatus(@item.KotDetailsId, 'Ready', @kot.KotId)" title="Mark as Ready">
+                                                                            <i class="fas fa-check"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-info btn-sm" onclick="updateItemStatus(@item.KotDetailsId, 'Served', @kot.KotId)" title="Mark as Served">
+                                                                            <i class="fas fa-check-double"></i>
+                                                                        </button>
+                                                                    }
+                                                                    else if (item.ItemStatus == "Ready")
+                                                                    {
+                                                                        <button type="button" class="btn btn-warning btn-sm" onclick="updateItemStatus(@item.KotDetailsId, 'Preparing', @kot.KotId)" title="Back to Preparing">
+                                                                            <i class="fas fa-undo"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-info btn-sm" onclick="updateItemStatus(@item.KotDetailsId, 'Served', @kot.KotId)" title="Mark as Served">
+                                                                            <i class="fas fa-check-double"></i>
+                                                                        </button>
+                                                                    }
+                                                                    else if (item.ItemStatus == "Served")
+                                                                    {
+                                                                        <span class="text-muted">-</span>
+                                                                    }
+                                                                </div>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">-</span>
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <a href="/kot/print/@kot.KotId" class="btn btn-primary" target="_blank" title="Print"><i class="fas fa-print"></i> Print</a>
+                                    @if (kot.OrderStatus == "Pending" || kot.OrderStatus == "Printed")
+                                    {
+                                        <a href="/kot/edit/@kot.KotId" class="btn btn-warning"><i class="fas fa-edit"></i> Edit KOT</a>
+                                    }
+                                    @if (kot.OrderStatus != "Served" && kot.OrderStatus != "Cancelled")
+                                    {
+                                        if (kot.OrderStatus == "Pending" || kot.OrderStatus == "Printed" || string.IsNullOrEmpty(kot.OrderStatus))
+                                        {
+                                            <button type="button" class="btn btn-warning" onclick="updateKotStatus(@kot.KotId, 'Preparing', false)"><i class="fas fa-fire"></i> Mark Preparing</button>
+                                            <button type="button" class="btn btn-success" onclick="updateKotStatus(@kot.KotId, 'Ready', false)"><i class="fas fa-check"></i> Mark Ready</button>
+                                            <button type="button" class="btn btn-info" onclick="updateKotStatus(@kot.KotId, 'Served', false)"><i class="fas fa-check-double"></i> Mark Served</button>
+                                        }
+                                        else if (kot.OrderStatus == "Preparing")
+                                        {
+                                            <button type="button" class="btn btn-secondary" onclick="updateKotStatus(@kot.KotId, 'Pending', true)"><i class="fas fa-undo"></i> Back to Pending</button>
+                                            <button type="button" class="btn btn-success" onclick="updateKotStatus(@kot.KotId, 'Ready', false)"><i class="fas fa-check"></i> Mark Ready</button>
+                                            <button type="button" class="btn btn-info" onclick="updateKotStatus(@kot.KotId, 'Served', false)"><i class="fas fa-check-double"></i> Mark Served</button>
+                                        }
+                                        else if (kot.OrderStatus == "Ready")
+                                        {
+                                            <button type="button" class="btn btn-warning" onclick="updateKotStatus(@kot.KotId, 'Preparing', true)"><i class="fas fa-undo"></i> Back to Preparing</button>
+                                            <button type="button" class="btn btn-info" onclick="updateKotStatus(@kot.KotId, 'Served', false)"><i class="fas fa-check-double"></i> Mark Served</button>
+                                        }
+                                    }
+                                    @if (kot.OrderStatus != "Cancelled")
+                                    {
+                                        <button type="button" class="btn btn-danger" onclick="cancelKot(@kot.KotId)" title="Cancel"><i class="fas fa-times"></i> Cancel</button>
+                                    }
+                                    @if (kot.SalesId == 0)
+                                    {
+                                        @* For KOTs with BookingId, conversion should be done from booking level to consolidate all KOTs *@
+                                        if (kot.BookingId > 0)
+                                        {
+                                            @* KOT is part of a booking - show message and link to booking *@
+                                            <a href="/tablebooking/details/@kot.BookingId" class="btn btn-success">
+                                                <i class="fas fa-receipt"></i> Convert All KOTs from Booking
+                                            </a>
+                                            <a href="/kot/linktosales/@kot.KotId" class="btn btn-warning" title="Link to existing sales invoice (edge case)">
+                                                <i class="fas fa-link"></i> Link to Sales
+                                            </a>
+                                        }
+                                        else if (kot.OrderStatus == "Served")
+                                        {
+                                            @* Standalone served KOT - show convert button (primary) and link option (secondary) *@
+                                            <button type="button" class="btn btn-success" onclick="convertKotToSales(@kot.KotId)">
+                                                <i class="fas fa-receipt"></i> Convert to Sales
+                                            </button>
+                                            <a href="/kot/linktosales/@kot.KotId" class="btn btn-warning" title="Link to existing sales invoice (edge case)">
+                                                <i class="fas fa-link"></i> Link to Sales
+                                            </a>
+                                        }
+                                        @* No buttons for non-served KOTs - order not complete yet *@
+                                    }
+                                    @if (kot.BookingId == 0)
+                                    {
+                                        <a href="/kot/linktobooking/@kot.KotId" class="btn btn-info"><i class="fas fa-link"></i> Link to Booking</a>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Customer/Restaurant/Kot.js"></script>
+<script>
+    $(document).ready(function () {
+        // Make back button dynamic - go back to previous page if available
+        var btnBack = $('#btnBack');
+        var returnUrl = '@(ViewBag.ReturnUrl ?? "")';
+        
+        // If returnUrl is provided, use it (already set in href)
+        // Otherwise, use browser history to go back dynamically
+        if (!returnUrl || returnUrl === '') {
+            // Intercept click to use browser history
+            btnBack.on('click', function (e) {
+                e.preventDefault();
+                
+                // Check if there's a valid referrer from the same origin
+                var referrer = document.referrer;
+                var currentOrigin = window.location.origin;
+                
+                if (referrer && referrer.indexOf(currentOrigin) === 0 && referrer !== window.location.href) {
+                    // Use browser history to go back to the actual previous page
+                    window.history.back();
+                } else {
+                    // Fallback to default KOT index page if no valid referrer
+                    window.location.href = '/kot/index';
+                }
+            });
+        }
+    });
+</script>
+

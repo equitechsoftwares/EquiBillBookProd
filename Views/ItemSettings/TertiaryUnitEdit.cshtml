@@ -1,0 +1,303 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Tertiary Unit";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Tertiary Unit</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/itemsettings/Tertiaryunit">Tertiary Units</a></li>
+                        <li class="breadcrumb-item active">Edit Tertiary Unit</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/itemsettings/Tertiaryunit" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+
+                            <div class="row">
+                                <!--<div class="col-sm-3">-->
+                                <!-- text input -->
+                                <!--<div class="form-group">
+            <label>Sub Category Code</label>
+            <input disabled type="text" class="form-control" id="txtSubCategoryCode" placeholder="" value="@ViewBag.TertiaryUnit.TertiaryUnitCode">
+        </div>
+    </div>-->
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Unit <span class="danger">*</span></label>
+                                        <div class="input-group divUnit_ctrl">
+                                            <select class="form-control select2" id="ddlUnit" onchange="fetchActiveSecondaryUnits()">
+                                                @foreach (var item in ViewBag.Units)
+                                                {
+                                                    if (ViewBag.TertiaryUnit.UnitId == item.UnitId)
+                                                    {
+                                                        <option value="@item.UnitId" selected>@item.UnitShortName</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.UnitId">@item.UnitShortName</option>
+                                                    }
+                                                }
+                                            </select>
+                                            @if (ViewBag.UnitsPermission.IsAdd == true)
+                                            {
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#unitModal">+ </a>
+                                                </span>
+                                            }
+                                            </div>
+                                        <small class="text-red font-weight-bold errorText" id="divUnit"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Secondary Unit <span class="danger">*</span></label>
+                                        <div class="input-group divSecondaryUnit_ctrl">
+                                            <select class="form-control select2" id="ddlSecondaryUnit">
+                                                @foreach (var item in ViewBag.SecondaryUnits)
+                                                {
+                                                    if (ViewBag.TertiaryUnit.SecondaryUnitId == item.SecondaryUnitId)
+                                                    {
+                                                        <option value="@item.SecondaryUnitId" selected>@item.SecondaryUnitShortName</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.SecondaryUnitId">@item.SecondaryUnitShortName</option>
+                                                    }
+                                                }
+                                            </select>
+                                            @if (ViewBag.SecondaryUnitsPermission.IsAdd == true)
+                                            {
+                                                <span class="input-group-append">
+                                                    <a href="javascript:void(0)" class="btn btn-info" onclick="openSecondaryUnitModal()">+ </a>
+                                                </span>
+                                            }
+                                            </div>
+                                        <small class="text-red font-weight-bold errorText" id="divSecondaryUnit"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Tertiary Unit Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divTertiaryUnitName_ctrl" id="txtTertiaryUnitName" placeholder="Enter Unit Name" value="@ViewBag.TertiaryUnit.TertiaryUnitName">
+                                        <small class="text-red font-weight-bold errorText" id="divTertiaryUnitName"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Tertiary Unit Short Name <span class="danger">*</span></label>
+                                        <input type="text" class="form-control divTertiaryUnitShortName_ctrl" id="txtTertiaryUnitShortName" placeholder="" value="@ViewBag.TertiaryUnit.TertiaryUnitShortName">
+                                        <small class="text-red font-weight-bold errorText" id="divTertiaryUnitShortName"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Allow Decimal <span class="danger">*</span> <i tabindex="0" class="fa fa-info-circle text-info hover-q no-print @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Decimals allows you to sell the related products in fractions."></i></label>
+                                        <select class="form-control" id="ddlAllowDecimal">
+                                            @if (ViewBag.TertiaryUnit.TertiaryUnitAllowDecimal == true)
+                                            {
+                                                <option value="true" selected>Yes</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="false">No</option>
+                                            }
+                                            @if (ViewBag.TertiaryUnit.TertiaryUnitAllowDecimal == false)
+                                            {
+                                                <option value="true">Yes</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="false">No</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnUpdate" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                            <button id="btnUpdate_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                            @*<a id="btnBack" href="/items/Tertiaryunit" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="unitModal">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Unit</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Unit Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divUnitName_M_ctrl" id="txtUnitName" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divUnitName_M"></small>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Unit Short Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divUnitShortName_M_ctrl" id="txtUnitShortName" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divUnitShortName_M"></small>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertUnit()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="secondaryUnitModal">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Secondary Unit</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <!-- text input -->
+                        <div class="form-group">
+                            <label>Secondary Unit Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divSecondaryUnitName_M_ctrl" id="txtSecondaryUnitName" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divSecondaryUnitName_M"></small>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>Secondary Unit Short Name <span class="danger">*</span></label>
+                            <input type="text" class="form-control divSecondaryUnitShortName_M_ctrl" id="txtSecondaryUnitShortName" placeholder="">
+                            <small class="text-red font-weight-bold errorText" id="divSecondaryUnitShortName_M"></small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertSecondaryUnit()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I add and update product tertiary units?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    •	To add a new product tertiary unit, click on the ‘Add New’ button at the top of the screen
+
+                                    •	To update an existing product tertiary unit, click on 'Edit' button beside the name of product tertiary unit you want to change, make your changes and then click the ‘Save’ button at the bottom of the screen.
+
+                                    •	To delete an existing product tertiary unit, tick the box that is to the left of the product tertiary unit you would like to delete and then click the ‘Delete’ button at the top of the list.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">Why should I add master units?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    If the product category you are creating is a tertiary unit, choose the main product unit, sub category.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script src="~/Content/JQuery/Customer/Settings/ItemSettings/TertiaryUnit.js"></script>

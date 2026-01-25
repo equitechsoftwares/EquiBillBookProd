@@ -1,0 +1,132 @@
+﻿<div>
+    <div class="row">
+        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+            <div class="">
+                <label>Reference No</label>
+                <span id="txtAdvBalance">
+                    @if (ViewBag.CustomerPayment.SalesReturnId == 0)
+                    {
+                        @ViewBag.CustomerPayment.ReferenceNo
+                    }
+                    else
+                    {
+                        @ViewBag.CustomerPayment.SalesReturnReferenceNo
+                    }
+                </span>
+                <input type="hidden" id="hdnCustomerPaymentId" value="@ViewBag.CustomerPayment.CustomerPaymentId" />
+                <input type="hidden" id="hdnAmountRemaining" value="@ViewBag.CustomerPayment.AmountRemaining" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+            <div class="text-danger">
+                <label>Balance</label>
+                <span id="txtAdvBalance">
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@ViewBag.CustomerPayment.AmountRemaining
+                        }
+                        else
+                        {
+                            @ViewBag.CustomerPayment.AmountRemaining@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+            <!-- text input -->
+            <div class="form-group">
+                <label>Paid On <span class="danger">*</span></label>
+                <div class="input-group date" id="_PaymentDate" data-target-input="nearest">
+                    <input id="txtPaymentDate" type="text" class="form-control datetimepicker-input divPaymentDate_M_ctrl" data-target="#_PaymentDate" />
+                    <div class="input-group-append" data-target="#_PaymentDate" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                    </div>
+                </div>
+                @*<input type="datetime-local" class="form-control" id="txtPaymentDate">*@
+                <small class="text-red font-weight-bold errorText" id="divPaymentDate_M"></small>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="table-responsive">
+        <table id="tblPayments" class="table table-bordered table-striped divCredits_M_ctrl">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Sales Date</th>
+                    <th>Invoice No</th>
+                    <th>Amount</th>
+                    <th>Due</th>
+                    <th>Credits To Apply</th>
+                </tr>
+            </thead>
+            <tbody id="divCombo" class="rows">
+                @{
+                    if (ViewBag.Sales != null)
+                    {
+                        var index = 1;
+                        foreach (var item in ViewBag.Sales)
+                        {
+                            <tr id="divCombo@(item.SalesId)">
+                                <td>@index</td>
+                                <td>
+                                    @item.SalesDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])
+                                </td>
+                                <td>
+                                    @(item.Type == "Customer Opening Balance Payment" ? "Customer Opening Balance" : item.InvoiceNo)
+                                </td>
+                                <td>
+                                    @item.GrandTotal
+                                </td>
+                                <td>
+                                    @item.Due
+                                </td>
+                                <td>
+                                    <div class="input-group" style="min-width:180px">
+                                        <input type="number" class="form-control divAmount@(item.SalesId)_M_ctrl" id="txtAmount@(item.SalesId)" onkeypress="return onlyDecimalKey(event)" onchange="updateTotal()">
+                                        <input type="hidden" id="hdnSalesAmount@(item.SalesId)" value="@item.GrandTotal" />
+                                        <input type="hidden" id="hdnSalesId@(item.SalesId)" value="@item.SalesId" />
+                                        <input type="hidden" id="hdnType@(item.SalesId)" value="@item.Type" />
+                                        @*<input type="hidden" id="hdnType@(item.SalesId)" value="@item.CustomerId" />*@
+                                    </div>
+                                    <small class="text-red font-weight-bold errorText" id="divAmount@(item.SalesId)_M"></small>
+                                </td>
+                            </tr>
+                            index++;
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+        <small class="text-red font-weight-bold errorText" id="divCredits_M"></small>
+
+    </div>
+    <div class="col-sm-12">
+
+        <div class="col-md-3 float-right">
+            <div class="row" id="divCalculationSummary">
+                <div class="col-12">
+                    <div class="row">
+                        <label for="inputEmail3" class="col-8 col-form-label text-right">Amount To Credit :</label>
+                        <label for="inputEmail3" class="col-4 col-form-label text-left" id="divAmountToCredit">
+                        </label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="row">
+                        <label for="inputEmail3" class="col-8 col-form-label text-right text-danger">Remaining Credits :</label>
+                        <label for="inputEmail3" class="col-4 col-form-label text-left text-danger" id="divRemainingCredits"></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+

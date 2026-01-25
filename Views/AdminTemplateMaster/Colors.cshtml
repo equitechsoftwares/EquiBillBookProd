@@ -1,0 +1,149 @@
+@model IEnumerable<EquiBillBook.Models.ClsInvoiceTemplateColorMaster>
+@using System.Web
+@using System.Collections.Generic
+
+@{
+    ViewBag.Title = "Template Colors";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var invoiceTemplateMasterId = (long)ViewBag.InvoiceTemplateMasterId;
+    var templateName = ViewBag.TemplateName as string ?? $"Pre-defined Template #{invoiceTemplateMasterId}";
+    var categories = ViewBag.Categories as Dictionary<long, EquiBillBook.Models.ClsInvoiceTemplateColorCategoryMaster> ?? new Dictionary<long, EquiBillBook.Models.ClsInvoiceTemplateColorCategoryMaster>();
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Template Colors - @templateName</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/admindashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/admintemplatemaster/index">Template Masters</a></li>
+                        <li class="breadcrumb-item active">Colors</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <a href="@Url.Action("CreateColor", "AdminTemplateMaster", new { invoiceTemplateMasterId = invoiceTemplateMasterId })"
+                   class="btn btn-primary float-sm-right mr-2">
+                    <i class="fas fa-plus"></i> New Color
+                </a>
+                <a href="@Url.Action("Categories", "AdminTemplateMaster", new { invoiceTemplateMasterId = invoiceTemplateMasterId })"
+                   class="btn btn-info float-sm-right mr-2">
+                    <i class="fas fa-folder"></i> Manage Categories
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        @Html.AntiForgeryToken()
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+
+        @if (Model != null && Model.Any())
+        {
+            var colorsByCategory = Model
+                .GroupBy(c => 
+                {
+                    if (c.InvoiceTemplateColorCategoryMasterId.HasValue && categories.ContainsKey(c.InvoiceTemplateColorCategoryMasterId.Value))
+                    {
+                        return categories[c.InvoiceTemplateColorCategoryMasterId.Value].CategoryName;
+                    }
+                    return !string.IsNullOrEmpty(c.Category) ? c.Category : "Uncategorized";
+                })
+                .OrderBy(g => 
+                {
+                    // Try to find a color in the group that has a category ID to get SortOrder
+                    var colorWithCategory = g.FirstOrDefault(c => c.InvoiceTemplateColorCategoryMasterId.HasValue && categories.ContainsKey(c.InvoiceTemplateColorCategoryMasterId.Value));
+                    if (colorWithCategory != null && colorWithCategory.InvoiceTemplateColorCategoryMasterId.HasValue)
+                    {
+                        return categories[colorWithCategory.InvoiceTemplateColorCategoryMasterId.Value].SortOrder;
+                    }
+                    // For uncategorized items or old category field, use a high sort order to put them at the end
+                    return int.MaxValue;
+                })
+                .ThenBy(g => g.Key);
+
+            foreach (var categoryGroup in colorsByCategory)
+            {
+                <div class="card card-primary card-outline mb-3">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-folder"></i> @categoryGroup.Key
+                            <span class="badge badge-info ml-2">@categoryGroup.Count() color(s)</span>
+                        </h3>
+                    </div>
+                    <div class="card-body table-responsive p-0">
+                        <table class="table table-bordered table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th class="hide noPrint" style="width:100px;">Actions</th>
+                                    <th>Key</th>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                    <th>Sort</th>
+                                    <th class="hidden">Status</th>
+                                    <th class="hide">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var c in categoryGroup.OrderBy(c => c.SortOrder).ThenBy(c => c.ColorKey))
+                                {
+                                    <tr>
+                                        <td>@c.InvoiceTemplateColorMasterId</td>
+                                        <td class="hide noPrint">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-info">Action</button>
+                                                <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                                    <span class="sr-only">Toggle Dropdown</span>
+                                                </button>
+                                                <div class="dropdown-menu" role="menu">
+                                                    <a class="dropdown-item" href="@Url.Action("EditColor", "AdminTemplateMaster", new { id = c.InvoiceTemplateColorMasterId })"><i class="fas fa-edit"></i> Edit</a>
+                                                    <a class="dropdown-item" href="javascript:void(0)" onclick="Delete(@c.InvoiceTemplateColorMasterId,'@Html.Raw(HttpUtility.JavaScriptStringEncode(c.ColorName))')"><i class="far fa-trash-alt"></i> Delete</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@c.ColorKey</td>
+                                        <td>@c.ColorName</td>
+                                        <td>
+                                            <span style="display:inline-block;width:20px;height:20px;border:1px solid #ccc;background-color:@c.DefaultValue;border-radius:4px;"></span>
+                                            <span class="ml-1">@c.DefaultValue</span>
+                                        </td>
+                                        <td>@c.SortOrder</td>
+                                        <td class="hidden">@(c.IsActive == true ? "Active" : "Inactive")</td>
+                                        <td class="hide">
+                                            @if (c.IsActive)
+                                            {
+                                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@c.InvoiceTemplateColorMasterId,false)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                                            }
+                                            else
+                                            {
+                                                <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@c.InvoiceTemplateColorMasterId,true)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="card card-primary card-outline">
+                <div class="card-body">
+                    <p class="text-center text-muted">No color defaults found for this template.</p>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Admin/AdminTemplateMaster.js"></script>

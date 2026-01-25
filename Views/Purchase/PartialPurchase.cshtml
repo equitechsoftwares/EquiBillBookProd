@@ -1,0 +1,378 @@
+﻿@{
+    var count = 1;
+    <thead>
+        <tr role="row">
+            <th>Sln</th>
+            <th class="hide noPrint">Action</th>
+
+            <th>Date</th>
+            <th>Purchase Bill#</th>
+            <th>Reference No</th>
+            <th>Supplier Name</th>
+            <th>Supplier Mobile No</th>
+            <th> Status</th>
+            <th>Total Items</th>
+            <th>Total Amount</th>
+            <th>Total Paid</th>
+            <th>Total Due </th>
+            @*<th>Return Due Amount</th>*@
+            @*<th>Purchase Status</th>*@
+            @*<th>Payment Status</th>*@
+            @*<th>Added By</th>
+                <th>Added On</th>
+                <th>Last Modified By</th>
+                <th>Last Modified On</th>*@
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in ViewBag.Purchases)
+        {
+            <tr>
+
+                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>
+                <td class="hide noPrint">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-info">Action</button>
+                        <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <div class="dropdown-menu" role="menu">
+                            @*<a class="dropdown-item" href="/purchase/view" id="View"><i class="fas fa-eye"></i> View purchase</a>*@
+                            @if (ViewBag.MenuPermission.IsEdit)
+                            {
+                                @*if (!item.IsPurchaseReturn)
+                                    {
+                                        <a class="dropdown-item" href="/purchase/edit?PurchaseId=@item.PurchaseId" id="Edit"><i class="fas fa-edit"></i> Edit</a>
+                                    }*@
+                                if (item.IsCancelled == false)
+                                {
+                                    //if (!item.IsPurchaseReturn)
+                                    //{
+                                    if (item.PurchaseType.ToLower() == "credit note")
+                                    {
+                                        <a class="dropdown-item" href="/purchase/creditnoteedit?PurchaseId=@item.PurchaseId" id="Edit"><i class="fas fa-edit"></i> Edit</a>
+                                    }
+                                    else
+                                    {
+                                        <a class="dropdown-item" href="/purchase/edit?PurchaseId=@item.PurchaseId" id="Edit"><i class="fas fa-edit"></i> Edit</a>
+                                    }
+                                    //}
+                                }
+                            }
+                            <a class="dropdown-item" href="javascript:void(0)" id="" onclick="View(@item.PurchaseId)"><i class="fas fa-eye"></i> View</a>
+                            @if (item.Status != "Draft" && item.Status != "Paid")
+                            {
+                                if (ViewBag.SupplierPaymentPermission.IsAdd)
+                                {
+                                    //if (item.Status != "Paid")
+                                    //{
+                                    @*<a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openAvailableCredits(@item.PurchaseId,@item.SupplierId,@item.GrandTotal,@item.Due,'@item.ReferenceNo')"><i class="fas fa-plus"></i> Apply Credits</a>*@
+
+                                    if (item.IsCancelled == false)
+                                    {
+                                        <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openPaymentModal(true,@item.PurchaseId,'Purchase Payment',@item.BranchId)"><i class="fas fa-plus"></i> Add Payment</a>
+                                    }
+
+                                    //}
+                                }
+                                @*if (ViewBag.SupplierPaymentPermission.IsView)
+                                    {
+                                        <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openPaymentModal(false,@item.PurchaseId,'Purchase Payment')"><i class="fas fa-money-bill"></i> View Payments</a>
+                                    }*@
+                            }
+                            @if (ViewBag.MenuPermission.IsDelete)
+                            {
+                                <a class="dropdown-item" href="javascript:void(0)" id="Delete" onclick="Delete(@item.PurchaseId)"><i class="fas fa-trash-alt"></i> Delete</a>
+                                @*if (item.IsCancelled == false && item.Status != "Draft")
+                                {
+                                    <a class="dropdown-item" href="javascript:void(0)" id="Edit" onclick="Cancel(@item.PurchaseId)"><i class="fas fa-trash-alt"></i> Cancel</a>
+                                }*@
+                            }
+                            @*<a class="dropdown-item" href="/purchase/edit" id="Pay"><i class="fas fa-hourglass"></i> Payment Receive</a>*@
+                            @if (item.Status != "Draft")
+                            {
+                                <a class="dropdown-item" href="javascript:void(0)" onclick="openNotificationModal('Purchase Bill',@item.PurchaseId)"><i class="fas fa-envelope"></i> Send Notification</a>
+                            }
+                            <div class="dropdown-divider"></div>
+
+                            @*<a class="dropdown-item" href="javascript:void(0)" id="View" onclick="PrintInvoice('@ViewBag.InvoiceUrl/purchase/invoice?InvoiceId=@item.InvoiceId')"><i class="fas fa-file"></i> Invoice</a>
+                                <a class="dropdown-item" href="javascript:void(0)" onclick="copyCode('@ViewBag.InvoiceUrl/purchase/invoice?InvoiceId=@item.InvoiceId')" id="Edit"><i class="fas fa-copy"></i> Copy Invoice Url</a>*@
+                            <a class="dropdown-item" href="javascript:void(0)" onclick="openInvoiceCopyModal('@ViewBag.InvoiceUrl/purchase/invoice?InvoiceId=@item.InvoiceId','@item.ReferenceNo')" id="Edit"><i class="fas fa-copy"></i> Invoice Url</a>
+
+                            @*<a class="dropdown-item" href="/purchase/delete" id="Edit"><i class="fas fa-file"></i> POS Invoice</a>*@
+                            @if (item.Status == "Draft")
+                            {
+                                if (ViewBag.PurchaseStatusUpdate.IsEdit && !item.IsPurchaseReturn)
+                                {
+                                    if (item.IsCancelled == false)
+                                    {
+                                        <a class="dropdown-item" href="javascript:void(0)" onclick="UpdatePurchaseStatus(@item.PurchaseId)"><i class="fas fa-edit"></i> Mark Purchase Bill as Received?</a>
+                                    }
+                                }
+                            }
+                            @if (item.Status != "Draft")
+                            {
+                                if (ViewBag.PurchaseReturnPermission.IsAdd)
+                                {
+                                    if (item.IsCancelled == false)
+                                    {
+                                        <a class="dropdown-item" href="/purchase/purchasereturnadd?PurchaseId=@item.PurchaseId" id="Edit"><i class="fas fa-undo"></i> Debit Note</a>
+                                    }
+
+                                }
+                                @*<a class="dropdown-item" href="/purchase/creditnoteadd?PurchaseId=@item.PurchaseId" id="Edit"><i class="fas fa-undo"></i> Credit Note</a>*@
+                            }
+                            @if (item.GstTreatment == "Export of Goods / Services (Zero-Rated Supply)")
+                            {
+                                if (item.IsCancelled == false)
+                                {
+                                    if (item.BillOfEntryId == 0)
+                                    {
+                                        if (ViewBag.BillOfEntryPermission.IsAdd)
+                                        {
+                                            <a class="dropdown-item" href="/purchase/BillOfEntryadd?purchaseid=@item.PurchaseId"><i class="fa-solid fa-rectangle-xmark"></i> Create Bill Of Entry</a>
+                                        }
+                                    }
+                                    @*else
+                                        {
+                                            <a class="dropdown-item" href="/purchase/BillOfEntryadd?BillOfEntryid=@item.BillOfEntryId"><i class="fa-solid fa-rectangle-xmark"></i> Edit Bill Of Entry</a>
+                                        }*@
+                                }
+                            }
+                        </div>
+                    </div>
+                </td>
+                <td>@item.PurchaseDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                <td>
+                    @item.ReferenceNo
+                    @if (item.IsPurchaseReturn)
+                    {
+                        <i tabindex="0" class="fa fa-info-circle text-danger hover-q no-print" role="button" data-toggle="popover" data-trigger="focus" title="" data-content="Some quantities are returned from this purchase"></i>
+
+                    }
+                </td>
+                <td>
+                    @item.Reference
+                </td>
+                <td>@item.SupplierName</td>
+                <td>@item.SupplierMobileNo</td>
+                <td style="white-space:nowrap">
+                    @if (item.IsCancelled == true)
+                    {
+                        <span class='p-1 bg-dark' style='cursor:pointer'>  Cancelled</span>
+                    }
+                    else if (item.Status == "Draft")
+                    {
+                        <span class='p-1 bg-gray' style='cursor:pointer'>  @item.Status</span>
+                    }
+                    else if (item.Status == "Due")
+                    {
+                        <span class='p-1 bg-warning' style='cursor:pointer'>  @item.Status</span>
+                    }
+                    else if (item.Status == "Partially Paid")
+                    {
+                        <span class='p-1 bg-success' style='cursor:pointer'>  @item.Status</span>
+                    }
+                    else if (item.Status == "Overdue")
+                    {
+                        <span class='p-1 bg-danger' style='cursor:pointer'>  @item.Status</span>
+                    }
+                    else
+                    {
+                        <span class='p-1 bg-blue' style='cursor:pointer'>  @item.Status</span>
+                    }
+                </td>
+                <td>
+                    @item.TotalItems
+                    @*@(String.Format("{0:0.##}", item.PaidQuantity))
+                        @if (item.FreeQuantity != 0)
+                        {
+                            <span> + @(String.Format("{0:0.##}", item.FreeQuantity))</span>
+                        }*@
+                </td>
+                <td>
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.GrandTotal))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", item.GrandTotal))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>
+                <td>
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.Paid))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", item.Paid))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>
+                <td>
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.Due))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", item.Due))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>
+                @*<td>
+                        @{
+                            if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                            {
+                                @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", item.PurchaseReturnDue))
+                            }
+                            else
+                            {
+                                @(String.Format("{0:0.##}", item.PurchaseReturnDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                            }
+                        }
+                    </td>*@
+                @*<td>@item.Status</td>*@
+                @*<td>
+                        @if (item.PaymentStatus == "Due")
+                        {
+                            <span class='p-1 bg-warning' style='cursor:pointer'>  @item.PaymentStatus</span>
+                        }
+                        else if (item.PaymentStatus == "Partially Paid")
+                        {
+                            <span class='p-1 bg-info' style='cursor:pointer'>  @item.PaymentStatus</span>
+                        }
+                        else if (item.PaymentStatus == "Overdue")
+                        {
+                            <span class='p-1 bg-danger' style='cursor:pointer'>  @item.PaymentStatus</span>
+                        }
+                        else
+                        {
+                            <span class='p-1 bg-success' style='cursor:pointer'>  @item.PaymentStatus</span>
+                        }
+                    </td>*@
+                @*<td>@item.AddedByCode</td>
+                    <td>@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                    <td>@item.ModifiedByCode</td>
+                    <td>@(item.ModifiedOn != null ? item.ModifiedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1]) : "")</td>*@
+            </tr>
+            count++;
+        }
+    </tbody>
+    <tbody>
+        <tr>
+            <td class="hide noPrint"></td>
+            <td colspan="7" data-title="Total" class="text-right"><b>Total</b></td>
+            <td data-title="Due Amount">
+                @ViewBag.TotalItems
+                @*@(String.Format("{0:0.##}", ViewBag.TotalPaidQuantity))
+                    @if (ViewBag.TotalFreeQuantity != 0)
+                    {
+                        <span> + @(String.Format("{0:0.##}", ViewBag.TotalFreeQuantity))</span>
+                    }*@
+            </td>
+            <td data-title="Due Amount">
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalGrandTotal))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalGrandTotal))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+            <td data-title="Due Amount">
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalPaid))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalPaid))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+            <td data-title="Due Amount">
+                @{
+                    if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                    {
+                        @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalDue))
+                    }
+                    else
+                    {
+                        @(String.Format("{0:0.##}", ViewBag.TotalDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                    }
+                }
+            </td>
+            @*<td data-title="Due Amount">
+                    @{
+                        if (Request.Cookies["BusinessSetting"].Value.Split('&')[2].Split('=')[1] == "1")
+                        {
+                            @Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]@(String.Format("{0:0.##}", ViewBag.TotalPurchaseReturnDue))
+                        }
+                        else
+                        {
+                            @(String.Format("{0:0.##}", ViewBag.TotalPurchaseReturnDue))@Request.Cookies["data"].Value.Split('&')[5].Split('=')[1]
+                        }
+                    }
+                </td>*@
+        </tr>
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="17">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1) + 1) to @(ViewBag.PageSize * ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divAsof').text('Showing Results: (' + @Html.Raw(Json.Encode(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    $('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));
+</script>

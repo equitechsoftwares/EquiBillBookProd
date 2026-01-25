@@ -1,0 +1,294 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Table";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Table</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/settings/index">Settings</a></li>
+                        <li class="breadcrumb-item"><a href="/restauranttable/index">Restaurant Tables</a></li>
+                        <li class="breadcrumb-item active">Edit Table</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/restauranttable/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Table Information</h3>
+                    </div>
+                    <form id="tableForm">
+                        <input type="hidden" id="TableId" name="TableId" value="@(ViewBag.Table != null ? ViewBag.Table.TableId : 0)" />
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <label>Branch <span class="text-danger">*</span></label>
+                                        <select class="form-control select2" id="ddlBranchId" name="BranchId" style="width: 100%;">
+                                            <option value="">Select Branch</option>
+                                            @if (ViewBag.Branchs != null)
+                                            {
+                                                foreach (var item in ViewBag.Branchs)
+                                                {
+                                                    <option value="@item.BranchId" @(ViewBag.Table != null && ViewBag.Table.BranchId == item.BranchId ? "selected" : "")>@item.Branch</option>
+                                                }
+                                            }
+                                        </select>
+                                        <small class="text-red font-weight-bold errorText" id="divBranchId" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <label>Table Slug <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="txtTableSlug" name="TableSlug" placeholder="e.g., table-5, vip-corner" value="@(ViewBag.Table != null && ViewBag.Table.TableSlug != null ? ViewBag.Table.TableSlug : "")" required>
+                                        <small class="text-muted">URL slug for direct table booking (globally unique)</small>
+                                        <br>
+                                        <small class="text-red font-weight-bold errorText" id="divTableSlug" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <label>Table Number <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="txtTableNo" name="TableNo" value="@(ViewBag.Table != null ? ViewBag.Table.TableNo : "")" required>
+                                        <small class="text-red font-weight-bold errorText" id="divTableNo" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <label>Table Name</label>
+                                        <input type="text" class="form-control" id="txtTableName" name="TableName" value="@(ViewBag.Table != null ? ViewBag.Table.TableName : "")">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <label>Capacity <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="txtCapacity" name="Capacity" min="1" value="@(ViewBag.Table != null ? ViewBag.Table.Capacity : 4)" required>
+                                        <small class="text-red font-weight-bold errorText" id="divCapacity" style="display: none;"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <label>Floor</label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlFloorId" name="FloorId">
+                                                <option value="">Select Floor</option>
+                                            </select>
+                                            <span class="input-group-append">
+                                                <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#floorModal">+ </a>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="form-group">
+                                        <label>Table Type</label>
+                                        <div class="input-group">
+                                            <select class="form-control select2" id="ddlTableTypeId" name="TableTypeId">
+                                                <option value="">Select Type</option>
+                                                @if (ViewBag.TableTypes != null)
+                                                {
+                                                    foreach (var item in ViewBag.TableTypes)
+                                                    {
+                                                        <option value="@item.TableTypeId" @(ViewBag.Table != null && ViewBag.Table.TableTypeId == item.TableTypeId ? "selected" : "")>@item.TableTypeName</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <span class="input-group-append">
+                                                <a href="javascript:void(0)" class="btn btn-info" data-toggle="modal" data-target="#tableTypeModal">+ </a>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button id="btnUpdate" type="button" class="btn btn-primary float-right" onclick="saveTable(1)"><i class="fas fa-edit"></i> Update</button>
+                            <button id="btnUpdate_AddAnother" type="button" class="btn btn-success float-right mr-2" onclick="saveTable(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Table Type Modal -->
+<div class="modal fade" id="tableTypeModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Table Type</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>Table Type Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control divTableTypeName_M_ctrl" id="txtTableTypeName_M" placeholder="e.g., VIP, Standard, Outdoor">
+                            <small class="text-red font-weight-bold errorText" id="divTableTypeName_M" style="display: none;"></small>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-control divDescription_M_ctrl" id="txtDescription_M" rows="3" placeholder="Optional description"></textarea>
+                            <small class="text-red font-weight-bold errorText" id="divDescription_M" style="display: none;"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertTableType()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<!-- Floor Modal -->
+<div class="modal fade" id="floorModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Floor</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>Business Location <span class="text-danger">*</span></label>
+                            <select class="form-control select2 divBranchId_M_ctrl" id="ddlBranchId_M" style="width: 100%;">
+                                <option value="">Select Branch</option>
+                                @if (ViewBag.Branchs != null)
+                                {
+                                    foreach (var item in ViewBag.Branchs)
+                                    {
+                                        <option value="@item.BranchId">@item.Branch</option>
+                                    }
+                                }
+                            </select>
+                            <small class="text-red font-weight-bold errorText" id="divBranchId_M" style="display: none;"></small>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>Floor Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control divFloorName_M_ctrl" id="txtFloorName_M" placeholder="e.g., Ground Floor, First Floor">
+                            <small class="text-red font-weight-bold errorText" id="divFloorName_M" style="display: none;"></small>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>Floor Number</label>
+                            <input type="number" class="form-control divFloorNumber_M_ctrl" id="txtFloorNumber_M" placeholder="e.g., 1, 2, 3">
+                            <small class="text-red font-weight-bold errorText" id="divFloorNumber_M" style="display: none;"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+                <button type="button" class="btn btn-primary" onclick="insertFloorFromModal()">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script src="~/Content/JQuery/Customer/Restaurant/RestaurantTable.js"></script>
+<script>
+    $(document).ready(function () {
+        // Initialize select2 without width option for input-group compatibility
+        $('.select2').select2();
+        
+        // Load floors when branch changes
+        $(document).on('change', '#ddlBranchId', function() {
+            loadFloorsByBranch();
+        });
+        
+        // Load floors on page load if branch is already selected (for edit mode)
+        if ($('#ddlBranchId').val() && $('#ddlBranchId').val() !== '') {
+            loadFloorsByBranch();
+            // After floors are loaded, restore the selected floor if it exists
+            setTimeout(function() {
+                var selectedFloorId = '@(ViewBag.Table != null && ViewBag.Table.FloorId != null ? ViewBag.Table.FloorId.ToString() : "")';
+                if (selectedFloorId && selectedFloorId !== '') {
+                    $('#ddlFloorId').val(selectedFloorId).trigger('change');
+                }
+            }, 500);
+        }
+        
+        // Clear modal form when modal is closed
+        $('#tableTypeModal').on('hidden.bs.modal', function () {
+            $('#txtTableTypeName_M').val('');
+            $('#txtDescription_M').val('');
+            $('.errorText').hide();
+            $('[style*="border: 2px"]').css('border', '');
+        });
+        
+        // Clear floor modal form when modal is closed
+        $('#floorModal').on('hidden.bs.modal', function () {
+            $('#ddlBranchId_M').val('').trigger('change');
+            $('#txtFloorName_M').val('');
+            $('#txtFloorNumber_M').val('');
+            $('.errorText').hide();
+            $('[style*="border: 2px"]').css('border', '');
+        });
+        
+        // Initialize select2 for floor modal when it's shown
+        $('#floorModal').on('shown.bs.modal', function () {
+            $('#ddlBranchId_M').select2({
+                dropdownParent: $('#floorModal')
+            });
+            // Pre-populate branch from form if selected
+            var formBranchId = $('#ddlBranchId').val();
+            if (formBranchId && formBranchId !== '') {
+                $('#ddlBranchId_M').val(formBranchId).trigger('change');
+            }
+        });
+        
+        // Clear branch error when user selects a branch
+        $(document).on('change', '#ddlBranchId_M', function() {
+            $('#divBranchId_M').hide().text('');
+            $(this).next('.select2-container').find('.select2-selection').css('border', '');
+        });
+        
+        // Clear floor name error when user types
+        $(document).on('input', '#txtFloorName_M', function() {
+            $('#divFloorName_M').hide().text('');
+            $(this).css('border', '');
+        });
+        
+        // Clear inline error for TableSlug when user starts typing
+        $(document).on('input', '#txtTableSlug', function() {
+            $('#divTableSlug').hide().text('');
+            $(this).css('border', '');
+        });
+    });
+</script>
+
+

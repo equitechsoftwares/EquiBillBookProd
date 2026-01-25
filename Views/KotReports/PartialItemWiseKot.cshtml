@@ -1,0 +1,98 @@
+@{
+    var kots = ViewBag.Kots as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var currentPageIndex = ViewBag.CurrentPageIndex ?? 1;
+    var pageCount = ViewBag.PageCount ?? 0;
+}
+<thead id="thead">
+    <tr>
+        <th>KOT No</th>
+        <th>Order Time</th>
+        <th>Table</th>
+        <th>Item Name</th>
+        <th>Quantity</th>
+        <th>Unit</th>
+        <th>Item Status</th>
+        <th>Kitchen Station</th>
+        <th>Cooking Instructions</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (kots != null && kots.Count > 0)
+    {
+        foreach (var kot in kots)
+        {
+            var kotDetails = kot.KotDetails as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+            if (kotDetails != null && kotDetails.Count > 0)
+            {
+                foreach (var detail in kotDetails)
+                {
+                    <tr>
+                        <td><a href="/kot/details/@kot.KotId">@kot.KotNo</a></td>
+                        <td>@(kot.OrderTime != null ? ((DateTime)kot.OrderTime).ToString("dd/MM/yyyy HH:mm") : "")</td>
+                        <td>@(kot.TableNo ?? "-")</td>
+                        <td>@(detail.ItemName ?? "-")</td>
+                        <td>@(detail.Quantity ?? 0)</td>
+                        <td>@(detail.Unit ?? "-")</td>
+                        <td><span class="badge badge-@(detail.ItemStatus == "Served" ? "success" : detail.ItemStatus == "Ready" ? "info" : detail.ItemStatus == "Preparing" ? "warning" : "secondary")">@(detail.ItemStatus ?? "-")</span></td>
+                        <td>@(detail.KitchenStationName ?? "-")</td>
+                        <td>@(detail.CookingInstructions ?? "-")</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td><a href="/kot/details/@kot.KotId">@kot.KotNo</a></td>
+                    <td>@(kot.OrderTime != null ? ((DateTime)kot.OrderTime).ToString("dd/MM/yyyy HH:mm") : "")</td>
+                    <td>@(kot.TableNo ?? "-")</td>
+                    <td colspan="6" class="text-center">No items</td>
+                </tr>
+            }
+        }
+    }
+</tbody>
+<tbody class="hide noPrint">
+    <tr></tr>
+    <tr>
+        <td colspan="9">
+            <div class="dataTables_info" id="tblItemWiseKot_info_custom" role="status" aria-live="polite">Showing @((currentPageIndex - 1) * pageSize + 1) to @(Math.Min(currentPageIndex * pageSize, totalCount)) of @totalCount entries</div>
+            @if (pageCount > 1)
+            {
+                int j = 0;
+                <div class="dataTables_paginate paging_simple_numbers" id="tblItemWiseKot_paginate_custom" style="float:right">
+                    <ul class="pagination">
+                        @if (currentPageIndex > 1)
+                        {
+                            <li class="paginate_button page-item previous" id="tblItemWiseKot_previous">
+                                <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblItemWiseKot" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                            </li>
+                            <li class="paginate_button page-item previous" id="tblItemWiseKot_previous">
+                                <a onclick="fetchList(@(currentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblItemWiseKot" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                            </li>
+                        }
+                        @for (int i = currentPageIndex; i <= pageCount; i++)
+                        {
+                            <li class="@(i == currentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblItemWiseKot" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                            </li>
+                            if (j == 10)
+                            {
+                                i = pageCount + 1;
+                            }
+                            j++;
+                        }
+                        @if (currentPageIndex < pageCount)
+                        {
+                            <li class="paginate_button page-item next" id="tblItemWiseKot_next">
+                                <a onclick="fetchList(@(currentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblItemWiseKot" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </td>
+    </tr>
+</tbody>
+

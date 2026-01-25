@@ -1,0 +1,201 @@
+﻿
+
+@{
+    var count = 1;
+    <thead>
+        <tr>
+            <th>Sln</th>
+            <th class="hide noPrint">
+                Action
+                <input type="hidden" id="hdnEnableItemExpiry" value="@(ViewBag.ItemSetting.EnableItemExpiry.ToString())" />
+                <input type="hidden" id="hdnExpiryType" value="@ViewBag.ItemSetting.ExpiryType" />
+            </th>
+            <th class="hide noPrint">Photo</th>
+            <th>Item Type</th>
+            <th>SKU/ Barcode</th>
+            <th>Hsn</th>
+            <th>Product Name</th>
+            <th>Product Type</th>
+            <th>Category</th>
+            @*@if (ViewBag.ItemSetting.EnableSubCategory == true)
+            {
+                <th>Sub Category</th>
+            }
+            @if (ViewBag.ItemSetting.EnableSubSubCategory == true)
+            {
+                <th>Sub Sub Category</th>
+            }*@
+            <th>Manage Stock</th>
+            <th>Unit</th>
+            @if (ViewBag.ItemSetting.EnableBrands == true)
+            {
+                <th>Brand</th>
+            }
+            <th class="hidden">Status</th>
+            <th class="hide">Status</th>
+            @*<th>Added By</th>
+                <th>Added On</th>
+                <th>Last Modified By</th>
+                <th>Last Modified On</th>*@
+        </tr>
+    </thead>
+    <tbody class="table-body">
+        @foreach (var item in ViewBag.Items)
+        {
+            <tr>
+                <td>@(ViewBag.PageSize * (ViewBag.PageIndex - 1) + count)</td>
+                <td class="hide noPrint">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-info">Action</button>
+                        <button type="button" class="btn btn-info dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <div class="dropdown-menu" role="menu">
+                            @*<a class="dropdown-item" href="/purchase/view" id="View"><i class="fas fa-eye"></i> View purchase</a>*@
+                            @if (ViewBag.MenuPermission.IsEdit)
+                            {
+                                <a class="dropdown-item" href="/items/Itemsedit?ItemId=@item.ItemId" id="Edit"><i class="fas fa-edit"></i> Edit</a>
+                            }
+                            <a class="dropdown-item" href="javascript:void(0)" id="" onclick="View(@item.ItemId)"><i class="fas fa-eye"></i> View</a>
+                            @*@if (ViewBag.DuplicateItemPermission.IsAdd)
+                                {
+                                    <a class="dropdown-item" href="/items/ItemsDuplicate?ItemId=@item.ItemId" id="Pay"><i class="fas fa-copy"></i> Duplicate Item</a>
+                                }*@
+
+                            @*<a class="dropdown-item" href="/purchase/edit" id="Pay"><i class="fas fa-hourglass"></i> Payment Receive</a>*@
+                            @if (ViewBag.MenuPermission.IsDelete)
+                            {
+                                <a class="dropdown-item" href="javascript:void(0)" id="Edit" onclick="Delete(@item.ItemId,'@Html.Raw(HttpUtility.JavaScriptStringEncode(item.ItemName))')"><i class="fas fa-trash-alt"></i> Delete</a>
+                            }
+
+                            <div class="dropdown-divider"></div>
+
+                            @if (ViewBag.OpeningStockPermission.IsEdit)
+                            {
+                                if (item.IsManageStock)
+                                {
+                                    <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="AvailableBranches(@item.ItemId,false)"><i class="fas fa-database"></i> Add/Edit Opening Stock</a>
+                                }
+                            }
+                            @if (ViewBag.SellingPriceGroupPermission.IsEdit)
+                            {
+                                <a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="AvailableSellingPriceGroups(@item.ItemId)"><i class="fas fa-database"></i> Add/Edit Selling Price Group</a>
+                                @*<a class="dropdown-item" href="javascript:void(0)" id="Pay" onclick="openPaymentModal(@item.ItemId)"><i class="fas fa-history"></i> Product Stock History</a>*@
+                            }
+                            @if (ViewBag.StockDetailsPermission.IsView)
+                            {
+                                if (item.ItemType == "Product" && item.IsManageStock == true)
+                                {
+                                    <a class="dropdown-item" href="/inventoryreports/stockledger?ItemId=@item.ItemId&ItemDetailsId=@item.ItemDetailsId&BranchId=@ViewBag.BranchId" id="Pay"><i class="fas fa-history"></i> Stock Report</a>
+                                }
+                            }
+                        </div>
+                    </div>
+                </td>
+
+                <td class="hide noPrint"><img src="@item.ProductImage" height="50" /></td>
+                <td>@item.ItemType</td>
+                <td>@item.SkuCode</td>
+
+                <td>@item.HsnCode</td>
+                <td>@item.ItemName</td>
+                <td>@item.ProductType</td>
+                <td>@item.Category</td>
+                @*@if (ViewBag.ItemSetting.EnableSubCategory == true)
+                {
+                    <td>@item.SubCategory</td>
+                }
+                @if (ViewBag.ItemSetting.EnableSubSubCategory == true)
+                {
+                    <td>@item.SubSubCategory</td>
+                }*@
+                <td>@item.IsManageStock</td>
+                <td>@item.UnitName</td>
+                @if (ViewBag.ItemSetting.EnableBrands == true)
+                {
+                    <td>@item.Brand</td>
+                }
+                <td class="hidden">@(item.IsActive == true ? "Active" : "Inactive")</td>
+                <td class="hide">
+                    @if (item.IsActive)
+                    {
+                        if (ViewBag.MenuPermission.IsEdit)
+                        {
+                            <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.ItemId,false)" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                        else
+                        {
+                            <input disabled class="chkIsActive" type="checkbox" checked data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                    }
+                    else
+                    {
+                        if (ViewBag.MenuPermission.IsEdit)
+                        {
+                            <input class="chkIsActive" type="checkbox" onchange="ActiveInactive(@item.ItemId,true)" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                        else
+                        {
+                            <input disabled class="chkIsActive" type="checkbox" data-on="Active" data-off="In Active" data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-width="100" data-height="25" data-style="design">
+                        }
+                    }
+                </td>
+                @*<td>@item.AddedByCode</td>
+                    <td>@item.AddedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])</td>
+                    <td>@item.ModifiedByCode</td>
+                    <td>@(item.ModifiedOn != null ? item.ModifiedOn.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1]) : "")</td>*@
+            </tr>
+            count++;
+        }
+    </tbody>
+    <tbody class="hide noPrint">
+        <tr></tr>
+        <tr>
+            <td colspan="18">
+                <div class="dataTables_info" id="tblUserRole_info_custom" role="status" aria-live="polite">Showing @(ViewBag.PageSize * (ViewBag.PageIndex - 1) + 1) to @(ViewBag.PageSize * ViewBag.CurrentPageIndex) of @ViewBag.TotalCount entries</div>
+                @if (ViewBag.PageCount > 1)
+                {
+                    int j = 0;
+                    <div class="dataTables_paginate paging_simple_numbers" id="tblUserRole_paginate_custom" style="float:right">
+                        <ul class="pagination">
+                            @if (ViewBag.CurrentPageIndex > 1)
+                            {
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(1)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">First</a>
+                                </li>
+                                <li class="paginate_button page-item previous" id="tblUserRole_previous">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex - 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                </li>
+                            }
+                            @for (int i = ViewBag.CurrentPageIndex; i <= ViewBag.PageCount; i++)
+                            {
+                                <li class="@(i == ViewBag.CurrentPageIndex ? "paginate_button page-item active" : "paginate_button page-item")">
+                                    <a onclick="fetchList(@i)" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="1" tabindex="0" class="page-link">@(i)</a>
+                                </li>
+                                if (j == 10)
+                                {
+                                    i = ViewBag.PageCount + 1;
+                                }
+                                j++;
+                            }
+                            @if (ViewBag.CurrentPageIndex < ViewBag.PageCount)
+                            {
+                                <li class="paginate_button page-item next" id="tblUserRole_next">
+                                    <a onclick="fetchList(@(ViewBag.CurrentPageIndex + 1))" href="javascript:void(0)" aria-controls="tblUserRole" data-dt-idx="2" tabindex="0" class="page-link">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </td>
+        </tr>
+    </tbody>
+}
+<script type="text/javascript">
+    $('#divAsof').text('Showing Results: (' + @Html.Raw(Json.Encode(ViewBag.FromDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1]) + " - " + ViewBag.ToDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1])))+')');
+    $('#divTotalCount').text('Total : '+@Html.Raw(Json.Encode(ViewBag.TotalCount)));
+    $('#divActiveCount').text('Active : '+@Html.Raw(Json.Encode(ViewBag.ActiveCount)));
+    $('#divInactiveCount').text('In-Active : '+@Html.Raw(Json.Encode(ViewBag.InactiveCount)));
+</script>
+
+

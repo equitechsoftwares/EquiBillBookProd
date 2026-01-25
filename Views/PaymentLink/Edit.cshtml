@@ -1,0 +1,275 @@
+﻿
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Edit Payment Link";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Payment Link</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/PaymentLink/index">Payment Link List</a></li>
+                        <li class="breadcrumb-item active">Edit Payment Link</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/PaymentLink/index" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+                @*<a href="javascript:void(0)" data-toggle="modal" data-target="#faqModal" class="btn btn-secondary float-sm-right mr-2">FAQs</a>*@
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="callout callout-info @(Request.Cookies["SystemSetting"].Value.Split('&')[0].Split('=')[1] == "True" ? "":"hidden")">
+                    @*<h5><i class="fas fa-info"></i> Note:</h5>*@
+                    Only the fields which are marked with <span class="text-danger">*</span> is mandatory. Rest all fields are optional and can be skipped
+                    @*<button class="btn btn-info btn-sm" onclick="insert()"> Check Mandatory Fields</button>*@
+                </div>
+                <!-- jquery validation -->
+                <div class="card card-primary card-outline">
+
+                    <!-- form start -->
+                    <div id="quickForm">
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Reference# </label>
+                                        <input type="text" disabled class="form-control" id="txtReferenceNo" value="@ViewBag.PaymentLink.ReferenceNo">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Customer Name <span class="danger">*</span></label>
+                                        <div class="input-group divSupplier">
+                                            @*<select class="form-control" id="ddlCustomer" disabled">*@
+                                            @foreach (var item in ViewBag.Users)
+                                            {
+                                                if (item.UserId == ViewBag.PaymentLink.CustomerId)
+                                                {
+                                                    <span class="form-control" style="background-color: #e9ecef">
+                                                        @item.Name
+                                                        @if (item.MobileNo != null && item.MobileNo != "")
+                                                        {
+                                                            <span>- @item.MobileNo</span>
+                                                        }
+                                                    </span>
+                                                }
+                                            }
+                                            @*</select>*@
+                                            @*@if (ViewBag.CustomersPermission.IsAdd == true)
+                                                {
+                                                    <span class="input-group-append">
+                                                        <a href="javascript:void(0)" class="btn btn-info" onclick="openCustomerModal()">+ </a>
+                                                    </span>
+                                                }*@
+
+                                        </div>
+                                        <small class="text-red font-weight-bold" id="divCustomer"></small>
+                                    </div>
+                                </div>
+                                @if (ViewBag.BusinessSetting.CountryId == 2)
+                                {
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 divPlaceOfSupply">
+                                        <!-- text input -->
+                                        <div class="form-group">
+                                            <label>Place Of Supply</label>
+                                            <div class="input-group">
+                                                <select class="form-control select2" id="ddlPlaceOfSupply" onchange="setTaxList()">
+                                                    <option value="0">Select</option>
+                                                    @foreach (var item in ViewBag.PlacesOfSupply)
+                                                    {
+                                                        if (ViewBag.PaymentLink.PlaceOfSupplyId == item.StateId)
+                                                        {
+                                                            <option selected value="@item.StateId">@item.State</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.StateId">@item.State</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                            <small class="text-red font-weight-bold errorText" id="divPlaceOfSupply"></small>
+                                        </div>
+                                    </div>
+                                }
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Tax <span class="danger">*</span></label>
+                                        <div class="input-group" id="divTax">
+                                            <select class="form-control select2" id="ddlTax">
+                                                @foreach (var item in ViewBag.Taxs)
+                                                {
+                                                    if (ViewBag.BusinessSetting.CountryId == 2)
+                                                    {
+                                                        if (ViewBag.BusinessSetting.StateId == ViewBag.PaymentLink.PlaceOfSupplyId)
+                                                        {
+                                                            if (item.TaxTypeId != 3)
+                                                            {
+                                                                if (ViewBag.PaymentLink.TaxId == item.TaxId)
+                                                                {
+                                                                    <option selected value="@item.TaxId-@item.TaxPercent.ToString("0")">@item.Tax</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@item.TaxId-@item.TaxPercent.ToString("0")">@item.Tax</option>
+                                                                }
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            if (item.CanDelete == false || item.TaxTypeId == 3 || item.TaxTypeId == 5)
+                                                            {
+                                                                if (ViewBag.PaymentLink.TaxId == item.TaxId)
+                                                                {
+                                                                    <option selected value="@item.TaxId-@item.TaxPercent.ToString("0")">@item.Tax</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@item.TaxId-@item.TaxPercent.ToString("0")">@item.Tax</option>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        if (ViewBag.PaymentLink.TaxId == item.TaxId)
+                                                        {
+                                                            <option selected value="@item.TaxId-@item.TaxPercent.ToString("0")">@item.Tax</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item.TaxId-@item.TaxPercent.ToString("0")">@item.Tax</option>
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divBusinessRegistrationName"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <div class="form-group">
+                                        <label>Payment Amount <span class="danger">*</span></label>
+                                        <input disabled type="number" class="form-control" id="txtAmount" placeholder="" value="@ViewBag.PaymentLink.Amount">
+                                        <small class="text-red font-weight-bold errorText" id="divAmount"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Link Expiration Date <span class="danger">*</span></label>
+                                        <div class="input-group date" id="_LinkExpirationDate" data-target-input="nearest">
+                                            <input id="txtLinkExpirationDate" value="@ViewBag.PaymentLink.LinkExpirationDate.ToString(Request.Cookies["BusinessSetting"].Value.Split('&')[0].Split('=')[1] + " " + Request.Cookies["BusinessSetting"].Value.Split('&')[1].Split('=')[1])" type="text" class="form-control datetimepicker-input" data-target="#_LinkExpirationDate" />
+                                            <div class="input-group-append" data-target="#_LinkExpirationDate" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                        <small class="text-red font-weight-bold errorText" id="divLinkExpirationDate"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <!-- text input -->
+                                    <div class="form-group">
+                                        <label>Notes</label>
+                                        <textarea class="form-control" id="txtNotes" rows="2" placeholder="">@ViewBag.PaymentLink.Notes</textarea>
+                                        <small class="text-red font-weight-bold errorText" id="divNotes"></small>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button id="btnUpdate" type="submit" class="btn btn-primary float-right" onclick="update(1)"><i class="fas fa-edit"></i> Update</button>
+                            <button id="btnUpdate_AddAnother" type="submit" class="btn btn-success float-right mr-2" onclick="update(2)"><i class="fas fa-plus-circle"></i> Update & Add Another</button>
+                            @*<a id="btnBack" href="/items/PaymentLink" class="btn btn-warning float-sm-right mr-2"><i class="fas fa-arrow-left"></i> Back</a>*@
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!--/.col (left) -->
+
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="faqModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">FAQs</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="p-0 pl-2 pr-2">
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I add and update product categories?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    •	To add a new product PaymentLink, click on the ‘Add New’ button at the top of the screen
+                                    •	To update an existing product PaymentLink, click on 'Edit' button beside the name of product PaymentLink you want to change, make your changes and then click the ‘Save’ button at the bottom of the screen.
+                                    •	To delete an existing product PaymentLink, tick the box that is to the left of the product PaymentLink you would like to delete and then click the ‘Delete’ button at the top of the list.
+                                </div>
+                            </div>
+                            <div class="card collapsed-card" data-card-widget="collapse" title="Collapse">
+                                <div class="card-header" data-card-widget="collapse" title="Collapse">
+                                    <h3 class="card-title">How do I make a product PaymentLink inactive?</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="display: none;">
+                                    IMS allows you stop an entire product PaymentLink from displaying in your catalogue, by marking it as inactive. This is sometimes better than deleting all those products since all the product information is retained but the products are not shown in the catalogue. To mark a product PaymentLink as inactive, follow these steps:
+
+                                    •	Click on the name of the product PaymentLink that you want to make active.
+                                    •	Change the status field from ‘Active’ to ‘Inactive’.
+                                    •	Click the ‘Save’ button at the bottom of the page.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal" style="margin-left:auto">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script src="~/Content/JQuery/Customer/Sales/PaymentLink.js"></script>

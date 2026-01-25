@@ -1,0 +1,118 @@
+@{
+    ViewBag.Title = Request.Cookies["data"].Value.Split('&')[8].Split('=')[1] + " | Link Booking to Sales";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Link Booking to Sales</h1>
+                <div class="float-left">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/dashboard/index">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/restaurantdashboard/index">Restaurant Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/tablebooking/index">Table Booking</a></li>
+                        <li class="breadcrumb-item"><a href="/tablebooking/list">Booking List</a></li>
+                        <li class="breadcrumb-item"><a href="/tablebooking/details/@(ViewBag.Booking != null ? ViewBag.Booking.BookingId : 0)">Booking Details</a></li>
+                        <li class="breadcrumb-item active">Link to Sales</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6 col-12 d-flex align-items-center justify-content-start justify-content-md-end mt-1 mt-md-0">
+                <a id="btnBack" href="/tablebooking/details/@(ViewBag.Booking != null ? ViewBag.Booking.BookingId : 0)" class="btn btn-warning float-sm-right"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Booking Information</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (ViewBag.Booking != null)
+                        {
+                            var booking = ViewBag.Booking;
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="alert alert-info">
+                                        <strong>Booking No:</strong> @booking.BookingNo<br />
+                                        <strong>Table:</strong> @(booking.TableNo ?? "Not Assigned")<br />
+                                        <strong>Customer:</strong> @booking.CustomerName<br />
+                                        <strong>Date:</strong> @booking.BookingDate.ToString("dd-MMM-yyyy") @booking.BookingTime.ToString(@"hh\:mm")
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Search Sales Invoice</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="searchForm">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label>Sales No</label>
+                                        <input type="text" class="form-control" id="txtSalesNo" placeholder="Enter Sales No">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label>From Date</label>
+                                        <input type="date" class="form-control" id="txtFromDate" value="@DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd")">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label>To Date</label>
+                                        <input type="date" class="form-control" id="txtToDate" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <button type="button" class="btn btn-primary" onclick="searchSales()"><i class="fas fa-search"></i> Search</button>
+                                    <button type="button" class="btn btn-secondary" onclick="clearSearch()"><i class="fas fa-times"></i> Clear</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Available Sales Invoices</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="divSalesList">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Use the search form above to find sales invoices to link.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="~/Content/JQuery/Customer/TableBooking/LinkSales.js"></script>
+<script>
+    var bookingId = @(ViewBag.Booking != null ? ViewBag.Booking.BookingId : 0);
+</script>
+

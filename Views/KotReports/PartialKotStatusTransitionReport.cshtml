@@ -1,0 +1,204 @@
+@{
+    var statusTransitions = ViewBag.StatusTransitions as System.Collections.Generic.List<dynamic> ?? new System.Collections.Generic.List<dynamic>();
+    
+    // Helper function to safely convert object to DateTime
+    Func<object, DateTime?> toDateTime = (obj) =>
+    {
+        if (obj == null) return null;
+        if (obj is DateTime) return (DateTime)obj;
+        if (obj is DateTime?) return (DateTime?)obj;
+        try
+        {
+            return Convert.ToDateTime(obj);
+        }
+        catch
+        {
+            try
+            {
+                return DateTime.Parse(obj.ToString());
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    };
+    
+    // Helper function to safely convert object to double
+    Func<object, double?> toDouble = (obj) =>
+    {
+        if (obj == null) return null;
+        if (obj is double) return (double)obj;
+        if (obj is double?) return (double?)obj;
+        if (obj is int) return (double)(int)obj;
+        if (obj is long) return (double)(long)obj;
+        if (obj is decimal) return (double)(decimal)obj;
+        try
+        {
+            return Convert.ToDouble(obj);
+        }
+        catch
+        {
+            try
+            {
+                return double.Parse(obj.ToString());
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    };
+}
+<thead id="thead">
+    <tr>
+        <th>KOT No</th>
+        <th>Table No</th>
+        <th>Order Time</th>
+        <th>Current Status</th>
+        <th>Ready Time</th>
+        <th>Served Time</th>
+        <th>Time to Ready (min)</th>
+        <th>Time to Served (min)</th>
+        <th>Total Time (min)</th>
+    </tr>
+</thead>
+<tbody class="table-body">
+    @if (statusTransitions != null && statusTransitions.Count > 0)
+    {
+        foreach (var transition in statusTransitions)
+        {
+            var transitionDict = transition as System.Collections.Generic.Dictionary<string, object>;
+            
+            // Get KotNo
+            string kotNo = "-";
+            if (transitionDict != null && transitionDict.ContainsKey("KotNo"))
+            {
+                kotNo = transitionDict["KotNo"]?.ToString() ?? "-";
+            }
+            else
+            {
+                try { kotNo = ((dynamic)transition).KotNo?.ToString() ?? "-"; } catch { }
+            }
+            
+            // Get TableNo
+            string tableNo = "-";
+            if (transitionDict != null && transitionDict.ContainsKey("TableNo"))
+            {
+                tableNo = transitionDict["TableNo"]?.ToString() ?? "-";
+            }
+            else
+            {
+                try { tableNo = ((dynamic)transition).TableNo?.ToString() ?? "-"; } catch { }
+            }
+            
+            // Get OrderTime
+            object orderTime = null;
+            if (transitionDict != null && transitionDict.ContainsKey("OrderTime"))
+            {
+                orderTime = transitionDict["OrderTime"];
+            }
+            else
+            {
+                try { orderTime = ((dynamic)transition).OrderTime; } catch { }
+            }
+            
+            // Get CurrentStatus
+            string currentStatus = "-";
+            if (transitionDict != null && transitionDict.ContainsKey("CurrentStatus"))
+            {
+                currentStatus = transitionDict["CurrentStatus"]?.ToString() ?? "-";
+            }
+            else
+            {
+                try { currentStatus = ((dynamic)transition).CurrentStatus?.ToString() ?? "-"; } catch { }
+            }
+            
+            // Get ReadyTime
+            object readyTime = null;
+            if (transitionDict != null && transitionDict.ContainsKey("ReadyTime"))
+            {
+                readyTime = transitionDict["ReadyTime"];
+            }
+            else
+            {
+                try { readyTime = ((dynamic)transition).ReadyTime; } catch { }
+            }
+            
+            // Get ServedTime
+            object servedTime = null;
+            if (transitionDict != null && transitionDict.ContainsKey("ServedTime"))
+            {
+                servedTime = transitionDict["ServedTime"];
+            }
+            else
+            {
+                try { servedTime = ((dynamic)transition).ServedTime; } catch { }
+            }
+            
+            // Get TimeToReady
+            object timeToReady = null;
+            if (transitionDict != null && transitionDict.ContainsKey("TimeToReady"))
+            {
+                timeToReady = transitionDict["TimeToReady"];
+            }
+            else
+            {
+                try { timeToReady = ((dynamic)transition).TimeToReady; } catch { }
+            }
+            
+            // Get TimeToServed
+            object timeToServed = null;
+            if (transitionDict != null && transitionDict.ContainsKey("TimeToServed"))
+            {
+                timeToServed = transitionDict["TimeToServed"];
+            }
+            else
+            {
+                try { timeToServed = ((dynamic)transition).TimeToServed; } catch { }
+            }
+            
+            // Get TotalTime
+            object totalTime = null;
+            if (transitionDict != null && transitionDict.ContainsKey("TotalTime"))
+            {
+                totalTime = transitionDict["TotalTime"];
+            }
+            else
+            {
+                try { totalTime = ((dynamic)transition).TotalTime; } catch { }
+            }
+            
+            <tr>
+                <td>@kotNo</td>
+                <td>@tableNo</td>
+                <td>@{
+                    var orderTimeDt = toDateTime(orderTime);
+                    @(orderTimeDt.HasValue ? orderTimeDt.Value.ToString("dd/MM/yyyy HH:mm") : "-")
+                }</td>
+                <td>@currentStatus</td>
+                <td>@{
+                    var readyTimeDt = toDateTime(readyTime);
+                    @(readyTimeDt.HasValue ? readyTimeDt.Value.ToString("dd/MM/yyyy HH:mm") : "-")
+                }</td>
+                <td>@{
+                    var servedTimeDt = toDateTime(servedTime);
+                    @(servedTimeDt.HasValue ? servedTimeDt.Value.ToString("dd/MM/yyyy HH:mm") : "-")
+                }</td>
+                <td>@{
+                    var timeToReadyVal = toDouble(timeToReady);
+                    @(timeToReadyVal.HasValue ? timeToReadyVal.Value.ToString("N1") : "-")
+                }</td>
+                <td>@{
+                    var timeToServedVal = toDouble(timeToServed);
+                    @(timeToServedVal.HasValue ? timeToServedVal.Value.ToString("N1") : "-")
+                }</td>
+                <td>@{
+                    var totalTimeVal = toDouble(totalTime);
+                    @(totalTimeVal.HasValue ? totalTimeVal.Value.ToString("N1") : "-")
+                }</td>
+            </tr>
+        }
+    }
+</tbody>
+
