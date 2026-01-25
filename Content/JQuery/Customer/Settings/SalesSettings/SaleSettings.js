@@ -7,6 +7,96 @@ $(function () {
     });
 
     $('.select2').select2();
+
+    // Initialize Summernote for Default Notes and Terms if they are visible
+    initializeDefaultNotesTermsEditors();
+
+    // Show/hide Default Notes field based on EnableNotes checkbox
+    $('#chkSalesEnableNotes').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('.divDefaultNotes').show();
+            // Initialize summernote if not already initialized
+            if (!$('#txtDefaultNotes').next('.note-editor').length) {
+                initializeDefaultNotesEditor();
+            }
+        } else {
+            $('.divDefaultNotes').hide();
+        }
+        // Show/hide the entire section based on whether any field is visible
+        toggleDefaultNotesTermsSection();
+    });
+
+    // Show/hide Default Terms field based on EnableTerms checkbox
+    $('#chkSalesEnableTerms').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('.divDefaultTerms').show();
+            // Initialize summernote if not already initialized
+            if (!$('#txtDefaultTerms').next('.note-editor').length) {
+                initializeDefaultTermsEditor();
+            }
+        } else {
+            $('.divDefaultTerms').hide();
+        }
+        // Show/hide the entire section based on whether any field is visible
+        toggleDefaultNotesTermsSection();
+    });
+
+    // Function to show/hide the entire Default Notes & Terms section
+    function toggleDefaultNotesTermsSection() {
+        if ($('#chkSalesEnableNotes').is(':checked') || $('#chkSalesEnableTerms').is(':checked')) {
+            $('.divDefaultNotesTermsSection').show();
+        } else {
+            $('.divDefaultNotesTermsSection').hide();
+        }
+    }
+
+    // Initialize Summernote editors for Default Notes and Terms
+    function initializeDefaultNotesTermsEditors() {
+        if ($('#chkSalesEnableNotes').is(':checked')) {
+            initializeDefaultNotesEditor();
+        }
+        if ($('#chkSalesEnableTerms').is(':checked')) {
+            initializeDefaultTermsEditor();
+        }
+    }
+
+    // Initialize Summernote for Default Notes
+    function initializeDefaultNotesEditor() {
+        $('textarea#txtDefaultNotes').summernote({
+            placeholder: '',
+            tabsize: 2,
+            height: 100,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'hr']],
+                ['help', ['help']]
+            ],
+        });
+    }
+
+    // Initialize Summernote for Default Terms
+    function initializeDefaultTermsEditor() {
+        $('textarea#txtDefaultTerms').summernote({
+            placeholder: '',
+            tabsize: 2,
+            height: 100,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'hr']],
+                ['help', ['help']]
+            ],
+        });
+    }
 });
 function saleUpdate() {
     var det = {
@@ -46,6 +136,8 @@ function saleUpdate() {
         EnableNotes: $('#chkSalesEnableNotes').is(':checked'),
         EnableTerms: $('#chkSalesEnableTerms').is(':checked'),
         EnableRecurringSales: $('#chkSalesEnableRecurringSales').is(':checked'),
+        DefaultNotes: $('#txtDefaultNotes').summernote('code') || $('#txtDefaultNotes').val(),
+        DefaultTerms: $('#txtDefaultTerms').summernote('code') || $('#txtDefaultTerms').val(),
     };
     $("#divLoading").show();
     $.ajax({

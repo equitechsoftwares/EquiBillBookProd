@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Web;
+using System.Web.Mvc;
 
 namespace EquiBillBook.Models
 {
@@ -55,6 +56,10 @@ namespace EquiBillBook.Models
         public bool EnableNotes { get; set; }
         public bool EnableTerms { get; set; }
         public bool EnableRecurringSales { get; set; }
+        [AllowHtml]
+        public string DefaultNotes { get; set; }
+        [AllowHtml]
+        public string DefaultTerms { get; set; }
     }
 
     public class ClsSaleSettingsVm
@@ -107,6 +112,10 @@ namespace EquiBillBook.Models
         public bool EnableNotes { get; set; }
         public bool EnableTerms { get; set; }
         public bool EnableRecurringSales { get; set; }
+        [AllowHtml]
+        public string DefaultNotes { get; set; }
+        [AllowHtml]
+        public string DefaultTerms { get; set; }
     }
 
 }

@@ -1878,7 +1878,7 @@ namespace EquiBillBook.Controllers.WebApi
                                              Tax = oConnectionContext.DbClsTax.Where(cc => cc.TaxId == b.TaxId).Select(cc => cc.Tax).FirstOrDefault(),
                                              TaxPercent = oConnectionContext.DbClsTax.Where(cc => cc.TaxId == b.TaxId).Select(cc => cc.TaxPercent).FirstOrDefault(),
                                              d.TaxType,
-                                             d.ItemCode,
+                                             ItemCode = oConnectionContext.DbClsItemCode.Where(e => e.ItemCodeId == d.ItemCodeId && e.IsDeleted == false).Select(e => e.Code).FirstOrDefault(),
                                              ComboItems = (from bb in oConnectionContext.DbClsSalesQuotationDetails
                                                            join cc in oConnectionContext.DbClsItemDetails
                                                            on bb.ItemDetailsId equals cc.ItemDetailsId
@@ -1986,6 +1986,7 @@ TaxExemptionReason = oConnectionContext.DbClsTaxExemption.Where(c => c.TaxExempt
                 a.DateFormat,
                 a.TimeFormat,
                 a.CurrencySymbolPlacement,
+                a.CountryId,
                 CurrencyCode = oConnectionContext.DbClsCountry.Where(b => b.CountryId == a.CountryId).Select(b => b.CurrencyCode).FirstOrDefault(),
                 CurrencySymbol = oConnectionContext.DbClsCountry.Where(b => b.CountryId == a.CountryId).Select(b => b.CurrencySymbol).FirstOrDefault(),
             }).FirstOrDefault();

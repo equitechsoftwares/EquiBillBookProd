@@ -3722,7 +3722,7 @@ on a.SalesId equals z.SalesId
                                                //Tax = oConnectionContext.DbClsTax.Where(cc => cc.TaxId == b.TaxId).Select(cc => cc.Tax).FirstOrDefault(),
                                                //TaxPercent = oConnectionContext.DbClsTax.Where(cc => cc.TaxId == b.TaxId).Select(cc => cc.TaxPercent).FirstOrDefault(),
                                                d.TaxType,
-                                               d.ItemCode,
+                                               ItemCode = oConnectionContext.DbClsItemCode.Where(e => e.ItemCodeId == d.ItemCodeId && e.IsDeleted == false).Select(e => e.Code).FirstOrDefault(),
                                                b.PriceExcTax,
                                                b.PriceIncTax,
                                                //b.Amount,
@@ -3839,6 +3839,7 @@ on a.SalesId equals z.SalesId
                 a.DateFormat,
                 a.TimeFormat,
                 a.CurrencySymbolPlacement,
+                a.CountryId,
                 CurrencyCode = oConnectionContext.DbClsCountry.Where(b => b.CountryId == a.CountryId).Select(b => b.CurrencyCode).FirstOrDefault(),
                 CurrencySymbol = oConnectionContext.DbClsCountry.Where(b => b.CountryId == a.CountryId).Select(b => b.CurrencySymbol).FirstOrDefault(),
             }).FirstOrDefault();

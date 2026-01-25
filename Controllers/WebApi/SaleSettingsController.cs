@@ -60,7 +60,9 @@ namespace EquiBillBook.Controllers.WebApi
                 a.SpecialDiscountAccountId,
                 a.EnableNotes,
                 a.EnableTerms,
-                a.EnableRecurringSales
+                a.EnableRecurringSales,
+                a.DefaultNotes,
+                a.DefaultTerms
             }).FirstOrDefault();
             data = new
             {
@@ -121,7 +123,9 @@ namespace EquiBillBook.Controllers.WebApi
                     SpecialDiscountAccountId = obj.SpecialDiscountAccountId,
                     EnableNotes = obj.EnableNotes,
                     EnableTerms = obj.EnableTerms,
-                    EnableRecurringSales = obj.EnableRecurringSales
+                    EnableRecurringSales = obj.EnableRecurringSales,
+                    DefaultNotes = obj.DefaultNotes,
+                    DefaultTerms = obj.DefaultTerms
                 };
 
                 oConnectionContext.DbClsSaleSettings.Attach(oClsSaleSettings);
@@ -162,6 +166,8 @@ namespace EquiBillBook.Controllers.WebApi
                 oConnectionContext.Entry(oClsSaleSettings).Property(x => x.EnableNotes).IsModified = true;
                 oConnectionContext.Entry(oClsSaleSettings).Property(x => x.EnableTerms).IsModified = true;
                 oConnectionContext.Entry(oClsSaleSettings).Property(x => x.EnableRecurringSales).IsModified = true;
+                oConnectionContext.Entry(oClsSaleSettings).Property(x => x.DefaultNotes).IsModified = true;
+                oConnectionContext.Entry(oClsSaleSettings).Property(x => x.DefaultTerms).IsModified = true;
                 oConnectionContext.SaveChanges();
 
                 ClsActivityLogVm oClsActivityLogVm = new ClsActivityLogVm()

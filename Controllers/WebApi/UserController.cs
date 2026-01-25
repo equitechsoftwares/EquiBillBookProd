@@ -10976,7 +10976,12 @@ DbFunctions.TruncateTime(c.PurchaseDate) >= obj.FromDate &&
                            CountryId = oConnectionContext.DbClsBusinessSettings.Where(b => b.CompanyId == a.CompanyId).Select(b => b.CountryId).FirstOrDefault(),
                        }).FirstOrDefault();
 
-            var LoginDetail = oConnectionContext.DbClsLoginDetails.Where(a => a.AddedBy == det.CompanyId && a.IsLoggedOut == false).FirstOrDefault();
+            string token = oCommonController.CreateToken();
+
+            var CurrentDate = oCommonController.CurrentDate(det.CompanyId);
+
+            //var LoginDetail = oConnectionContext.DbClsLoginDetails.Where(a => a.AddedBy == det.CompanyId && a.IsLoggedOut == false).FirstOrDefault();
+            long LoginDetailsId = oCommonController.InsertLoginDetails(det.UserId, det.UserType, false, "", obj.Platform, "", "", "", obj.IpAddress, token, CurrentDate, obj.Browser);
 
             var BusinessSetting = oConnectionContext.DbClsBusinessSettings.Where(a => a.CompanyId == det.CompanyId).Select(a => new
             {
@@ -11027,8 +11032,8 @@ DbFunctions.TruncateTime(c.PurchaseDate) >= obj.FromDate &&
                     {
                         UserId = det.UserId,
                         UserType = det.UserType,
-                        Token = LoginDetail.Token,
-                        LoginDetailsId = LoginDetail.LoginDetailsId,
+                        Token = token,
+                        LoginDetailsId = LoginDetailsId,
                         CurrencySymbol = oConnectionContext.DbClsCountry.Where(b => b.CountryId == det.CountryId).Select(b => b.CurrencySymbol).FirstOrDefault(),
                         CurrencyCode = oConnectionContext.DbClsCountry.Where(b => b.CountryId == det.CountryId).Select(b => b.CurrencyCode).FirstOrDefault(),
                         DialingCode = oConnectionContext.DbClsCountry.Where(b => b.CountryId == det.CountryId).Select(b => b.DialingCode).FirstOrDefault(),

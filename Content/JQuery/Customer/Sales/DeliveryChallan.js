@@ -63,6 +63,26 @@
         ],
     });
 
+    $('textarea#txtNotes').summernote({
+        placeholder: '',
+        tabsize: 2,
+        height: 100,
+        toolbar: [
+            ['style', ['style']],
+            ['font', ['bold', 'italic', 'underline', 'clear']],
+            // ['font', ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', 'clear']],
+            //['fontname', ['fontname']],
+            // ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['table', ['table']],
+            ['insert', ['link', 'picture', 'hr']],
+            //['view', ['fullscreen', 'codeview']],
+            ['help', ['help']]
+        ],
+    });
+
     $('textarea#txtTerms').summernote({
         placeholder: '',
         tabsize: 2,
@@ -1415,7 +1435,7 @@ function insert(i) {
         ShippingStatus: $('#ddlShippingStatus').val(),
         Subtotal: $("#hdndivTotalAmount").val(),
         DeliveredTo: $('#txtDeliveredTo').val(),
-        Notes: $("#txtNotes").val(), Terms: $("#txtTerms").val(),
+        Notes: $("#txtNotes").summernote('code') || $("#txtNotes").val(), Terms: $("#txtTerms").summernote('code') || $("#txtTerms").val(),
         IsActive: true,
         IsDeleted: false,
         DeliveryChallanDetails: ItemDetails,
@@ -1643,7 +1663,7 @@ function update(i) {
         ShippingStatus: $('#ddlShippingStatus').val(),
         Subtotal: $("#hdndivTotalAmount").val(),
         DeliveredTo: $('#txtDeliveredTo').val(),
-        Notes: $("#txtNotes").val(), Terms: $("#txtTerms").val(),
+        Notes: $("#txtNotes").summernote('code') || $("#txtNotes").val(), Terms: $("#txtTerms").summernote('code') || $("#txtTerms").val(),
         IsActive: true,
         IsDeleted: false,
         DeliveryChallanDetails: ItemDetails,

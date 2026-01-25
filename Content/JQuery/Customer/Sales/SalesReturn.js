@@ -35,6 +35,26 @@
     $('#_Date').addClass('notranslate');
     $('#_DueDate').addClass('notranslate');
 
+    $('textarea#txtNotes').summernote({
+        placeholder: '',
+        tabsize: 2,
+        height: 100,
+        toolbar: [
+            ['style', ['style']],
+            ['font', ['bold', 'italic', 'underline', 'clear']],
+            // ['font', ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', 'clear']],
+            //['fontname', ['fontname']],
+            // ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['table', ['table']],
+            ['insert', ['link', 'picture', 'hr']],
+            //['view', ['fullscreen', 'codeview']],
+            ['help', ['help']]
+        ],
+    });
+
     $('textarea#txtTerms').summernote({
         placeholder: '',
         tabsize: 2,
@@ -494,7 +514,7 @@ function insert() {
         NetAmount: $("#divNetAmount").text().replace(/[^-0-9\.]+/g, ""),
         Subtotal: $("#hdndivTotalAmount").val(),
         DeliveredTo: $('#txtDeliveredTo').val(),
-        Notes: $("#txtNotes").val(), Terms: $("#txtTerms").val(),
+        Notes: $("#txtNotes").summernote('code') || $("#txtNotes").val(), Terms: $("#txtTerms").summernote('code') || $("#txtTerms").val(),
         SmsSettingsId: $('#ddlSmsSettings').val(),
         EmailSettingsId: $('#ddlEmailSettings').val(),
         WhatsappSettingsId: $('#ddlWhatsappSettings').val(),
@@ -696,7 +716,7 @@ function update() {
         NetAmount: $("#divNetAmount").text().replace(/[^-0-9\.]+/g, ""),
         Subtotal: $("#hdndivTotalAmount").val(),
         DeliveredTo: $('#txtDeliveredTo').val(),
-        Notes: $("#txtNotes").val(), Terms: $("#txtTerms").val(),
+        Notes: $("#txtNotes").summernote('code') || $("#txtNotes").val(), Terms: $("#txtTerms").summernote('code') || $("#txtTerms").val(),
         SmsSettingsId: $('#ddlSmsSettings').val(),
         EmailSettingsId: $('#ddlEmailSettings').val(),
         WhatsappSettingsId: $('#ddlWhatsappSettings').val(),

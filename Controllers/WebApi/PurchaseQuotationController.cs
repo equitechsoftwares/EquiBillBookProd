@@ -1688,7 +1688,7 @@ namespace EquiBillBook.Controllers.WebApi
                                                 Tax = oConnectionContext.DbClsTax.Where(cc => cc.TaxId == b.TaxId).Select(cc => cc.Tax).FirstOrDefault(),
                                                 TaxPercent = oConnectionContext.DbClsTax.Where(cc => cc.TaxId == b.TaxId).Select(cc => cc.TaxPercent).FirstOrDefault(),
                                                 d.TaxType,
-                                                d.ItemCode
+                                                ItemCode = oConnectionContext.DbClsItemCode.Where(e => e.ItemCodeId == d.ItemCodeId && e.IsDeleted == false).Select(e => e.Code).FirstOrDefault()
                                             }).ToList(),
                 PurchaseQuotationAdditionalCharges = oConnectionContext.DbClsPurchaseQuotationAdditionalCharges.Where(b => b.PurchaseQuotationId == a.PurchaseQuotationId
                     && b.IsDeleted == false && b.IsActive == true).Select(b => new ClsPurchaseQuotationAdditionalChargesVm
@@ -1777,6 +1777,7 @@ namespace EquiBillBook.Controllers.WebApi
                 a.DateFormat,
                 a.TimeFormat,
                 a.CurrencySymbolPlacement,
+                a.CountryId,
                 CurrencyCode = oConnectionContext.DbClsCountry.Where(b => b.CountryId == a.CountryId).Select(b => b.CurrencyCode).FirstOrDefault(),
                 CurrencySymbol = oConnectionContext.DbClsCountry.Where(b => b.CountryId == a.CountryId).Select(b => b.CurrencySymbol).FirstOrDefault(),
             }).FirstOrDefault();
