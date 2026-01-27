@@ -9,10 +9,21 @@ namespace EquiBillBook.Models
 {
     public class ConnectionContext : DbContext
     {
-        //public ConnectionContext() : base("ConnectionContext")
-        //{
-        //    this.Database.CommandTimeout = 1000;
-        //}
+        public ConnectionContext() : base("ConnectionContext")
+        {
+            // Disable automatic database initialization checks for better performance
+            Database.SetInitializer<ConnectionContext>(null);
+            
+            // Set command timeout
+            this.Database.CommandTimeout = 1000;
+            
+            // Disable proxy creation for better performance (only if not using change tracking proxies)
+            // this.Configuration.ProxyCreationEnabled = false;
+            
+            // Note: Keeping lazy loading enabled by default for compatibility
+            // If you want better performance, disable it and use explicit loading
+            // this.Configuration.LazyLoadingEnabled = false;
+        }
 
         static ConnectionContext()
         {
