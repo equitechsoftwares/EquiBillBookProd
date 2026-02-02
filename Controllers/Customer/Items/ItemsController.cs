@@ -2390,7 +2390,7 @@ namespace EquiBillBook.Controllers
                 obj.Platform = "Web"; obj.Domain = Request.Url.Host.Replace("www.", "");
             }
 
-            ClsItemVm itemVmObj = new ClsItemVm { ItemId = obj.ItemId, CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, BranchId = obj.BranchId };
+            ClsItemVm itemVmObj = new ClsItemVm { ItemId = obj.ItemId,ItemDetailsId = obj.ItemDetailsId, CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, BranchId = obj.BranchId };
             OpeningStockController openingStockController = new OpeningStockController();
             var openingStockResult = await openingStockController.ItemDetailsForOpeningStock(itemVmObj);
             ClsResponse oClsResponse = await oCommonController.ExtractResponseFromActionResult(openingStockResult);
