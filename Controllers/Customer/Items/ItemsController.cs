@@ -2368,7 +2368,7 @@ namespace EquiBillBook.Controllers
                 obj.AddedBy = Convert.ToInt64(arr[2]);
                 obj.CompanyId = Convert.ToInt64(Request.Cookies["data"]["CompanyId"]);
             }
-            ClsOpeningStock openingStockObj = new ClsOpeningStock { ItemId = obj.ItemId, CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, BranchId = obj.BranchId };
+            ClsOpeningStock openingStockObj = new ClsOpeningStock { ItemId = obj.ItemId, ItemDetailsId = obj.ItemDetailsId, CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, BranchId = obj.BranchId };
             OpeningStockController openingStockController = new OpeningStockController();
             var openingStockResult = await openingStockController.OpeningStock(openingStockObj);
             ClsResponse oClsResponse = await oCommonController.ExtractResponseFromActionResult(openingStockResult);
