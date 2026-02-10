@@ -1569,6 +1569,15 @@ namespace EquiBillBook.Controllers.WebApi
                     decimal taxAmount = amountExcTax * (taxPercent / 100);
                     decimal amountIncTax = amountExcTax + taxAmount;
 
+                    // Derive per-unit exclusive/inclusive prices the same way Sales/Add does,
+                    // so that (PriceIncTax - PriceExcTax) always reflects the correct per-unit tax.
+                    decimal priceExcTaxPerUnit = consolidatedItem.TotalQuantity > 0
+                        ? amountExcTax / consolidatedItem.TotalQuantity
+                        : unitPriceExcTax;
+                    decimal priceIncTaxPerUnit = consolidatedItem.TotalQuantity > 0
+                        ? amountIncTax / consolidatedItem.TotalQuantity
+                        : priceExcTaxPerUnit;
+
                     subtotal += amountIncTax;
                     totalQuantity += consolidatedItem.TotalQuantity;
                     totalTaxAmount += taxAmount;
@@ -1582,9 +1591,11 @@ namespace EquiBillBook.Controllers.WebApi
                         ItemId = consolidatedItem.ItemId,
                         ItemDetailsId = consolidatedItem.ItemDetailsId,
                         Quantity = consolidatedItem.TotalQuantity,
-                        UnitCost = itemDetail.PurchaseIncTax,
-                        PriceIncTax = unitPriceIncTax,
-                        PriceExcTax = unitPriceExcTax,
+                        // Align KOT → Sales with Sales/Add: use per-unit selling price before tax as UnitCost
+                        UnitCost = priceExcTaxPerUnit,
+                        // These drive the per-unit tax column on the invoice (PriceIncTax - PriceExcTax)
+                        PriceExcTax = priceExcTaxPerUnit,
+                        PriceIncTax = priceIncTaxPerUnit,
                         AmountExcTax = amountExcTax,
                         TaxAmount = taxAmount,
                         AmountIncTax = amountIncTax,
@@ -1600,6 +1611,7 @@ namespace EquiBillBook.Controllers.WebApi
                         ModifiedBy = obj.AddedBy,
                         QuantityRemaining = quantityRemaining,
                         WarrantyId = 0,
+                        // Keep purchase price only for costing, like normal sales
                         DefaultUnitCost = itemDetail.PurchaseIncTax,
                         DefaultAmount = itemDetail.PurchaseIncTax * consolidatedItem.TotalQuantity,
                         PriceAddedFor = 1,
@@ -1793,7 +1805,12 @@ namespace EquiBillBook.Controllers.WebApi
                         .FirstOrDefault();
                     if (booking != null)
                     {
-                        booking.SalesId = oClsSales.SalesId;
+                        // Do not override the primary/first sales link for the booking.
+                        // Only set SalesId if this is the first invoice linked to the booking.
+                        if (booking.SalesId == 0)
+                        {
+                            booking.SalesId = oClsSales.SalesId;
+                        }
                         // Note: Relationship maintained via BookingId in tblKotMaster, no need to update booking.KotId
                         booking.ModifiedBy = obj.AddedBy;
                         booking.ModifiedOn = CurrentDate;
@@ -1844,9 +1861,9 @@ namespace EquiBillBook.Controllers.WebApi
             }
 
             var kots = oConnectionContext.DbClsKotMaster
-                .Where(a => a.BookingId == obj.BookingId && 
-                       a.CompanyId == obj.CompanyId && 
-                       a.IsDeleted == false)
+                .Where(a => a.BookingId == obj.BookingId &&
+                            a.CompanyId == obj.CompanyId &&
+                            a.IsDeleted == false)
                 .OrderByDescending(a => a.OrderTime)
                 .Select(a => new ClsKotMasterVm
                 {
@@ -1857,6 +1874,11 @@ namespace EquiBillBook.Controllers.WebApi
                     TableId = a.TableId,
                     BookingId = a.BookingId,
                     SalesId = a.SalesId,
+                    // Fetch Sales invoice number so UI can show Sales No beside each KOT
+                    SalesNo = oConnectionContext.DbClsSales
+                        .Where(s => s.SalesId == a.SalesId && s.IsDeleted == false)
+                        .Select(s => s.InvoiceNo)
+                        .FirstOrDefault(),
                     GuestCount = a.GuestCount,
                     OrderType = a.OrderType
                 })

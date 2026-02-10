@@ -271,16 +271,28 @@
                                                                 </span>
                                                                 @if (kot.SalesId > 0)
                                                                 {
-                                                                    <span class="badge badge-primary ml-1">Linked to Sales</span>
-                                                                    <a href="/sales/details/@kot.SalesId" class="btn btn-sm btn-primary ml-1" data-toggle="tooltip" data-placement="top" title="View Sales">
+                                                                    <span class="badge badge-primary ml-1">
+                                                                        @if (!string.IsNullOrEmpty(kot.SalesNo))
+                                                                        {
+                                                                            @:Sales: @kot.SalesNo
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            @:Linked to Sales
+                                                                        }
+                                                                    </span>
+                                                                    <a href="/sales/details/@kot.SalesId" class="btn btn-sm btn-primary ml-1" data-toggle="tooltip" data-placement="top" title="View Sales Invoice">
                                                                         <i class="fas fa-eye"></i>
                                                                     </a>
                                                                 }
                                                                 else if (kot.OrderStatus == "Served")
                                                                 {
-                                                                    @* Show link to sales option for served, unlinked KOTs *@
-                                                                    <a href="/kot/linktosales/@kot.KotId" class="btn btn-sm btn-warning ml-1" data-toggle="tooltip" data-placement="top" title="Link to Sales">
-                                                                        <i class="fas fa-link"></i> Link to Sales
+                                                                    @* For served, unlinked KOTs: icon-only buttons for convert and link *@
+                                                                    <a href="javascript:void(0)" class="btn btn-sm btn-success ml-1" onclick="convertKotToSales(@kot.KotId)" data-toggle="tooltip" data-placement="top" title="Convert this KOT to a new Sales invoice">
+                                                                        <i class="fas fa-receipt"></i>
+                                                                    </a>
+                                                                    <a href="/kot/linktosales/@kot.KotId" class="btn btn-sm btn-warning ml-1" data-toggle="tooltip" data-placement="top" title="Link to existing Sales invoice">
+                                                                        <i class="fas fa-link"></i>
                                                                     </a>
                                                                 }
                                                             </li>
@@ -294,7 +306,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th>Sales No</th>
+                                            <th>Primary Sales No</th>
                                             <td>
                                                 @if (booking.SalesId != 0)
                                                 {
@@ -515,7 +527,7 @@
                                             <a href="/tablebooking/linktokot/@booking.BookingId" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Link to KOT"><i class="fas fa-clipboard-list"></i></a>
                                         }
                                     }
-                                    @if (booking.Status != "Cancelled" && (booking.SalesId == 0))
+                                    @if (booking.Status != "Cancelled")
                                     {
                                         @* Check if there are served, unlinked KOTs to convert *@
                                         var servedUnlinkedKots = ViewBag.Kots != null ? 
