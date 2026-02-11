@@ -560,7 +560,7 @@ namespace EquiBillBook.Controllers.Customer.Settings
                 obj.CompanyId = Convert.ToInt64(Request.Cookies["data"]["CompanyId"]);
             }
             WebApi.ItemCodeMasterController itemCodeMasterController = new WebApi.ItemCodeMasterController();
-            ClsItemCodeMasterVm itemCodeMasterObj = new ClsItemCodeMasterVm { AddedBy = obj.AddedBy, CompanyId = obj.CompanyId, Search = obj.Search };
+            ClsItemCodeMasterVm itemCodeMasterObj = new ClsItemCodeMasterVm { AddedBy = obj.AddedBy, CompanyId = obj.CompanyId, Search = obj.Search, ItemCodeType = obj.ItemCodeType };
             var itemCodeAutocompleteResult = await itemCodeMasterController.ItemCodeAutocomplete(itemCodeMasterObj);
             ClsResponse oClsResponse = await oCommonController.ExtractResponseFromActionResult(itemCodeAutocompleteResult);
 
