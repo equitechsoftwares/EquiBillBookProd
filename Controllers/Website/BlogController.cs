@@ -1,4 +1,4 @@
-﻿using EquiBillBook.Controllers.WebApi;
+using EquiBillBook.Controllers.WebApi;
 using EquiBillBook.Models;
 using System;
 using System.Collections.Generic;
@@ -51,9 +51,10 @@ namespace EquiBillBook.Controllers.Website
                 }
             }
 
-            // Load blogs and categories
+            // Load initial blog page and categories
             await LoadBlogs(companyId);
             await LoadBlogCategories(companyId);
+            ViewBag.CompanyId = companyId;
 
             // SEO Meta Tags
             ViewBag.PageTitle = "Blog - EquiBillBook";
@@ -78,7 +79,7 @@ namespace EquiBillBook.Controllers.Website
                 {
                     CompanyId = companyId,
                     PageIndex = 1,
-                    PageSize = 0 // Get all published blogs
+                    PageSize = 9 // Initial page for infinite scroll
                 };
 
                 // Initialize API controller
@@ -91,10 +92,12 @@ namespace EquiBillBook.Controllers.Website
                 if (blogResponse.Status == 1 && blogResponse.Data != null)
                 {
                     ViewBag.Blogs = blogResponse.Data.Blogs;
+                    ViewBag.BlogTotalCount = blogResponse.Data.TotalCount;
                 }
                 else
                 {
                     ViewBag.Blogs = new List<object>();
+                    ViewBag.BlogTotalCount = 0;
                 }
             }
             catch (Exception)

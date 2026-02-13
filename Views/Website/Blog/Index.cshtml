@@ -44,7 +44,7 @@
         }
 
         <!-- Blog List Container -->
-        <div id="blogListContainer">
+        <div id="blogListContainer" data-company-id="@(ViewBag.CompanyId ?? 0)" data-page-size="9" data-total-count="@(ViewBag.BlogTotalCount ?? 0)">
             @if (ViewBag.Blogs != null && ((System.Collections.IEnumerable)ViewBag.Blogs).Cast<object>().Any())
             {
                 <div class="row" id="blogRow">
@@ -58,12 +58,8 @@
                                 }
                                 @if (!string.IsNullOrWhiteSpace(item.Image?.ToString()))
                                 {
-                                    <img src="@item.Image" class="card-img-top position-relative" alt="@item.Title" style="height: 200px; object-fit: cover;">
+                                    <img src="@item.Image" class="card-img-top position-relative" alt="@item.Title" style="height: 200px; object-fit: cover;" onerror="this.style.display='none'; this.onerror=null;">
                                 }
-                                @* else
-                                {
-                                    <img src="/Content/web-assets/images/hero-bg-2.jpg" class="card-img-top position-relative" alt="@item.Title" style="height: 200px; object-fit: cover;">
-                                } *@
                                 <div class="card-body">
                                     <div class="post-meta mb-2">
                                         <ul class="list-inline meta-list">
@@ -100,6 +96,16 @@
                         <h3 class="text-muted">No blog posts found in this category.</h3>
                         <p class="text-muted">Try selecting a different category.</p>
                     </div>
+                </div>
+                <div id="blogLoadMoreSentinel" class="col-12 text-center py-4"></div>
+                <div id="blogLoadingIndicator" class="col-12 text-center py-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p class="text-muted mt-2">Loading more posts...</p>
+                </div>
+                <div id="blogNoMoreMessage" class="col-12 text-center py-3" style="display: none;">
+                    <p class="text-muted small">You've reached the end of the blog</p>
                 </div>
             }
             else
@@ -178,39 +184,176 @@
 </style>
 
 <script>
+    var blogState = {
+        pageIndex: 1,
+        totalCount: 0,
+        pageSize: 9,
+        companyId: 0,
+        categoryFilter: '',
+        isLoading: false,
+        hasMore: true
+    };
+
     $(document).ready(function() {
-        // Initialize - ensure all blogs are visible on page load
-        filterBlogsByCategory('');
+        var $container = $('#blogListContainer');
+        blogState.totalCount = parseInt($container.data('total-count') || 0, 10);
+        blogState.pageSize = parseInt($container.data('page-size') || 9, 10);
+        blogState.companyId = parseInt($container.data('company-id') || 0, 10);
+        blogState.hasMore = $('.blog-item').length < blogState.totalCount;
+
+        // Intersection Observer for load more on scroll
+        if (typeof IntersectionObserver !== 'undefined') {
+            var sentinel = document.getElementById('blogLoadMoreSentinel');
+            if (sentinel && $('.blog-item').length > 0) {
+                var observer = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting && blogState.hasMore && !blogState.isLoading) {
+                            loadMoreBlogs();
+                        }
+                    });
+                }, { rootMargin: '200px', threshold: 0 });
+                observer.observe(sentinel);
+            }
+        } else {
+            // Fallback: scroll event for older browsers
+            $(window).on('scroll', function() {
+                var sentinel = $('#blogLoadMoreSentinel');
+                if (sentinel.length && blogState.hasMore && !blogState.isLoading) {
+                    var rect = sentinel[0].getBoundingClientRect();
+                    if (rect.top < window.innerHeight + 200) {
+                        loadMoreBlogs();
+                    }
+                }
+            });
+        }
     });
 
     function filterBlogsByCategory(categoryName) {
-        // Update active button
+        blogState.categoryFilter = categoryName;
+        blogState.pageIndex = 1;
+
         $('.category-filter-btn').removeClass('active');
-        var targetButton = categoryName === '' 
-            ? $('.category-filter-btn[data-category=""]') 
+        var targetButton = categoryName === ''
+            ? $('.category-filter-btn[data-category=""]')
             : $('.category-filter-btn[data-category="' + categoryName.replace(/"/g, '&quot;') + '"]');
         targetButton.addClass('active');
 
-        // Filter blog items
-        var visibleCount = 0;
-        $('.blog-item').each(function() {
-            var itemCategory = $(this).attr('data-category') || '';
-            if (categoryName === '' || itemCategory.toLowerCase() === categoryName.toLowerCase()) {
-                $(this).removeClass('hidden').addClass('fade-in');
-                visibleCount++;
+        // Reload from API when filter changes (ensures correct data for infinite scroll)
+        reloadBlogsWithFilter(categoryName);
+    }
+
+    function reloadBlogsWithFilter(categoryName) {
+        if (blogState.isLoading) return;
+        blogState.isLoading = true;
+        blogState.pageIndex = 1;
+
+        $('#blogLoadingIndicator').show();
+        $('#blogNoMoreMessage').hide();
+
+        loadBlogsFromApi(1, categoryName, function(blogs, totalCount) {
+            blogState.totalCount = totalCount;
+            blogState.hasMore = blogs.length < totalCount;
+
+            $('#blogRow').empty();
+            blogs.forEach(function(item) {
+                $('#blogRow').append(renderBlogCard(item));
+            });
+
+            $('#blogLoadingIndicator').hide();
+            blogState.isLoading = false;
+
+            if (blogs.length === 0) {
+                $('#noBlogsMessage').show();
+                $('#blogRow').hide();
             } else {
-                $(this).addClass('hidden').removeClass('fade-in');
+                $('#noBlogsMessage').hide();
+                $('#blogRow').show();
+            }
+        }, function() {
+            $('#blogLoadingIndicator').hide();
+            blogState.isLoading = false;
+        });
+    }
+
+    function loadMoreBlogs() {
+        if (blogState.isLoading || !blogState.hasMore) return;
+
+        blogState.isLoading = true;
+        $('#blogLoadingIndicator').show();
+        $('#blogNoMoreMessage').hide();
+
+        var nextPage = blogState.pageIndex + 1;
+        loadBlogsFromApi(nextPage, blogState.categoryFilter, function(blogs, totalCount) {
+            blogState.pageIndex = nextPage;
+            blogState.totalCount = totalCount;
+            blogState.hasMore = ($('.blog-item').length + blogs.length) < totalCount;
+
+            blogs.forEach(function(item) {
+                $('#blogRow').append(renderBlogCard(item));
+            });
+
+            $('#blogLoadingIndicator').hide();
+            if (!blogState.hasMore) {
+                $('#blogNoMoreMessage').show();
+            }
+            blogState.isLoading = false;
+        }, function() {
+            $('#blogLoadingIndicator').hide();
+            blogState.isLoading = false;
+        });
+    }
+
+    function loadBlogsFromApi(pageIndex, categoryFilter, onSuccess, onError) {
+        $.ajax({
+            url: '/api/Blog/WebBlogs',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                CompanyId: blogState.companyId,
+                PageIndex: pageIndex,
+                PageSize: blogState.pageSize,
+                CategoryFilter: categoryFilter || ''
+            }),
+            success: function(response) {
+                if (response && response.Status === 1 && response.Data) {
+                    onSuccess(response.Data.Blogs || [], response.Data.TotalCount || 0);
+                } else {
+                    if (onError) onError();
+                }
+            },
+            error: function() {
+                if (onError) onError();
             }
         });
+    }
 
-        // Show/hide no blogs message
-        if (visibleCount === 0 && $('.blog-item').length > 0) {
-            $('#noBlogsMessage').show();
-            $('#blogRow').hide();
-        } else {
-            $('#noBlogsMessage').hide();
-            $('#blogRow').show();
-        }
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        var d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '';
+        var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        return months[d.getMonth()] + ' ' + ('0' + d.getDate()).slice(-2) + ', ' + d.getFullYear();
+    }
+
+    function renderBlogCard(item) {
+        var slug = item.UniqueSlug || item.BlogId;
+        var categoryName = item.CategoryName || '';
+        var shortDesc = item.ShortDescription || '';
+        if (shortDesc.length > 150) shortDesc = shortDesc.substring(0, 150) + '...';
+
+        var categoryBadge = categoryName ? '<span class="category position-absolute badge badge-pill badge-primary" style="top: 10px; right: 10px; z-index: 1;">' + $('<div>').text(categoryName).html() + '</span>' : '';
+        var imgHtml = item.Image ? '<img src="' + $('<div>').text(item.Image).html() + '" class="card-img-top position-relative" alt="' + $('<div>').text(item.Title || '').html() + '" style="height: 200px; object-fit: cover;" onerror="this.style.display=\'none\'; this.onerror=null;">' : '';
+
+        return '<div class="col-md-4 mb-4 blog-item fade-in" data-category="' + $('<div>').text(categoryName).html() + '">' +
+            '<div class="single-blog-card card border-0 shadow-sm h-100">' +
+            categoryBadge +
+            imgHtml +
+            '<div class="card-body">' +
+            '<div class="post-meta mb-2"><ul class="list-inline meta-list"><li class="list-inline-item"><i class="far fa-calendar-alt mr-1"></i>' + formatDate(item.PublishedDate || item.AddedOn) + '</li></ul></div>' +
+            '<h5 class="card-title mb-3"><a href="/blog/' + $('<div>').text(slug).html() + '" class="text-dark">' + $('<div>').text(item.Title || '').html() + '</a></h5>' +
+            (shortDesc ? '<p class="card-text text-muted">' + $('<div>').text(shortDesc).html() + '</p>' : '') +
+            '<div class="text-right mt-3"><a href="/blog/' + $('<div>').text(slug).html() + '" class="btn btn-primary btn-sm read-more-btn">Read More <i class="fas fa-arrow-right"></i></a></div>' +
+            '</div></div></div>';
     }
 </script>
 

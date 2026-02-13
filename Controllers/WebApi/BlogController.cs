@@ -65,6 +65,9 @@ namespace EquiBillBook.Controllers.WebApi
                     ).ToList();
                 }
 
+                // Capture total count before pagination
+                int totalCount = blogs.Count;
+
                 // Apply pagination if needed
                 if (obj.PageSize > 0)
                 {
@@ -79,7 +82,7 @@ namespace EquiBillBook.Controllers.WebApi
                     Data = new
                     {
                         Blogs = blogs,
-                        TotalCount = blogs.Count
+                        TotalCount = totalCount
                     }
                 };
 
@@ -889,7 +892,7 @@ namespace EquiBillBook.Controllers.WebApi
         {
             try
             {
-                if (Request.Properties.ContainsKey("MS_HttpContext"))
+                if (Request?.Properties?.ContainsKey("MS_HttpContext") == true)
                 {
                     var httpContext = Request.Properties["MS_HttpContext"] as System.Web.HttpContextWrapper;
                     if (httpContext != null && httpContext.Request != null)
