@@ -838,6 +838,11 @@ function initKotAutocomplete() {
                     else {
                         if (data.Data && data.Data.ItemsArray && data.Data.ItemsArray.length == 1) {
                             $('#txttags').val('');
+                            // Reset autocomplete term to allow re-searching the same value
+                            var autocompleteInstance = $('#txttags').data('ui-autocomplete') || $('#txttags').data('autocomplete');
+                            if (autocompleteInstance) {
+                                autocompleteInstance.term = '';
+                            }
                             var splitVal = data.Data.ItemsArray[0].split('~');
                             fetchKotItem(splitVal[splitVal.length - 1]);
                             skuCodes.push(splitVal[splitVal.length - 1]);
@@ -859,6 +864,16 @@ function initKotAutocomplete() {
             var splitVal = ui.item.value.split('~');
             fetchKotItem(splitVal[splitVal.length - 1]);
             skuCodes.push(splitVal[splitVal.length - 1]);
+        }
+    });
+
+    // Reset autocomplete term when input is cleared manually to allow re-searching the same value
+    $('#txttags').on('input', function() {
+        if ($(this).val() === '') {
+            var autocompleteInstance = $(this).data('ui-autocomplete') || $(this).data('autocomplete');
+            if (autocompleteInstance) {
+                autocompleteInstance.term = '';
+            }
         }
     });
 }
@@ -898,6 +913,11 @@ function fetchKotItem(SkuHsnCode) {
         success: function (data) {
             $("#divLoading").hide();
             $('#txttags').val('');
+            // Reset autocomplete term to allow re-searching the same value
+            var autocompleteInstance = $('#txttags').data('ui-autocomplete') || $('#txttags').data('autocomplete');
+            if (autocompleteInstance) {
+                autocompleteInstance.term = '';
+            }
             
             if (data.Status == 1 && data.Data && data.Data.ItemDetails && data.Data.ItemDetails.length > 0) {
                 // Add the first item (or all items if multiple variations)

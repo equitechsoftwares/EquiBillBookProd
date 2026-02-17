@@ -1,4 +1,4 @@
-﻿$(function () {
+$(function () {
     $('#tblData').DataTable({
         lengthChange: false,
         searching: false,
@@ -222,6 +222,11 @@ $('#txttags').autocomplete({
                 else {
                     if (data.Data.ItemsArray.length == 1) {
                         $('#txttags').val('');
+                        // Reset autocomplete term to allow re-searching the same value
+                        var autocompleteInstance = $('#txttags').data('ui-autocomplete') || $('#txttags').data('autocomplete');
+                        if (autocompleteInstance) {
+                            autocompleteInstance.term = '';
+                        }
                         var splitVal = data.Data.ItemsArray[0].split('~');
                         fetchItem(splitVal[splitVal.length - 1]);
                     }
@@ -238,6 +243,16 @@ $('#txttags').autocomplete({
     select: function (event, ui) {
         var splitVal = ui.item.value.split('~');
         fetchItem(splitVal[splitVal.length - 1]);
+    }
+});
+
+// Reset autocomplete term when input is cleared manually to allow re-searching the same value
+$('#txttags').on('input', function() {
+    if ($(this).val() === '') {
+        var autocompleteInstance = $(this).data('ui-autocomplete') || $(this).data('autocomplete');
+        if (autocompleteInstance) {
+            autocompleteInstance.term = '';
+        }
     }
 });
 
@@ -259,6 +274,11 @@ function fetchItem(SkuHsnCode) {
             var html = '';
             //var vari = '';
             $('#txttags').val('');
+            // Reset autocomplete term to allow re-searching the same value
+            var autocompleteInstance = $('#txttags').data('ui-autocomplete') || $('#txttags').data('autocomplete');
+            if (autocompleteInstance) {
+                autocompleteInstance.term = '';
+            }
             var z = count;
             for (let i = 0; i < data.Data.ItemDetails.length; i++) {
                 var isPresent = false;
