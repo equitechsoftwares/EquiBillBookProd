@@ -1,4 +1,4 @@
-﻿
+
 $(function () {
     $("[data-toggle=popover]").popover({
         html: true,
@@ -138,6 +138,8 @@ function saleUpdate() {
         EnableRecurringSales: $('#chkSalesEnableRecurringSales').is(':checked'),
         DefaultNotes: $('#txtDefaultNotes').summernote('code') || $('#txtDefaultNotes').val(),
         DefaultTerms: $('#txtDefaultTerms').summernote('code') || $('#txtDefaultTerms').val(),
+        ShowBillingAddressOnInvoice: $('#chkSalesShowBillingAddressOnInvoice').is(':checked'),
+        ShowShippingAddressOnInvoice: $('#chkSalesShowShippingAddressOnInvoice').is(':checked'),
     };
     $("#divLoading").show();
     $.ajax({

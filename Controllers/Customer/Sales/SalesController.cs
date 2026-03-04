@@ -1,4 +1,4 @@
-﻿using EquiBillBook.Controllers.WebApi;
+using EquiBillBook.Controllers.WebApi;
 using EquiBillBook.Filters;
 using EquiBillBook.Models;
 using System;
@@ -541,6 +541,24 @@ namespace EquiBillBook.Controllers
             ViewBag.BusinessSetting = oClsResponse.Data.BusinessSetting;
             ViewBag.OnlinePaymentSetting = oClsResponse.Data.OnlinePaymentSetting;
             ViewBag.Catalogue = oClsResponse.Data.Catalogue;
+
+            try
+            {
+                var saleSettingsController = new WebApi.SaleSettingsController();
+                var saleSettingsObj = new ClsSaleSettingsVm
+                {
+                    CompanyId = oClsResponse.Data.Sale.CompanyId,
+                    AddedBy = oClsResponse.Data.Sale.AddedBy
+                };
+                var saleSettingsResult = await saleSettingsController.SaleSetting(saleSettingsObj);
+                ClsResponse oClsResponseSaleSettings = await oCommonController.ExtractResponseFromActionResult(saleSettingsResult);
+                ViewBag.SaleSetting = oClsResponseSaleSettings.Data.SaleSetting;
+            }
+            catch
+            {
+                ViewBag.SaleSetting = null;
+            }
+
             return View();
         }
 

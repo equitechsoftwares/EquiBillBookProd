@@ -242,7 +242,9 @@ namespace EquiBillBook.Controllers.WebApi.Common
                 EnablePos = false,
                 EnableSpecialDiscount = false,
                 EnableNotes = false,
-                EnableTerms = false
+                EnableTerms = false,
+                ShowBillingAddressOnInvoice = true,
+                ShowShippingAddressOnInvoice = true,
             };
             oConnectionContext.DbClsSaleSettings.Add(oClsSaleSettings);
             oConnectionContext.SaveChanges();

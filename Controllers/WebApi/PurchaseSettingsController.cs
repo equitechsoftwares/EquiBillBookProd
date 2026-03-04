@@ -1,4 +1,4 @@
-﻿using EquiBillBook.Filters;
+using EquiBillBook.Filters;
 using EquiBillBook.Models;
 using System;
 using System.Collections.Generic;

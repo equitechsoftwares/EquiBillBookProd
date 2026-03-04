@@ -1,4 +1,4 @@
-﻿using EquiBillBook.Filters;
+using EquiBillBook.Filters;
 using EquiBillBook.Models;
 using System;
 using System.Collections.Generic;
@@ -62,7 +62,9 @@ namespace EquiBillBook.Controllers.WebApi
                 a.EnableTerms,
                 a.EnableRecurringSales,
                 a.DefaultNotes,
-                a.DefaultTerms
+                a.DefaultTerms,
+                a.ShowBillingAddressOnInvoice,
+                a.ShowShippingAddressOnInvoice
             }).FirstOrDefault();
             data = new
             {
@@ -125,7 +127,9 @@ namespace EquiBillBook.Controllers.WebApi
                     EnableTerms = obj.EnableTerms,
                     EnableRecurringSales = obj.EnableRecurringSales,
                     DefaultNotes = obj.DefaultNotes,
-                    DefaultTerms = obj.DefaultTerms
+                    DefaultTerms = obj.DefaultTerms,
+                    ShowBillingAddressOnInvoice = obj.ShowBillingAddressOnInvoice,
+                    ShowShippingAddressOnInvoice = obj.ShowShippingAddressOnInvoice
                 };
 
                 oConnectionContext.DbClsSaleSettings.Attach(oClsSaleSettings);
@@ -168,6 +172,8 @@ namespace EquiBillBook.Controllers.WebApi
                 oConnectionContext.Entry(oClsSaleSettings).Property(x => x.EnableRecurringSales).IsModified = true;
                 oConnectionContext.Entry(oClsSaleSettings).Property(x => x.DefaultNotes).IsModified = true;
                 oConnectionContext.Entry(oClsSaleSettings).Property(x => x.DefaultTerms).IsModified = true;
+                oConnectionContext.Entry(oClsSaleSettings).Property(x => x.ShowBillingAddressOnInvoice).IsModified = true;
+                oConnectionContext.Entry(oClsSaleSettings).Property(x => x.ShowShippingAddressOnInvoice).IsModified = true;
                 oConnectionContext.SaveChanges();
 
                 ClsActivityLogVm oClsActivityLogVm = new ClsActivityLogVm()

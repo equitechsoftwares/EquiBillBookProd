@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -60,6 +60,8 @@ namespace EquiBillBook.Models
         public string DefaultNotes { get; set; }
         [AllowHtml]
         public string DefaultTerms { get; set; }
+        public bool ShowBillingAddressOnInvoice { get; set; }
+        public bool ShowShippingAddressOnInvoice { get; set; }
     }
 
     public class ClsSaleSettingsVm
@@ -116,6 +118,8 @@ namespace EquiBillBook.Models
         public string DefaultNotes { get; set; }
         [AllowHtml]
         public string DefaultTerms { get; set; }
+        public bool ShowBillingAddressOnInvoice { get; set; }
+        public bool ShowShippingAddressOnInvoice { get; set; }
     }
 
 }

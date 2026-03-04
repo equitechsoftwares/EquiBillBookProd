@@ -298,6 +298,7 @@ namespace EquiBillBook.Controllers.Customer.Settings
             ViewBag.PaymentTermPermission = oClsResponse35.Data.MenuPermissions.Where(a => a.Menu.ToLower() == "payment terms").FirstOrDefault();
 
             ViewBag.IsAccountsAddon = oClsResponse21.Data.PlanAddons.Where(a => a.Type == "Accounts").Count() == 0 ? false : true;
+            ViewBag.IsPosAddon = oClsResponse21.Data.PlanAddons.Where(a => a.Type == "Pos").Count() == 0 ? false : true;
 
             return View();
         }

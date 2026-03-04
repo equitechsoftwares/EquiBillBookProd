@@ -1,4 +1,4 @@
-﻿using EquiBillBook.Controllers.WebApi;
+using EquiBillBook.Controllers.WebApi;
 using EquiBillBook.Filters;
 using EquiBillBook.Models;
 using System;

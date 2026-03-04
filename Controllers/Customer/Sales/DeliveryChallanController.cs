@@ -1,4 +1,4 @@
-﻿using WebApi = EquiBillBook.Controllers.WebApi;
+using WebApi = EquiBillBook.Controllers.WebApi;
 using EquiBillBook.Filters;
 using EquiBillBook.Models;
 using System;
@@ -447,6 +447,22 @@ namespace EquiBillBook.Controllers
             ViewBag.TotalAmount = oClsResponse.Data.DeliveryChallan.DeliveryChallanDetails.Select(a => a.AmountIncTax).DefaultIfEmpty().Sum();
             ViewBag.BusinessSetting = oClsResponse.Data.BusinessSetting;
             ViewBag.OnlinePaymentSetting = oClsResponse.Data.OnlinePaymentSetting;
+            try
+            {
+                var saleSettingsController = new WebApi.SaleSettingsController();
+                var saleSettingsObj = new ClsSaleSettingsVm
+                {
+                    CompanyId = oClsResponse.Data.DeliveryChallan.CompanyId,
+                    AddedBy = oClsResponse.Data.DeliveryChallan.AddedBy
+                };
+                var saleSettingsResult = await saleSettingsController.SaleSetting(saleSettingsObj);
+                ClsResponse oClsResponseSaleSettings = await oCommonController.ExtractResponseFromActionResult(saleSettingsResult);
+                ViewBag.SaleSetting = oClsResponseSaleSettings.Data.SaleSetting;
+            }
+            catch
+            {
+                ViewBag.SaleSetting = null;
+            }
             return View();
         }
 
