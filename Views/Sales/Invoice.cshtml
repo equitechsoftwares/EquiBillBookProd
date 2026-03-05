@@ -570,9 +570,14 @@
                         </div>
                         @if (ViewBag.Sale.User.Addresses.Count > 0)
                         {
+                                var customer = ViewBag.Sale.User;
+                                var customerDisplayName = !string.IsNullOrEmpty((string)customer.BusinessName)
+                                    ? (string)customer.BusinessName
+                                    : (string)customer.Name;
+                            
                             <div class="details-grid">
                                 <div class="detail-item">
-                                    <span class="detail-value">@ViewBag.Sale.User.Addresses[0].Name</span>
+                                    <span class="detail-value">@customerDisplayName</span>
                                 </div>
                                 @if (ViewBag.Sale.User.Addresses[0].Address != null && ViewBag.Sale.User.Addresses[0].Address != "")
                                 {
@@ -605,6 +610,12 @@
                                 {
                                     <div class="detail-item">
                                         <span class="detail-value">@($"{ViewBag.Sale.Branch.Tax}: {ViewBag.Sale.User.TaxNo}")</span>
+                                    </div>
+                                }
+                                @if (ViewBag.Sale.User.PanNo != null && ViewBag.Sale.User.PanNo != "")
+                                {
+                                    <div class="detail-item">
+                                        <span class="detail-value">@($"PAN: {ViewBag.Sale.User.PanNo}")</span>
                                     </div>
                                 }
                             </div>
@@ -715,6 +726,13 @@
                         <span class="detail-label">Status</span>
                         <span class="detail-value">@(ViewBag.Sale.IsCancelled == true ? "Cancelled" : ViewBag.Sale.Status)</span>
                     </div>
+                    @if (ViewBag.Sale.User.Addresses.Count > 0 && ViewBag.Sale.User.Addresses[0].State != null && ViewBag.Sale.User.Addresses[0].State != "")
+                    {
+                        <div class="detail-item">
+                            <span class="detail-label">Place Of Supply</span>
+                            <span class="detail-value">@ViewBag.Sale.User.Addresses[0].State</span>
+                        </div>
+                    }
                     @if (ViewBag.Sale.Status != "Draft")
                     {
                         if (ViewBag.Sale.Due != 0)

@@ -1414,11 +1414,11 @@ function insertCustomer() {
         return;
     }
 
-    if (!det.MobileNo || det.MobileNo.trim() === '') {
-        $('#divMobileNo_M').text('Mobile number is required').show();
-        $('.divMobileNo_M_ctrl').css('border', '2px solid #dc3545');
-        return;
-    }
+    // if (!det.MobileNo || det.MobileNo.trim() === '') {
+    //     $('#divMobileNo_M').text('Mobile number is required').show();
+    //     $('.divMobileNo_M_ctrl').css('border', '2px solid #dc3545');
+    //     return;
+    // }
 
     $("#divLoading").show();
     $.ajax({

@@ -64,7 +64,7 @@ namespace EquiBillBook.Controllers
             ClsResponse oClsResponse = await oCommonController.ExtractResponseFromActionResult(result);
 
             var userController = new UserController();
-            var result1 = await userController.AllActiveUsers(new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy });
+            var result1 = await userController.AllActiveUsers(new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType });
             ClsResponse oClsResponse1 = await oCommonController.ExtractResponseFromActionResult(result1);
 
             var menuController = new MenuController();
@@ -207,7 +207,7 @@ namespace EquiBillBook.Controllers
             obj.IsAdvance = true;
 
             var userController = new UserController();
-            var result6 = await userController.AllActiveUsers(new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy });
+            var result6 = await userController.AllActiveUsers(new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType });
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
             var menuController = new MenuController();
@@ -554,7 +554,7 @@ namespace EquiBillBook.Controllers
             ClsResponse oClsResponse5 = await oCommonController.ExtractResponseFromActionResult(result5);
 
             var userController = new UserController();
-            var result6 = await userController.AllActiveUsers(new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy });
+            var result6 = await userController.AllActiveUsers(new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType });
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
             var itemSettingsController = new ItemSettingsController();
@@ -790,7 +790,7 @@ namespace EquiBillBook.Controllers
             ClsResponse oClsResponse4 = await oCommonController.ExtractResponseFromActionResult(result4);
 
             var userController = new UserController();
-            var result6 = await userController.AllActiveUsers(new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy });
+            var result6 = await userController.AllActiveUsers(new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType });
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
             var menuController = new MenuController();
@@ -1101,7 +1101,7 @@ namespace EquiBillBook.Controllers
             obj.IsAdvance = true;
 
             var userController = new UserController();
-            var result6 = await userController.AllActiveUsers(new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy });
+            var result6 = await userController.AllActiveUsers(new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType });
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
             var menuController = new MenuController();

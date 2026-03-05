@@ -5662,9 +5662,11 @@ namespace EquiBillBook.Controllers.WebApi
                 User = oConnectionContext.DbClsUser.Where(c => c.UserId == a.CustomerId).Select(c => new
                 {
                     c.Name,
+                    c.BusinessName,
                     c.MobileNo,
                     c.EmailId,
                     TaxNo = c.BusinessRegistrationNo,
+                    c.PanNo,
                     Addresses = oConnectionContext.DbClsAddress.Where(b => b.UserId == a.CustomerId).Select(b => new
                     {
                         b.MobileNo,

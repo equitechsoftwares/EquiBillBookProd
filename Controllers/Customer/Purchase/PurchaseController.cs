@@ -64,7 +64,7 @@ namespace EquiBillBook.Controllers
             //ClsResponse oClsResponse5 = await oCommonController.ExtractResponseFromActionResult(result5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType };
             var result1 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse1 = await oCommonController.ExtractResponseFromActionResult(result1);
 
@@ -252,7 +252,7 @@ namespace EquiBillBook.Controllers
             //ClsResponse oClsResponse5 = await oCommonController.ExtractResponseFromActionResult(result5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, BranchId = obj.BranchId, IsAdvance = obj.IsAdvance };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, BranchId = obj.BranchId, IsAdvance = obj.IsAdvance, UserType = obj.UserType };
             var result6 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
@@ -677,7 +677,7 @@ namespace EquiBillBook.Controllers
             ClsResponse oClsResponse5 = await oCommonController.ExtractResponseFromActionResult(result5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, BranchId = obj.BranchId, IsAdvance = obj.IsAdvance };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, BranchId = obj.BranchId, IsAdvance = obj.IsAdvance, UserType = obj.UserType };
             var result6 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
@@ -981,7 +981,7 @@ namespace EquiBillBook.Controllers
             //ClsResponse oClsResponse5 = await oCommonController.ExtractResponseFromActionResult(result5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, BranchId = obj.BranchId, IsAdvance = obj.IsAdvance };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, BranchId = obj.BranchId, IsAdvance = obj.IsAdvance, UserType = obj.UserType };
             var result6 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
@@ -1619,7 +1619,7 @@ namespace EquiBillBook.Controllers
             //ClsResponse oClsResponse5 = serializer.Deserialize<ClsResponse>(res5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType };
             var result6 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
@@ -2017,7 +2017,7 @@ namespace EquiBillBook.Controllers
             //ClsResponse oClsResponse5 = serializer.Deserialize<ClsResponse>(res5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType };
             var result6 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
@@ -2271,7 +2271,7 @@ namespace EquiBillBook.Controllers
             ClsResponse oClsResponse5 = await oCommonController.ExtractResponseFromActionResult(result5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType };
             var result6 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
@@ -2526,7 +2526,7 @@ namespace EquiBillBook.Controllers
             //ClsResponse oClsResponse5 = serializer.Deserialize<ClsResponse>(res5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType };
             var result6 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
@@ -2776,7 +2776,7 @@ namespace EquiBillBook.Controllers
             //ClsResponse oClsResponse5 = serializer.Deserialize<ClsResponse>(res5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType };
             var result1 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse1 = await oCommonController.ExtractResponseFromActionResult(result1);
 
@@ -2948,7 +2948,7 @@ namespace EquiBillBook.Controllers
             //ClsResponse oClsResponse5 = serializer.Deserialize<ClsResponse>(res5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType };
             var result6 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
@@ -3217,7 +3217,7 @@ namespace EquiBillBook.Controllers
             ClsResponse oClsResponse5 = await oCommonController.ExtractResponseFromActionResult(result5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType };
             var result6 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
@@ -3473,7 +3473,7 @@ namespace EquiBillBook.Controllers
             //ClsResponse oClsResponse5 = serializer.Deserialize<ClsResponse>(res5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType };
             var result6 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 
@@ -3685,7 +3685,7 @@ namespace EquiBillBook.Controllers
             //ClsResponse oClsResponse5 = serializer.Deserialize<ClsResponse>(res5);
 
             var userController = new WebApi.UserController();
-            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy };
+            var userObj = new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType };
             var result6 = await userController.AllActiveUsers(userObj);
             ClsResponse oClsResponse6 = await oCommonController.ExtractResponseFromActionResult(result6);
 

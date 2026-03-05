@@ -1,4 +1,4 @@
-﻿using EquiBillBook.Controllers.WebApi;
+using EquiBillBook.Controllers.WebApi;
 using EquiBillBook.Filters;
 using EquiBillBook.Models;
 using System;
@@ -1125,7 +1125,7 @@ namespace EquiBillBook.Controllers
             ClsResponse oClsResponse = await oCommonController.ExtractResponseFromActionResult(result);
 
             var userController = new UserController();
-            var result1 = await userController.AllActiveUsers(new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy });
+            var result1 = await userController.AllActiveUsers(new ClsUserVm { CompanyId = obj.CompanyId, AddedBy = obj.AddedBy, UserType = obj.UserType });
             ClsResponse oClsResponse1 = await oCommonController.ExtractResponseFromActionResult(result1);
 
             var branchController = new BranchController();

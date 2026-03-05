@@ -1,4 +1,4 @@
-﻿using EquiBillBook.Filters;
+using EquiBillBook.Filters;
 using EquiBillBook.Models;
 using System;
 using System.Collections.Generic;
@@ -1593,11 +1593,13 @@ namespace EquiBillBook.Controllers.WebApi
                 User = oConnectionContext.DbClsUser.Where(c => c.UserId == a.SupplierId).Select(c => new
                 {
                     c.Name,
+                    c.BusinessName,
                     c.MobileNo,
                     c.EmailId,
                     //c.TaxNo,
                     //Tax = oConnectionContext.DbClsTax.Where(bb => bb.TaxId == c.TaxId).Select(bb => bb.Tax).FirstOrDefault(),
                     TaxNo = c.BusinessRegistrationNo,
+                    c.PanNo,
                     Addresses = oConnectionContext.DbClsAddress.Where(b => b.UserId == a.SupplierId).Select(b => new
                     {
                         b.MobileNo,

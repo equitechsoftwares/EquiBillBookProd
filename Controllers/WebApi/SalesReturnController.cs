@@ -1,4 +1,4 @@
-﻿using EquiBillBook.Filters;
+using EquiBillBook.Filters;
 using EquiBillBook.Models;
 using System;
 using System.Collections.Generic;
@@ -3617,9 +3617,11 @@ on a.SalesId equals z.SalesId
                            User = oConnectionContext.DbClsUser.Where(c => c.UserId == z.CustomerId).Select(c => new
                            {
                                c.Name,
+                               c.BusinessName,
                                c.MobileNo,
                                c.EmailId,
                                TaxNo = c.BusinessRegistrationNo,
+                               c.PanNo,
                                Addresses = oConnectionContext.DbClsAddress.Where(b => b.UserId == z.CustomerId).Select(b => new
                                {
                                    b.MobileNo,

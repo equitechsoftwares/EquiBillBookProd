@@ -1,4 +1,4 @@
-﻿using EquiBillBook.Controllers.WebApi.Common;
+using EquiBillBook.Controllers.WebApi.Common;
 using EquiBillBook.Filters;
 using EquiBillBook.Models;
 using System;
@@ -2185,12 +2185,6 @@ namespace EquiBillBook.Controllers.WebApi
                         isError = true;
                     }
 
-                    if (obj.MobileNo == "" || obj.MobileNo == null)
-                    {
-                        errors.Add(new ClsError { Message = "This field is required", Id = "divMobileNo" });
-                        isError = true;
-                    }
-
                     //if (obj.EmailId == "" || obj.EmailId == null)
                     //{
                     //    errors.Add(new ClsError { Message = "This field is required", Id = "divEmailId" });
@@ -2331,12 +2325,6 @@ namespace EquiBillBook.Controllers.WebApi
                     if (obj.Name == "" || obj.Name == null)
                     {
                         errors.Add(new ClsError { Message = "This field is required", Id = "divName" });
-                        isError = true;
-                    }
-
-                    if (obj.MobileNo == "" || obj.MobileNo == null)
-                    {
-                        errors.Add(new ClsError { Message = "This field is required", Id = "divMobileNo" });
                         isError = true;
                     }
 
@@ -2959,12 +2947,6 @@ namespace EquiBillBook.Controllers.WebApi
                         isError = true;
                     }
 
-                    if (obj.MobileNo == "" || obj.MobileNo == null)
-                    {
-                        errors.Add(new ClsError { Message = "This field is required", Id = "divMobileNo" });
-                        isError = true;
-                    }
-
                     //if (obj.EmailId == "" || obj.EmailId == null)
                     //{
                     //    errors.Add(new ClsError { Message = "This field is required", Id = "divEmailId" });
@@ -3076,12 +3058,6 @@ namespace EquiBillBook.Controllers.WebApi
                     if (obj.Name == "" || obj.Name == null)
                     {
                         errors.Add(new ClsError { Message = "This field is required", Id = "divName" });
-                        isError = true;
-                    }
-
-                    if (obj.MobileNo == "" || obj.MobileNo == null)
-                    {
-                        errors.Add(new ClsError { Message = "This field is required", Id = "divMobileNo" });
                         isError = true;
                     }
 
